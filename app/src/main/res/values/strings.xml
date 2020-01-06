@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AskQuastionApp</string>
+    <string name="facebook_app_id" translatable="false">491648578053491</string>
+    <string name="fb_login_protocol_scheme">fb491648578053491</string>
+</resources>

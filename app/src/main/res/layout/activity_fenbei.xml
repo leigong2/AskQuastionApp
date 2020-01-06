@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+    <TextView
+        android:id="@+id/fenbei_count"
+        tools:text="32DB"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/desc"
+        tools:text="我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:lineSpacingExtra="8dp"
+        android:layout_marginTop="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

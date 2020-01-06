@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_name"
+        tools:text="我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:padding="5dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp">
+
+        <ImageView
+            android:id="@+id/on_pre"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="60dp"
+            android:layout_marginLeft="10dp"
+            android:src="@mipmap/pre_play" />
+
+        <ImageView
+            android:id="@+id/on_play"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"/>
+
+        <ImageView
+            android:id="@+id/on_next"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="60dp"
+            android:layout_marginRight="10dp"
+            android:rotationY="180"
+            android:src="@mipmap/pre_play" />
+    </FrameLayout>
+
+</LinearLayout>

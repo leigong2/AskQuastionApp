@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+    <data>
+        <variable
+            name="presenter"
+            type="com.example.android.askquastionapp.besar.ThirdActivity"/>
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <com.example.android.askquastionapp.besar.view.ThirdBesselView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            android:id="@+id/bessel_view"
+            />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/group_mode"
+            >
+            <RadioButton
+                android:id="@+id/radio_mode_first"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="控制点1"
+                android:textColor="#333"
+                android:checked="true"
+                />
+            <RadioButton
+                android:id="@+id/radio_mode_second"
+
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="20dp"
+                android:text="控制点2"
+                android:textColor="#333"
+                />
+
+
+        </RadioGroup>
+
+    </RelativeLayout>
+</layout>
