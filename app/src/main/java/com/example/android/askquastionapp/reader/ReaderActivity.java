@@ -2,13 +2,17 @@ package com.example.android.askquastionapp.reader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -20,6 +24,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.scwang.smartrefresh.layout.util.DensityUtil;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -29,6 +34,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -45,6 +51,7 @@ public class ReaderActivity extends AppCompatActivity {
     private SmartRefreshLayout refreshLayout;
     private ArrayList<HrefData> mDatas;
     private String mUrl;
+    private TextView menuTextView;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, ReaderActivity.class);
@@ -106,7 +113,60 @@ public class ReaderActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, Menu.FIRST, 0, "更多").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItem item = menu.findItem(Menu.FIRST);
+        menuTextView = (TextView) item.getActionView();
+        if (menuTextView == null) {
+            menuTextView = new TextView(this);
+        }
+        menuTextView.setPadding(DensityUtil.dp2px(16), 0, DensityUtil.dp2px(16), 0);
+        menuTextView.setTextColor(Color.parseColor("#FFFFFF"));
+        menuTextView.setText("更多");
+        menuTextView.setEnabled(true);
+        menuTextView.setMaxLines(1);
+        menuTextView.setEllipsize(TextUtils.TruncateAt.END);
+        boolean onCreateOptionsMenu = super.onCreateOptionsMenu(menu);
+        menuTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPop(v);
+            }
+        });
+        item.setActionView(menuTextView);
+        return onCreateOptionsMenu;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case Menu.FIRST:
+                showPop(item.getActionView());
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showPop(View v) {
+        MorePop pop = new MorePop(this);
+        List<String> datas = new ArrayList<>();
+        for (int i = 0; i < 167; i++) {
+            datas.add(String.valueOf(i + 1));
+        }
+        pop.setDatas(datas);
+        pop.showAsDropDown(v, -DensityUtil.dp2px(20), DensityUtil.dp2px(20));
+        pop.setOnItemClick(new MorePop.OnItemClick() {
+            @Override
+            public void onItem(String index) {
+                mDatas.clear();
+                loadData(Integer.parseInt(index));
+            }
+        });
+    }
+
     private int mCurPage;
+
     private void loadData(int page) {
         mCurPage = page;
         if (page > 1) {
@@ -155,11 +215,13 @@ public class ReaderActivity extends AppCompatActivity {
                     public void onNext(Document document) {
                         getHomePage(document);
                     }
+
                     @Override
                     public void onError(Throwable e) {
                         refreshLayout.finishRefresh();
                         refreshLayout.finishLoadMore();
                     }
+
                     @Override
                     public void onComplete() {
 

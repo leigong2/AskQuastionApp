@@ -56,7 +56,7 @@ public class ReaderDetailActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             editText.setBackground(null);
         }
-        editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         editText.setLineSpacing(0, 1);
         editText.setCursorVisible(false);
         editText.setClickable(true);
