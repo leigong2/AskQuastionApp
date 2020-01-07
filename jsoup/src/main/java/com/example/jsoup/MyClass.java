@@ -22,7 +22,7 @@ public class MyClass {
 //        HlsDownloader.getInstance().download("https://www.2344ww.com/vod/html16/24564_down_0.html", "D:\\user\\zune\\img", "test");
 //        SimpleThread simpleThread = new SimpleThread("https://jobs.zhaopin.com/");
 //        SimpleThread simpleThread = new SimpleThread("https://www.2344ww.com");
-        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/duzhewenzhai/");
+        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
         simpleThread.start();
 //        GetGifDownloader.getGif();
 //        FileUtil.getFileName("D:\\user\\zune\\img");

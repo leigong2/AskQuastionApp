@@ -153,6 +153,7 @@ public class ReaderDetailActivity extends AppCompatActivity {
                         String temp = node.attributes().get("#text");
                         if (!StringUtils.isNullOrEmpty(temp.trim())) {
                             sb.append(temp);
+                            break;
                         }
                     } else {
                         StringBuilder stringBuilder = new StringBuilder();
@@ -171,6 +172,7 @@ public class ReaderDetailActivity extends AppCompatActivity {
                         } else {
                             if (!StringUtils.isNullOrEmpty(stringBuilder.toString())) {
                                 sb.append(stringBuilder);
+                                break;
                             }
                         }
                     }

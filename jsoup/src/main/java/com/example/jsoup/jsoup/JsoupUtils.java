@@ -161,10 +161,6 @@ public class JsoupUtils {
         }
         List<String> temp = new ArrayList<>();
         if (document != null) {
-            getHomePage(document);
-            return;
-        }
-        if (document != null) {
             StringBuilder artBody = getArtBody(document);
             System.out.println(artBody);
 //            List<HrefData> hrefs = getHrefs(document);
@@ -377,6 +373,7 @@ public class JsoupUtils {
                         String temp = node.attributes().get("#text");
                         if (!StringUtils.isNullOrEmpty(temp.trim())) {
                             sb.append(temp);
+                            break;
                         }
                     } else {
                         StringBuilder stringBuilder = new StringBuilder();
@@ -395,6 +392,7 @@ public class JsoupUtils {
                         } else {
                             if (!StringUtils.isNullOrEmpty(stringBuilder.toString())) {
                                 sb.append(stringBuilder);
+                                break;
                             }
                         }
                     }
