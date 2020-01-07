@@ -251,7 +251,7 @@ public class JsoupUtils {
         }*/
     }
 
-    private void getHomePage(Document document) {
+    public void getHomePage(Document document) {
         if (document != null) {
             System.out.println(document);
         }

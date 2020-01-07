@@ -143,6 +143,7 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".reader.ReaderListActivity" />
         <activity android:name=".reader.ReaderActivity" />
+        <activity android:name=".reader.ReaderDetailActivity" />
     </application>
 
 </manifest>
