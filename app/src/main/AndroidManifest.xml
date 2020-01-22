@@ -144,6 +144,8 @@
         <activity android:name=".reader.ReaderListActivity" />
         <activity android:name=".reader.ReaderActivity" />
         <activity android:name=".reader.ReaderDetailActivity" />
+        <service android:name=".TestNotifyService" />
+        <activity android:name=".picture.ImageViewActivity" />
     </application>
 
 </manifest>

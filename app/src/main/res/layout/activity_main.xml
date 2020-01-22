@@ -127,6 +127,34 @@
                 android:gravity="center"
                 android:text="读者" />
 
+            <TextView
+                android:id="@+id/js_save"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="js存储" />
+
+            <TextView
+                android:id="@+id/js_read"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="js读取" />
+
+            <TextView
+                android:id="@+id/android_q"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="androidQ notify" />
+
+            <TextView
+                android:id="@+id/src_image"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="加载圆图" />
+
         </LinearLayout>
     </ScrollView>
 

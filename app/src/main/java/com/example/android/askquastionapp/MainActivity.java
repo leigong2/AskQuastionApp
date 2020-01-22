@@ -1,10 +1,17 @@
 package com.example.android.askquastionapp;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,22 +23,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.clean.ClearHolder;
-import com.example.android.askquastionapp.picture.PictureActivity;
-import com.example.android.askquastionapp.reader.ReaderListActivity;
-import com.example.android.askquastionapp.utils.BitmapUtil;
-import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.contacts.ContactBean;
-import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.fenbei.FenBeiActivity;
 import com.example.android.askquastionapp.location.LocationActivity;
 import com.example.android.askquastionapp.math.MathFunActivity;
-import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.picture.ImageViewActivity;
+import com.example.android.askquastionapp.picture.PictureActivity;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
+import com.example.android.askquastionapp.reader.ReaderListActivity;
+import com.example.android.askquastionapp.utils.BitmapUtil;
+import com.example.android.askquastionapp.utils.ClearUtils;
+import com.example.android.askquastionapp.utils.ContactsUtils;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
@@ -120,7 +132,93 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.replace_bitmap).setOnClickListener(v -> replaceBitmap());
         findViewById(R.id.look_pic).setOnClickListener(v -> lookPic());
         findViewById(R.id.reader).setOnClickListener(v -> ReaderListActivity.start(MainActivity.this));
+        findViewById(R.id.js_save).setOnClickListener(v -> saveJs());
+        findViewById(R.id.js_read).setOnClickListener(v -> readJs());
+        findViewById(R.id.android_q).setOnClickListener(v -> startNotifycationQ());
         ClearUtils.getInstance().getAppProcessName(this);
+        findViewById(R.id.src_image).setOnClickListener(v -> startLoadImg());
+    }
+
+    private void startLoadImg() {
+        startActivity(new Intent(this, ImageViewActivity.class));
+    }
+
+    private void startNotifycationQ() {
+        TestNotifyService.start(this);
+    }
+
+    private void readJs() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+        WebView webView = new WebView(this);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);// 打开本地缓存提供JS调用,至关重要
+        webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 8);// 实现8倍缓存
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAppCacheEnabled(true);
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath();
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        webView.getSettings().setAppCachePath(path);
+        webView.getSettings().setDatabaseEnabled(true);
+        WebViewClient client = new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                view.loadUrl("javascript:getData()");
+            }
+        };
+        webView.setWebViewClient(client);
+        webView.loadUrl("file:///android_asset/javaScript.html");
+        webView.addJavascriptInterface(new AppClass(this), "android");
+    }
+
+    private void saveJs() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+        WebView webView = new WebView(this);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);// 打开本地缓存提供JS调用,至关重要
+        webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 8);// 实现8倍缓存
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAppCacheEnabled(true);
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath();
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        webView.getSettings().setAppCachePath(path);
+        webView.getSettings().setDatabaseEnabled(true);
+        WebViewClient client = new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                view.loadUrl("javascript:saveData('123')");
+            }
+        };
+        webView.setWebViewClient(client);
+        webView.loadUrl("file:///android_asset/javaScript.html");
+        webView.addJavascriptInterface(new AppClass(this), "android");
     }
 
     private void lookPic() {
@@ -533,4 +631,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private class AppClass {
+        private Context c;
+
+        public AppClass(Context baseContext) {
+            this.c = baseContext;
+        }
+
+        @JavascriptInterface
+        public void callBack(String userKey) {
+            Toast.makeText(c, userKey + "", Toast.LENGTH_SHORT).show();
+            Log.e("Tag", "设置了userKey : " + userKey);
+        }
+
+        @JavascriptInterface
+        public void getUserKey(String userKey) {
+            Toast.makeText(c, userKey + "", Toast.LENGTH_SHORT).show();
+            Log.e("Tag", "读取到userKey : " + userKey);
+        }
+    }
 }

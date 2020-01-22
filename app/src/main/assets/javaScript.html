@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script>
+       function saveData(param){
+          var localStorage = window.localStorage;
+          localStorage.setItem("userAgent",param,true);
+          window.android.callBack(param);
+       }
+       function getData(){
+          var localStorage = window.localStorage;
+          window.android.getUserKey(localStorage.getItem("userAgent"));
+       }
+    </script>
+</head>
+</html>
