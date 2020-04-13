@@ -1,17 +1,11 @@
 package com.example.android.askquastionapp;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +13,7 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -43,6 +38,7 @@ import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.ContactsUtils;
+import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
@@ -59,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -87,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private String avFile;
     private String baseDir;
     public static String imageDir;
+    public static List<String> sExtSdCardPaths = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +135,57 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.android_q).setOnClickListener(v -> startNotifycationQ());
         ClearUtils.getInstance().getAppProcessName(this);
         findViewById(R.id.src_image).setOnClickListener(v -> startLoadImg());
+        findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
+    }
+
+    private void sdCard() {
+        if (!DocumentsFileUtils.getInstance().hasPermissions(this)) {
+            return;
+        }
+        readSdCard();
+        writeToSdCard();
+    }
+
+    private void writeToSdCard() {
+        if (DocumentsFileUtils.getInstance().rootPath == null) {
+            return;
+        }
+        File file = new File(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1] + separator + "测试.txt");
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write("测试".getBytes());
+            fileOutputStream.flush();
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readSdCard() {
+        if (DocumentsFileUtils.getInstance().rootPath == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            DocumentsFileUtils.getInstance().showOpenDocumentTree(this);
+            if (!DocumentsFileUtils.getInstance().hasUriTree(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1])) {
+                return;
+            }
+        }
+        List<String> strings = new ArrayList<>();
+        for (String s : DocumentsFileUtils.getInstance().rootPath) {
+            DocumentFile document = DocumentsFileUtils.getInstance().getUriDocumentFile(s);
+            File file = DocumentsFileUtils.getInstance().documentToFile(document);
+            for (File listFile : file.listFiles()) {
+                strings.add("存储设备是：" + s + "; 路径是：" + listFile.getPath());
+            }
+        }
+        if (clearHolder == null) {
+            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+        }
+        clearHolder.stopLoad(strings, false);
     }
 
     private void startLoadImg() {
@@ -575,6 +624,7 @@ public class MainActivity extends AppCompatActivity {
         if (shareDialog != null) {
             shareDialog.onActivityResult(requestCode, resultCode, data);
         }
+        DocumentsFileUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
     }
 
     /**
