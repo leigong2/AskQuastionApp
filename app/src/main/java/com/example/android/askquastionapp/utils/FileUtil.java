@@ -8,22 +8,16 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
-
-import com.blankj.utilcode.util.LogUtils;
-import com.example.android.askquastionapp.MainApp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.text.DecimalFormat;
-
-import static android.os.Build.VERSION_CODES.N;
 
 /**
  * Created by DB_BOY on 2019/6/24.</br>
@@ -276,5 +270,29 @@ public class FileUtil {
         reader.close();
         in.close();
         return s;
+    }
+
+    //复制文件
+    public static void copyFile(File oldfile, File newfile) {
+        try {
+            if (!oldfile.exists() || !oldfile.isFile()) {
+                return;
+            }
+            if (newfile.exists()) {//新文件路径下有同名文件
+                return;
+            } else {
+                newfile.createNewFile();
+            }
+            FileInputStream fin = new FileInputStream(oldfile);//输入流
+            FileOutputStream fout = new FileOutputStream(newfile, true);//输出流
+            byte[] b = new byte[1024];
+            while ((fin.read(b)) != -1) {//读取到末尾 返回-1 否则返回读取的字节个数
+                fout.write(b);
+            }
+            fin.close();
+            fout.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -15,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.annotation.StringDef;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
@@ -30,12 +31,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DocumentsFileUtils {
+
+    //https://www.jianshu.com/p/f3fcf033be5c
+    public static final String VIDEO_TYPE = "video/mp4";
+    public static final String TXT_TYPE = "text/plain";
+    public static final String WORD_TYPE = "application/msword";
+    public static final String EXCEL_TYPE = "text/xml";
+    public static final String VOICE_TYPE = "audio/x-mpeg";
+    public static final String IMAGE_TYPE = "image/jpeg";
+
+    @StringDef({VIDEO_TYPE, TXT_TYPE, WORD_TYPE, EXCEL_TYPE, VOICE_TYPE, IMAGE_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface NormalMimeType {
+    }
+
     public static String mUriPath;
 
     private static final String TAG = DocumentsFileUtils.class.getSimpleName();
@@ -535,5 +552,25 @@ public class DocumentsFileUtils {
     private void requestPermissions(Activity activity) {
         ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
                 , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+    }
+
+    //复制文件
+    public static void copyFile(Context context, File oldfile, DocumentFile newDocumentFile, @NormalMimeType String mimeType, String path) {
+        try {
+            if (!oldfile.exists() || !oldfile.isFile()) {
+                return;
+            }
+            newDocumentFile.createFile(mimeType, path);
+            FileInputStream fin = new FileInputStream(oldfile);//输入流
+            OutputStream fout = context.getContentResolver().openOutputStream(newDocumentFile.getUri());;//输出流
+            byte[] b = new byte[1024];
+            while ((fin.read(b)) != -1) {//读取到末尾 返回-1 否则返回读取的字节个数
+                fout.write(b);
+            }
+            fin.close();
+            fout.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

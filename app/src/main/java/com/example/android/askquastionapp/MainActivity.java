@@ -1,6 +1,7 @@
 package com.example.android.askquastionapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
@@ -47,6 +49,7 @@ import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.jsoup.JsoupUtils;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -54,13 +57,25 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -143,14 +158,19 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         readSdCard();
-        writeToSdCard();
     }
 
-    private void writeToSdCard() {
+
+    /**
+     * Write to sd card.
+     *
+     * @param extraPath the extra path, 除了根目录之外的全路径
+     */
+    private void writeToSdCard(String extraPath) {
         if (DocumentsFileUtils.getInstance().rootPath == null) {
             return;
         }
-        File file = new File(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1] + separator + "测试.txt");
+        File file = new File(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1] + separator + extraPath);
         try {
             if (!file.exists()) {
                 file.createNewFile();
@@ -164,6 +184,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Write to sd card.
+     *
+     * @param extraPath the extra path, 除了根目录之外的全路径
+     */
+    private void writeDocumentToSdCard(String extraPath, @DocumentsFileUtils.NormalMimeType String mimeType) {
+        if (DocumentsFileUtils.getInstance().rootPath == null) {
+            return;
+        }
+        DocumentFile documentFile = DocumentsFileUtils.getInstance().getUriDocumentFile(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1]);
+        String[] parts = extraPath.split("/");
+        for (int i = 0; i < parts.length; i++) {
+            DocumentFile nextDocument = documentFile.findFile(parts[i]);
+            if (nextDocument == null) {
+                if ((i < parts.length - 1)) {
+                    nextDocument = documentFile.createDirectory(parts[i]);
+                } else {
+                    nextDocument = documentFile.createFile(mimeType, parts[i]);
+                }
+            }
+            documentFile = nextDocument;
+        }
+    }
+
     private void readSdCard() {
         if (DocumentsFileUtils.getInstance().rootPath == null) {
             return;
@@ -174,18 +218,171 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        List<String> strings = new ArrayList<>();
-        for (String s : DocumentsFileUtils.getInstance().rootPath) {
-            DocumentFile document = DocumentsFileUtils.getInstance().getUriDocumentFile(s);
-            File file = DocumentsFileUtils.getInstance().documentToFile(document);
-            for (File listFile : file.listFiles()) {
-                strings.add("存储设备是：" + s + "; 路径是：" + listFile.getPath());
-            }
-        }
         if (clearHolder == null) {
             clearHolder = new ClearHolder(findViewById(R.id.clear_root));
         }
-        clearHolder.stopLoad(strings, false);
+        clearHolder.startLoad();
+        Observable.just(1).map(new Function<Integer, List<String>>() {
+            @Override
+            public List<String> apply(Integer integer) throws Exception {
+                List<String> strings = getWechatFile("tencent/MicroMsg");
+                copyToWeixin(strings);
+                return strings;
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<String>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(List<String> strings) {
+                        clearHolder.stopLoad(strings, false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+    }
+
+    private void copyToWeixin(List<String> strings) {
+        if (DocumentsFileUtils.getInstance().rootPath == null) {
+            return;
+        }
+        for (String string : strings) {
+            String[] split = string.split(", ");
+            String path = split[0];
+            File file = new File(path);
+            if (!file.exists()) {
+                continue;
+            }
+            String fileType = getType(file);
+            if (TextUtils.isEmpty(fileType)) {
+                continue;
+            }
+            String root = DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1];
+            String type = split[split.length - 1];
+            String descPath = root + separator + "weixin" + separator + type + separator + file.getName() + (file.getName().contains(".") ? "" : fileType);
+            File descDir = new File(root + separator + "weixin" + separator + type);
+            if (!descDir.exists()) {
+                descDir.mkdirs();
+            }
+            File desc = new File(descPath);
+//            FileUtil.copyFile(file, desc);
+            @DocumentsFileUtils.NormalMimeType String mimeType = getMimeType(fileType);
+            DocumentsFileUtils.copyFile(this, file, DocumentsFileUtils.getInstance().fileToDocument(desc, false, this), mimeType, descPath);
+        }
+    }
+
+    private @DocumentsFileUtils.NormalMimeType
+    String getMimeType(String fileType) {
+        switch (fileType) {
+            case ".png":
+                return DocumentsFileUtils.IMAGE_TYPE;
+            case ".mp4":
+                return DocumentsFileUtils.VIDEO_TYPE;
+            case ".mp3":
+                return DocumentsFileUtils.VOICE_TYPE;
+            case ".txt":
+                return DocumentsFileUtils.TXT_TYPE;
+        }
+        return null;
+    }
+
+    private String getType(File file) {
+        String fileType = getFileType(file);
+        switch (fileType) {
+            case "图片":
+                return ".png";
+            case "视频":
+                return ".mp4";
+            case "音频":
+                return ".mp3";
+            case "文本":
+                return ".txt";
+        }
+        return "";
+    }
+
+    private List<String> getWechatFile(@NotNull String path) {
+        ArrayList<String> strings = new ArrayList<>();
+        if (DocumentsFileUtils.getInstance().rootPath == null) {
+            return strings;
+        }
+        File rootFile = DocumentsFileUtils.getInstance().documentToFile(
+                DocumentsFileUtils.getInstance().getUriDocumentFile(
+                        DocumentsFileUtils.getInstance().rootPath[0]
+                )
+        );
+        if (rootFile != null && rootFile.exists() && rootFile.isDirectory()) {
+            strings = getListFile(strings, new File(rootFile.getPath() + separator + path));
+        }
+        return strings;
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    private ArrayList<String> getListFile(List<String> strings, File rootFile) {
+        if (rootFile != null && rootFile.exists() && rootFile.isDirectory()) {
+            for (File file : rootFile.listFiles()) {
+                if (file.isDirectory()) {
+                    getListFile(strings, file);
+                } else if (file.length() > 1024 * 10) {
+                    long createTime;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        createTime = getCreateTime(file);
+                    } else {
+                        createTime = file.lastModified();
+                    }
+                    String createFileTime = simpleDateFormat.format(new Date(createTime));
+                    float f = file.length() / 1024f / 1024f;
+                    DecimalFormat df = new DecimalFormat("######0.00");
+                    String s = df.format(f);
+                    String type = getFileType(file);
+                    strings.add(String.format("%s, %s, %s, %s", file.getPath(), s + "M", createFileTime, type));
+                }
+            }
+        }
+        return new ArrayList<>(strings);
+    }
+
+    private String getFileType(File file) {
+        if (file.getPath().endsWith(".jpg") || file.getPath().endsWith(".gif") || file.getPath().endsWith(".png")
+                || file.getPath().contains("image")) {
+            return "图片";
+        }
+        if (file.getPath().endsWith(".mp4") || file.getPath().endsWith(".m3u8") || file.getPath().endsWith(".avi")
+                || file.getPath().contains("video")) {
+            return "视频";
+        }
+        if (file.getPath().endsWith(".mp3") || file.getPath().endsWith(".amr") || file.getPath().endsWith(".wmv")
+                || file.getPath().contains("voice")) {
+            return "音频";
+        }
+        if (file.getPath().endsWith(".doc") || file.getPath().endsWith(".docx") || file.getPath().endsWith(".txt")
+                || file.getPath().contains("document")) {
+            return "文本";
+        }
+        return "其它";
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private long getCreateTime(File file) {
+        try {
+            Path path = Paths.get(file.getPath());
+            BasicFileAttributeView basicview = Files.getFileAttributeView(path, BasicFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+            BasicFileAttributes attr = basicview.readAttributes();
+            return attr.creationTime().toMillis();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return file.lastModified();
+        }
     }
 
     private void startLoadImg() {
