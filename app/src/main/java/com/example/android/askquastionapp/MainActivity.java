@@ -45,6 +45,7 @@ import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.jsoup.JsoupUtils;
@@ -151,6 +152,11 @@ public class MainActivity extends AppCompatActivity {
         ClearUtils.getInstance().getAppProcessName(this);
         findViewById(R.id.src_image).setOnClickListener(v -> startLoadImg());
         findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
+        findViewById(R.id.selenium).setOnClickListener(v -> testSelenium());
+    }
+
+    private void testSelenium() {
+        WebViewUtils.getContentFromUrl(this, "http://list.iqiyi.com/www/2/-------------24-1-1-iqiyi--.html");
     }
 
     private void sdCard() {
@@ -261,6 +267,10 @@ public class MainActivity extends AppCompatActivity {
             if (!file.exists()) {
                 continue;
             }
+            if (System.currentTimeMillis() - file.lastModified() < 7 * 24 * 3600 * 1000L) {
+                Log.i("zune", file.getPath());
+                continue;
+            }
             String fileType = getType(file);
             if (TextUtils.isEmpty(fileType)) {
                 continue;
@@ -273,9 +283,9 @@ public class MainActivity extends AppCompatActivity {
                 descDir.mkdirs();
             }
             File desc = new File(descPath);
-//            FileUtil.copyFile(file, desc);
-            @DocumentsFileUtils.NormalMimeType String mimeType = getMimeType(fileType);
-            DocumentsFileUtils.copyFile(this, file, DocumentsFileUtils.getInstance().fileToDocument(desc, false, this), mimeType, descPath);
+            FileUtil.copyFile(file, desc);
+            /*@DocumentsFileUtils.NormalMimeType String mimeType = getMimeType(fileType);
+            DocumentsFileUtils.copyFile(this, file, DocumentsFileUtils.getInstance().fileToDocument(desc, false, this), mimeType, descPath);*/
         }
     }
 
