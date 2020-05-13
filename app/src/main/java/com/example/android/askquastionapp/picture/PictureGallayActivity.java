@@ -37,7 +37,7 @@ import pl.droidsonroids.gif.GifImageView;
 public class PictureGallayActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SmartRefreshLayout refreshLayout;
-    private List<String> mDatas;
+    private List<String> mDatas = new ArrayList<>();
     private String path;
 
     public static void start(Context context, String path) {
@@ -62,7 +62,15 @@ public class PictureGallayActivity extends AppCompatActivity {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                return new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_image, viewGroup, false));
+                WatchVideoActivity.ViewHolder viewHolder = new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_image, viewGroup, false));
+                viewHolder.itemView.setOnLongClickListener(new MyLongClickListener(i) {
+                    @Override
+                    public void onLongClick(View v, int position) {
+                        ToastUtils.showShort("已复制文件");
+                        copyToClip(v.getContext(), mDatas.get(position));
+                    }
+                });
+                return viewHolder;
             }
 
             @Override
@@ -84,13 +92,6 @@ public class PictureGallayActivity extends AppCompatActivity {
                         imageView.setVisibility(View.VISIBLE);
                         imageView.setImageBitmap(resizeBitmap(mDatas.get(i)));
                     }
-                    viewHolder.itemView.setOnLongClickListener(new MyLongClickListener(i) {
-                        @Override
-                        public void onLongClick(View v, int position) {
-                            ToastUtils.showShort("已复制文件");
-                            copyToClip(v.getContext(), mDatas.get(position));
-                        }
-                    });
                 }
             }
 
@@ -99,7 +100,6 @@ public class PictureGallayActivity extends AppCompatActivity {
                 return mDatas.size();
             }
         });
-        mDatas = new ArrayList<>();
         loadData();
     }
 
@@ -142,13 +142,17 @@ public class PictureGallayActivity extends AppCompatActivity {
         for (File file : files) {
             mDatas.add(file.getPath());
         }
-        Collections.sort(mDatas, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return getPosition(o1) - getPosition(o2);
-            }
-        });
-        recyclerView.getAdapter().notifyDataSetChanged();
+        if (!mDatas.isEmpty()) {
+            Collections.sort(mDatas, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return getPosition(o1) - getPosition(o2);
+                }
+            });
+        }
+        if (recyclerView.getAdapter() != null) {
+            recyclerView.getAdapter().notifyDataSetChanged();
+        }
     }
 
     private int getPosition(String o1) {

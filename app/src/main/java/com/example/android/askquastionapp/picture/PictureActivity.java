@@ -68,7 +68,28 @@ public class PictureActivity extends AppCompatActivity {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                return new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_video, viewGroup, false));
+                WatchVideoActivity.ViewHolder viewHolder = new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_video, viewGroup, false));
+                viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
+                    @Override
+                    public void onClick(View view, int position) {
+                        PictureGallayActivity.start(PictureActivity.this, mDatas.get(position));
+                    }
+                });
+                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        int position = (int) view.getTag();
+                        String url = mDatas.get(position);
+                        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (cm != null) {
+                            ClipData mClipData = ClipData.newPlainText("Label", url);
+                            cm.setPrimaryClip(mClipData);
+                            ToastUtils.showShort("链接已复制");
+                        }
+                        return false;
+                    }
+                });
+                return viewHolder;
             }
 
             @Override
@@ -76,27 +97,7 @@ public class PictureActivity extends AppCompatActivity {
                 if (viewHolder instanceof WatchVideoActivity.ViewHolder) {
                     TextView textView = viewHolder.itemView.findViewById(R.id.text_view);
                     textView.setText(mDatas.get(i));
-                    viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
-                        @Override
-                        public void onClick(View view, int position) {
-                            PictureGallayActivity.start(PictureActivity.this, mDatas.get(position));
-                        }
-                    });
                     viewHolder.itemView.setTag(i);
-                    viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View view) {
-                            int position = (int) view.getTag();
-                            String url = mDatas.get(position);
-                            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                            if (cm != null) {
-                                ClipData mClipData = ClipData.newPlainText("Label", url);
-                                cm.setPrimaryClip(mClipData);
-                                ToastUtils.showShort("链接已复制");
-                            }
-                            return false;
-                        }
-                    });
                 }
             }
 
