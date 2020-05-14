@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.House;
+import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.clean.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
@@ -45,6 +46,7 @@ import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
+import com.example.android.askquastionapp.utils.StringUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.web.WebViewUtils;
@@ -70,14 +72,19 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
@@ -204,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 if (company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓"))
                 if (!jsons.contains(company)) {
                     jsons.add(company);
-                    datas.add(company.scale);
+                    datas.add(company.scale.replaceAll("\n", "").replaceAll(" ", ""));
                 }
             }
             String msg = GsonGetter.getInstance().getGson().toJson(jsons);
@@ -213,6 +220,58 @@ public class MainActivity extends AppCompatActivity {
                 clearHolder = new ClearHolder(findViewById(R.id.clear_root));
             }
             clearHolder.stopLoad(datas, false);
+            Disposable subscribe = Observable.just(datas).map(new Function<List<String>, Map<String, Integer>>() {
+                @Override
+                public Map<String, Integer> apply(List<String> strings) throws Exception {
+                    long time = System.currentTimeMillis();
+                    Map<String, Integer> temp = new HashMap<>();
+                    int minLength = 2;
+                    int maxLength = 10;
+                    for (String data : strings) {
+                        for (int i = 0; i < data.length(); i++) {
+                            if (i == minLength - 1) {
+                                String tempStr = data.substring(0, i + 1);
+                                temp.put(tempStr, (temp.get(tempStr) == null ? 1 : temp.get(tempStr) + 1));
+                            } else if (i > minLength - 1 && i < maxLength) {
+                                int length = i - minLength + 1;
+                                for (int j = 0; j < length; j++) {
+                                    String tempStr = data.substring(j, i + 1);
+                                    temp.put(tempStr, (temp.get(tempStr) == null ? 1 : temp.get(tempStr) + 1));
+                                }
+                            } else if (i >= maxLength) {
+                                int length = maxLength - minLength;
+                                for (int j = 0; j < length; j++) {
+                                    String tempStr = data.substring(i - maxLength + j, i + 1);
+                                    temp.put(tempStr, (temp.get(tempStr) == null ? 1 : temp.get(tempStr) + 1));
+                                }
+                            }
+//                            Log.i("zune", "data["+i+"] = " + data.charAt(i));
+                        }
+                    }
+                    Log.i("zune", "time = " + (System.currentTimeMillis() - time));
+                    return temp;
+                }
+            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(stringIntegerMap -> {
+                        List<KeyWords> keyWords = new ArrayList<>();
+                        for (String s : stringIntegerMap.keySet()) {
+                            if (stringIntegerMap.get(s) == null || stringIntegerMap.get(s) < 5) {
+                                continue;
+                            }
+                            KeyWords keyWord = new KeyWords();
+                            keyWord.keyWord = s;
+                            keyWord.time = stringIntegerMap.get(s);
+                            keyWords.add(keyWord);
+                        }
+                        Collections.sort(keyWords, new Comparator<KeyWords>() {
+                            @Override
+                            public int compare(KeyWords o1, KeyWords o2) {
+                                return o2.time - o1.time;
+                            }
+                        });
+                        String s = GsonGetter.getInstance().getGson().toJson(keyWords);
+                        Log.i("zune", s);
+                    });
         }
     }
 
