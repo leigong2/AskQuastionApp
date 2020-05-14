@@ -169,6 +169,13 @@
                 android:gravity="center"
                 android:text="selenium测试" />
 
+            <TextView
+                android:id="@+id/bazhuayu"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="八爪鱼" />
+
         </LinearLayout>
     </ScrollView>
 

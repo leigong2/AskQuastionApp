@@ -27,6 +27,8 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.bean.Company;
+import com.example.android.askquastionapp.bean.House;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.clean.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
@@ -48,6 +50,7 @@ import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
+import com.example.jsoup.GsonGetter;
 import com.example.jsoup.jsoup.JsoupUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -153,6 +156,64 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.src_image).setOnClickListener(v -> startLoadImg());
         findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
         findViewById(R.id.selenium).setOnClickListener(v -> testSelenium());
+        findViewById(R.id.bazhuayu).setOnClickListener(v -> readXls());
+    }
+
+    private void readXls() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+        File fileName = FileUtil.assetsToFile(this, "企业最新招聘信息_求职信息_找工作上智联招聘.xlsx");
+        Map<String, List<List<String>>> map = ExcelManager.getInstance().analyzeXls(fileName.getPath());
+        if (map == null || map.isEmpty()) {
+            map = ExcelManager.getInstance().analyzeXlsx(fileName.getPath());
+        }
+//        {xxx:"xxx", xxx:"xxx"}
+        for (String key : map.keySet()) {
+            List<List<String>> lists = map.get(key);
+            if (lists == null) {
+                return;
+            }
+            List<Company> jsons = new ArrayList<>();
+            List<String> datas = new ArrayList<>();
+            for (int i = 1; i < lists.size(); i++) {
+                StringBuilder json = new StringBuilder();
+                for (int j = 0; j < lists.get(i).size(); j++) {
+                    String value = lists.get(i).get(j);
+                    if (value == null) {
+                        value = "";
+                    }
+                    String str = value.replaceAll("\\\\", "\\\\\\\\");
+                    if (j == 0) {
+                        json.append("{\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\",");
+                    } else if (j == lists.get(i).size() - 1) {
+                        json.append("\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\"}");
+                    } else {
+                        json.append("\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\",");
+                    }
+                }
+                Company company = GsonGetter.getInstance().getGson().fromJson(json.toString(), Company.class);
+                if (company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓"))
+                if (!jsons.contains(company)) {
+                    jsons.add(company);
+                    datas.add(company.scale);
+                }
+            }
+            String msg = GsonGetter.getInstance().getGson().toJson(jsons);
+            Log.i("zune", msg);
+            if (clearHolder == null) {
+                clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+            }
+            clearHolder.stopLoad(datas, false);
+        }
     }
 
     private void testSelenium() {
