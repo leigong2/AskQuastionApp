@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -37,6 +38,8 @@ import pl.droidsonroids.gif.GifImageView;
 public class PictureGallayActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SmartRefreshLayout refreshLayout;
+    private ImageView anim;
+    private View animLay;
     private List<String> mDatas = new ArrayList<>();
     private String path;
 
@@ -54,6 +57,14 @@ public class PictureGallayActivity extends AppCompatActivity {
         path = getIntent().getStringExtra("path");
         recyclerView = findViewById(R.id.recycler_view);
         refreshLayout = findViewById(R.id.refresh_layout);
+        anim = findViewById(R.id.anim);
+        animLay = findViewById(R.id.anim_lay);
+        animLay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismissAnim();
+            }
+        });
         refreshLayout.setEnableLoadMore(false);
         refreshLayout.setEnableRefresh(false);
 
@@ -63,11 +74,25 @@ public class PictureGallayActivity extends AppCompatActivity {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
                 WatchVideoActivity.ViewHolder viewHolder = new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_image, viewGroup, false));
-                viewHolder.itemView.setOnLongClickListener(new MyLongClickListener(i) {
+                if (viewHolder.itemView.getTag() == null) {
+                    viewHolder.itemView.setTag(0);
+                }
+                int position = (int) viewHolder.itemView.getTag();
+                viewHolder.itemView.setOnLongClickListener(new MyLongClickListener(position) {
                     @Override
                     public void onLongClick(View v, int position) {
                         ToastUtils.showShort("已复制文件");
                         copyToClip(v.getContext(), mDatas.get(position));
+                    }
+                });
+                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (animLay.getVisibility() == View.GONE) {
+                            showAnim();
+                        } else {
+                            dismissAnim();
+                        }
                     }
                 });
                 return viewHolder;
@@ -75,6 +100,7 @@ public class PictureGallayActivity extends AppCompatActivity {
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+                viewHolder.itemView.setTag(i);
                 if (viewHolder instanceof WatchVideoActivity.ViewHolder) {
                     ImageView imageView = viewHolder.itemView.findViewById(R.id.image_view);
                     GifImageView gifView = viewHolder.itemView.findViewById(R.id.gif_view);
@@ -101,6 +127,42 @@ public class PictureGallayActivity extends AppCompatActivity {
             }
         });
         loadData();
+    }
+
+    private Handler handler = new Handler();
+
+    private int mCurAnimPosition;
+    private Runnable animRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mCurAnimPosition < mDatas.size() - 1) {
+                mCurAnimPosition ++;
+                anim.setImageBitmap(resizeBitmap(mDatas.get(mCurAnimPosition)));
+                handler.postDelayed(animRunnable, 100);
+            } else {
+                handler.removeCallbacks(animRunnable);
+                animLay.setVisibility(View.GONE);
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dismissAnim();
+    }
+
+    private void showAnim() {
+        mCurAnimPosition = 0;
+        handler.removeCallbacks(animRunnable);
+        animLay.setVisibility(View.VISIBLE);
+        handler.postDelayed(animRunnable, 100);
+    }
+
+    private void dismissAnim() {
+        mCurAnimPosition = 0;
+        animLay.setVisibility(View.GONE);
+        handler.removeCallbacks(animRunnable);
     }
 
     public abstract class MyLongClickListener implements View.OnLongClickListener {

@@ -39,4 +39,20 @@
             android:layout_height="wrap_content" />
     </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
+    <FrameLayout
+        android:background="#000"
+        android:id="@+id/anim_lay"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/anim"
+            android:scaleType="fitXY"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
+
 </LinearLayout>

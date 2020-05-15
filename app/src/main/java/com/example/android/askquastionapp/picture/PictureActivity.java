@@ -72,7 +72,8 @@ public class PictureActivity extends AppCompatActivity {
                 viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
                     @Override
                     public void onClick(View view, int position) {
-                        PictureGallayActivity.start(PictureActivity.this, mDatas.get(position));
+                        int positions = (int) view.getTag();
+                        PictureGallayActivity.start(PictureActivity.this, mDatas.get(positions));
                     }
                 });
                 viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

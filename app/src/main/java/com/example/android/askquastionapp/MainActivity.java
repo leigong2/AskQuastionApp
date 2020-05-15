@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -28,7 +29,6 @@ import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
-import com.example.android.askquastionapp.bean.House;
 import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.clean.ClearHolder;
@@ -46,7 +46,6 @@ import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
-import com.example.android.askquastionapp.utils.StringUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.web.WebViewUtils;
@@ -87,6 +86,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -111,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
     private String baseDir;
     public static String imageDir;
     public static List<String> sExtSdCardPaths = new ArrayList<>();
+    private String movieUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/movie_db.db";
+    private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
+    private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +171,76 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
         findViewById(R.id.selenium).setOnClickListener(v -> testSelenium());
         findViewById(R.id.bazhuayu).setOnClickListener(v -> readXls());
+        startDownload();
+    }
+
+    private void startDownload() {
+        if (new File(movieFile).exists()
+                && new File(musicFile).exists()
+                && new File(avFile).exists() ) {
+            return;
+        }
+        if (clearHolder == null) {
+            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+        }
+        clearHolder.startLoad();
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                File file = new File(baseDir);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                startDownload(musicUrl, musicFile, () -> startDownload(movieUrl, movieFile, () -> startDownload(avUrl, avFile, () -> {
+                    Disposable subscribe = Observable.just(1).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(integer -> clearHolder.dismiss());
+                })));
+            }
+        }.start();
+    }
+
+    private void startDownload(String url, String file, CallBack callBack) {
+        if (new File(file).exists()) {
+            if (callBack != null) {
+                callBack.onCallBack();
+            }
+            return;
+        }
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            }
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.body() == null) {
+                    return;
+                }
+                InputStream is = response.body().byteStream();
+                FileOutputStream fos = new FileOutputStream(new File(file));
+                int len = 0;
+                byte[] buffer = new byte[2048];
+                while (-1 != (len = is.read(buffer))) {
+                    fos.write(buffer, 0, len);
+                }
+                fos.flush();
+                fos.close();
+                is.close();
+                if (callBack != null) {
+                    callBack.onCallBack();
+                }
+            }
+        });
+    }
+
+    public interface CallBack {
+        void onCallBack();
     }
 
     private void readXls() {
@@ -245,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
                                     temp.put(tempStr, (temp.get(tempStr) == null ? 1 : temp.get(tempStr) + 1));
                                 }
                             }
-//                            Log.i("zune", "data["+i+"] = " + data.charAt(i));
                         }
                     }
                     Log.i("zune", "time = " + (System.currentTimeMillis() - time));
