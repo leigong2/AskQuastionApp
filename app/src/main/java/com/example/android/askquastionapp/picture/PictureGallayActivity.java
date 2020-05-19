@@ -202,7 +202,13 @@ public class PictureGallayActivity extends AppCompatActivity {
         File dir = new File(path);
         File[] files = dir.listFiles();
         for (File file : files) {
-            mDatas.add(file.getPath());
+            if (file.isDirectory()) {
+                for (File listFile : file.listFiles()) {
+                    mDatas.add(listFile.getPath());
+                }
+            } else {
+                mDatas.add(file.getPath());
+            }
         }
         if (!mDatas.isEmpty()) {
             Collections.sort(mDatas, new Comparator<String>() {
