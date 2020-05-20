@@ -73,7 +73,7 @@ public class PictureActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view, int position) {
                         int positions = (int) view.getTag();
-                        PictureGallayActivity.start(PictureActivity.this, mDatas.get(positions));
+                        PictureGallayActivity.start(PictureActivity.this, mDatas, (Integer) viewHolder.itemView.getTag());
                     }
                 });
                 viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

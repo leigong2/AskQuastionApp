@@ -20,9 +20,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.MemoryCache;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,10 +46,13 @@ public class PictureGallayActivity extends AppCompatActivity {
     private View animLay;
     private List<String> mDatas = new ArrayList<>();
     private String path;
+    private Integer curPosition;
+    private List<String> paths;
 
-    public static void start(Context context, String path) {
+    public static void start(Context context, List<String> path, int position) {
         Intent intent = new Intent(context, PictureGallayActivity.class);
-        intent.putExtra("path", path);
+        MemoryCache.getInstance().put("path", path);
+        MemoryCache.getInstance().put("position", position);
         context.startActivity(intent);
     }
 
@@ -54,7 +61,12 @@ public class PictureGallayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_watch_video);
         findViewById(R.id.search).setVisibility(View.GONE);
-        path = getIntent().getStringExtra("path");
+        paths = MemoryCache.getInstance().remove("path");
+        if (paths == null) {
+            paths = new ArrayList<>();
+        }
+        curPosition = MemoryCache.getInstance().remove("position");
+        this.path = paths.get(curPosition);
         recyclerView = findViewById(R.id.recycler_view);
         refreshLayout = findViewById(R.id.refresh_layout);
         anim = findViewById(R.id.anim);
@@ -65,8 +77,30 @@ public class PictureGallayActivity extends AppCompatActivity {
                 dismissAnim();
             }
         });
-        refreshLayout.setEnableLoadMore(false);
-        refreshLayout.setEnableRefresh(false);
+        refreshLayout.setEnableLoadMore(true);
+        refreshLayout.setEnableRefresh(true);
+        refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore(@NonNull RefreshLayout refreshLayout) {
+                curPosition++;
+                if (curPosition == paths.size()) {
+                    curPosition = 0;
+                }
+                path = paths.get(curPosition);
+                loadData();
+            }
+        });
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(@NonNull RefreshLayout refreshLayout) {
+                curPosition--;
+                if (curPosition == -1) {
+                    curPosition = paths.size() - 1;
+                }
+                path = paths.get(curPosition);
+                loadData();
+            }
+        });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new RecyclerView.Adapter() {
@@ -199,6 +233,10 @@ public class PictureGallayActivity extends AppCompatActivity {
     private static Pattern pattern = Pattern.compile("-?[0-9]+\\.?[0-9]*");
 
     private void loadData() {
+        if (recyclerView != null && mDatas.size() > 0) {
+            recyclerView.scrollToPosition(0);
+        }
+        mDatas.clear();
         File dir = new File(path);
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -220,6 +258,10 @@ public class PictureGallayActivity extends AppCompatActivity {
         }
         if (recyclerView.getAdapter() != null) {
             recyclerView.getAdapter().notifyDataSetChanged();
+        }
+        if (refreshLayout != null) {
+            refreshLayout.finishLoadMore();
+            refreshLayout.finishRefresh();
         }
     }
 
