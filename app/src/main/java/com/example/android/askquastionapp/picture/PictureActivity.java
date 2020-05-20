@@ -120,8 +120,21 @@ public class PictureActivity extends AppCompatActivity {
     }
 
     private void loadData() {
+        if (recyclerView.getAdapter() == null) {
+            return;
+        }
         File dir = new File(path);
+        if (!dir.exists()) {
+            recyclerView.getAdapter().notifyDataSetChanged();
+            refreshLayout.finishRefresh();
+            return;
+        }
         File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            recyclerView.getAdapter().notifyDataSetChanged();
+            refreshLayout.finishRefresh();
+            return;
+        }
         for (File file : files) {
             mDatas.add(file.getPath());
         }
