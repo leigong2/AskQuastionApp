@@ -1,22 +1,12 @@
 package com.example.jsoup;
 
-import com.example.jsoup.bean.VideoBean;
 import com.example.jsoup.jsoup.GetGifDownloader;
-import com.example.jsoup.jsoup.HlsDownloader;
-import com.example.jsoup.jsoup.JsoupUtils;
-import com.example.jsoup.jsoup.SqliteUtils;
+import com.example.jsoup.thread.CustomThreadPoolExecutor;
 import com.example.jsoup.thread.SimpleThread;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.example.jsoup.jsoup.JsoupUtils.avDBPath;
-import static com.example.jsoup.jsoup.JsoupUtils.movieDBPath;
-import static com.example.jsoup.jsoup.JsoupUtils.videoDBPath;
-
 public class MyClass {
+    public static boolean sStop;
+
     public static void main(String[] args) {
         //http://www.mgy5.com/  http://www.rerere888.com/arttype/2.html
 //        HlsDownloader.getInstance().download("https://www.2344ww.com/vod/html16/24564_down_0.html", "D:\\user\\zune\\img", "test");
@@ -24,7 +14,31 @@ public class MyClass {
         SimpleThread simpleThread = new SimpleThread("http://www.nuu22.com");
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
 //        simpleThread.start();
-        GetGifDownloader.getGif();
+//        GetGifDownloader.getGif();
+        UiUtil.showDialog("测试", new UiUtil.CallBack() {
+            @Override
+            public void onChooseFileDir(String path) {
+                System.out.println("path = " + path);
+                GetGifDownloader.imageDir = path;
+            }
+
+            @Override
+            public void onStatusChange(boolean start) {
+                System.out.println(start ? "开始下载了" : "停止下载了");
+                if (start) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            super.run();
+                            sStop = false;
+                            GetGifDownloader.getGif();
+                        }
+                    }.start();
+                } else {
+                    stopEvery();
+                }
+            }
+        });
 //        FileUtil.getFileName("D:\\user\\zune\\img");
 
         /*for (int i = 0; i < 74470; i++) {
@@ -56,5 +70,13 @@ public class MyClass {
         List<VideoBean> m = SqliteUtils.getInstance(avDBPath).queryData("video_bean", map, VideoBean.class, 10);
         System.out.println(m);*/
 //        HlsDownloader.getInstance().download("http://42.51.43.168/20190128/03_1.m3u8", "D:\\user\\zune\\video", "测试");
+    }
+
+    public static void stopEvery() {
+        sStop = true;
+        CustomThreadPoolExecutor customThreadPoolExecutor = GetGifDownloader.getsPool();
+        if (customThreadPoolExecutor != null) {
+            customThreadPoolExecutor.shutdown();
+        }
     }
 }

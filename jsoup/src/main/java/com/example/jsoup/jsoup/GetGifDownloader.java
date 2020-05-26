@@ -1,5 +1,6 @@
 package com.example.jsoup.jsoup;
 
+import com.example.jsoup.MyClass;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.bean.ImgData;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
@@ -29,11 +30,20 @@ public class GetGifDownloader {
 
     private static CustomThreadPoolExecutor sPool;
     private int secondaryIndex;
-    private static String imageDir = "D:\\user\\zune\\img";
+    public static String imageDir = "D:\\user\\zune\\img";
+
+    public static CustomThreadPoolExecutor getsPool() {
+        return sPool;
+    }
 
     public static void getGif() {
-        File fileDir = new File("D:\\user\\zune\\img");
-        Collections.addAll(imageName, fileDir.list());
+        File fileDir = new File(imageDir);
+        if (!fileDir.exists()) {
+            fileDir.mkdirs();
+        }
+        if (fileDir.list() != null && fileDir.list().length > 0) {
+            Collections.addAll(imageName, fileDir.list());
+        }
         if (sPool == null) {
             sPool = new CustomThreadPoolExecutor(100);
         }
@@ -54,6 +64,9 @@ public class GetGifDownloader {
     }
 
     private static boolean getRightUrl(String url) {
+        if (MyClass.sStop) {
+            return false;
+        }
         Document document = getDocument(url);
         List<HrefData> hrefs = getHrefs(document);
         boolean isRight = false;
@@ -69,6 +82,9 @@ public class GetGifDownloader {
     }
 
     private static Document getDocument(String url) {
+        if (MyClass.sStop) {
+            return null;
+        }
         Document document = null;
         String[] split = ip[(int) (ip.length * Math.random())].split(":");
         String userAgent = userAgents[(int) (userAgents.length * Math.random())];
@@ -105,6 +121,9 @@ public class GetGifDownloader {
     }
 
     private static void parseUrl(String url) {
+        if (MyClass.sStop) {
+            return;
+        }
         Document document = getDocument(url);
         if (document != null) {
             List<ImgData> imgs = getImgs(document);
@@ -157,6 +176,9 @@ public class GetGifDownloader {
     private static Set<String> imageName = new HashSet<>();
 
     private static void checkDownload(ImgData img) {
+        if (MyClass.sStop) {
+            return;
+        }
         if (!imageUrls.contains(img.src)) {
             imageUrls.add(img.src);
             sPool.execute(new MyRunnable(img) {
@@ -170,6 +192,9 @@ public class GetGifDownloader {
 
     //链接url下载图片
     private static void downloadPicture(String imageUrl, String dir, String imageName) {
+        if (MyClass.sStop) {
+            return;
+        }
         System.out.println(imageName + "..................." + imageUrl);
         long time = System.currentTimeMillis();
         URL url;
