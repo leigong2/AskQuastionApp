@@ -642,9 +642,6 @@ public class JsoupUtils {
             Element element = attr.get(i);
             String src = element.attr("src");
             String s = StringUtils.isNullOrEmpty(element.attr("alt")) ? imageTitle : element.attr("alt");
-            if (s.startsWith("哈哈哈")) {
-                System.out.println(s);
-            }
             ImgData imgData = new ImgData(src, s.split("】")[0] + "】" + i);//实体对象构造方法，代码省略
             imgDataList.add(imgData);
         }

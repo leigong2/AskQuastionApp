@@ -116,7 +116,7 @@ public class GetGifDownloader {
                 titles = titlesTemp;
             }
             for (int i = 0; i < imgs.size(); i++) {
-                //System.out.println(imgs.get(i));
+                System.out.println(imgs.get(i));
                 if (!imgs.get(i).src.endsWith("gif")) {
                     //continue;
                 }
@@ -170,7 +170,7 @@ public class GetGifDownloader {
 
     //链接url下载图片
     private static void downloadPicture(String imageUrl, String dir, String imageName) {
-        //System.out.println(imageName + "..................." + imageUrl);
+        System.out.println(imageName + "..................." + imageUrl);
         long time = System.currentTimeMillis();
         URL url;
         int responseCode = 0;
