@@ -28,31 +28,44 @@ import static com.example.jsoup.jsoup.JsoupUtils.getImgs;
 public class GetGifDownloader {
 
     private static CustomThreadPoolExecutor sPool;
-    private String test = "http://www.rerere888.com/arttype/2-1.html";
+    private int secondaryIndex;
     private static String imageDir = "D:\\user\\zune\\img";
 
     public static void getGif() {
-        File fileDir = new File("D:\\user\\zune\\img0");
+        File fileDir = new File("D:\\user\\zune\\img");
         Collections.addAll(imageName, fileDir.list());
         if (sPool == null) {
             sPool = new CustomThreadPoolExecutor(100);
         }
-        for (int i = 1; i <= 100; i++) {
-            String url = String.format("http://www.rerere888.com/arttype/2-%s.html", i);
-            getRightUrl(url);
+        for (int i = 43; i <= 50; i++) {
+            for (int j = 1; j < 100; j++) {
+                String url;
+                if (j == 1) {
+                    url = String.format("http://www.5160088.com/html/part/index%s.html", i);
+                } else {
+                    url = String.format("http://www.5160088.com/html/part/index%s_%s.html", i, j);
+                }
+                boolean rightUrl = getRightUrl(url);
+                if (!rightUrl) {
+                    break;
+                }
+            }
         }
     }
 
-    private static void getRightUrl(String url) {
+    private static boolean getRightUrl(String url) {
         Document document = getDocument(url);
         List<HrefData> hrefs = getHrefs(document);
+        boolean isRight = false;
         for (HrefData href : hrefs) {
-            if (href.href.startsWith("/artdetail")) {
-                String rightUrl = "http://www.rerere888.com" + href.href;
-                System.out.println(url + "-------------------" + rightUrl);
+            if (href.href.startsWith("/html/article/index")) {
+                String rightUrl = "http://www.5160088.com" + href.href;
+                //System.out.println(url + "-------------------" + rightUrl);
                 parseUrl(rightUrl);
+                isRight = true;
             }
         }
+        return isRight;
     }
 
     private static Document getDocument(String url) {
@@ -103,8 +116,7 @@ public class GetGifDownloader {
                 titles = titlesTemp;
             }
             for (int i = 0; i < imgs.size(); i++) {
-                imgs.get(i).src = "http://www.rerere888.com" + imgs.get(i).src;
-                System.out.println(imgs.get(i));
+                //System.out.println(imgs.get(i));
                 if (!imgs.get(i).src.endsWith("gif")) {
                     //continue;
                 }
@@ -116,10 +128,9 @@ public class GetGifDownloader {
                         && !imgs.get(i).alt.contains("人彘")
                         && !imgs.get(i).alt.contains("男同")
                         && !imgs.get(i).alt.contains("豚")  ) {
-                    System.out.println(imgs.get(i).alt);
 //                    break;
                 }
-                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0];
+                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0].split("】")[0] + "】";
                 if (imageName.contains(s.replaceAll(" ", ""))) {
                     break;
                 }
@@ -151,7 +162,7 @@ public class GetGifDownloader {
             sPool.execute(new MyRunnable(img) {
                 @Override
                 void run(ImgData img) {
-                    downloadPicture(img.src, imageDir, img.alt);
+                    downloadPicture(img.src, imageDir + "\\" + img.alt.split("】")[0] + "】", img.alt);
                 }
             });
         }
@@ -159,7 +170,7 @@ public class GetGifDownloader {
 
     //链接url下载图片
     private static void downloadPicture(String imageUrl, String dir, String imageName) {
-        System.out.println(imageName + "..................." + imageUrl);
+        //System.out.println(imageName + "..................." + imageUrl);
         long time = System.currentTimeMillis();
         URL url;
         int responseCode = 0;

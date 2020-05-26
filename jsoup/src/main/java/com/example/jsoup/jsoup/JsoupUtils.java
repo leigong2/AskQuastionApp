@@ -13,7 +13,9 @@ import com.mysql.cj.util.StringUtils;
 import com.mysql.cj.util.TestUtils;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -132,7 +134,7 @@ public class JsoupUtils {
         }
         urls.add(url.startsWith("http") ? url : baseUrl + url);
         Document document = null;
-        String[] split = ip[(int) (ip.length * Math.random())].split(":");
+        String[] splitIp = ip[(int) (ip.length * Math.random())].split(":");
         String userAgent = userAgents[(int) (userAgents.length * Math.random())];
         String session = "Hm_lvt_e55ff7844747a41e412fd2b38266f729=1574478858,1575279638,1575332776,1576215605; UM_distinctid=16e9640c55172a-03d372c96ca269-4c302b7a-1fa400-16e9640c5523e3; CNZZDATA1275110260=1105678920-1574476527-https%253A%252F%252Fwww.baidu.com%252F%7C1576213844; bdshare_firstime=1574478857680; Hm_lvt_e4476baf9a1725eedfe34c443331f6cf=1574479437,1575279643,1575332777,1576215906; Hm_lpvt_e55ff7844747a41e412fd2b38266f729=1576216455; Hm_lpvt_e4476baf9a1725eedfe34c443331f6cf=1576216455";
         try {
@@ -161,59 +163,59 @@ public class JsoupUtils {
         }
         List<String> temp = new ArrayList<>();
         if (document != null) {
-            StringBuilder artBody = getArtBody(document);
-            System.out.println(artBody);
-//            List<HrefData> hrefs = getHrefs(document);
-//            for (HrefData href : hrefs) {
-//                if (href.href == null || baseUrl.equals(href.href) || (!href.href.startsWith("/") && !href.href.startsWith("http"))) {
-//                    continue;
-//                }
-//                if (urls.contains(baseUrl + href.href)) {
-//                    continue;
-//                }
-////                getMp4Video(infoData, href);
-//                if (count > 0) {
-//                    return;
-//                }
-////                getMp3Url(href);
-//                temp.add(href.href.startsWith("/") ? baseUrl + href.href : href.href);
-//            }
-//            List<ImgData> imgs = getImgs(document);
-//            for (int i = 0; i < imgs.size(); i++) {
-//                ImgData imgData = imgs.get(i);
-//                String[] split = imgData.src.split("\\.");
-//                String[] titlesTemp = document.title().split("\\\\");
-//                String[] titles;
-//                if (titlesTemp.length == 1) {
-//                    titles = document.title().split("/");
-//                } else {
-//                    titles = titlesTemp;
-//                }
-//                String end = "jpg";
-//                if (split.length == 1) {
-//                    if (imgData.src.endsWith("png")) {
-//                        end = "png";
-//                    } else if (imgData.src.endsWith("gif")) {
-//                        end = "gif";
-//                    }
-//                }
-//                boolean isTitle = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]).trim().length() == 4;
-//                if (isTitle) {
-//                    continue;
-//                }
-//                String imageName = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]) + i
-//                        + "." + (split.length == 0 ? end : split[split.length - 1]);
-//                if (imageName.contains(getGbk("正在播放"))) {
-//                    continue;
-//                }
-//                if (justGif && ((imageName.endsWith("gif") || imageName.endsWith("GIF")))) {
-//                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
-//                            , imageName);
-//                } else if (!justGif) {
-//                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
-//                            , imageName);
-//                }
-//            }
+//            StringBuilder artBody = getArtBody(document);
+//            System.out.println(artBody);
+            List<HrefData> hrefs = getHrefs(document);
+            for (HrefData href : hrefs) {
+                if (href.href == null || baseUrl.equals(href.href) || (!href.href.startsWith("/") && !href.href.startsWith("http"))) {
+                    continue;
+                }
+                if (urls.contains(baseUrl + href.href)) {
+                    continue;
+                }
+//                getMp4Video(infoData, href);
+                if (count > 0) {
+                    return;
+                }
+//                getMp3Url(href);
+                temp.add(href.href.startsWith("/") ? baseUrl + href.href : href.href);
+            }
+            List<ImgData> imgs = getImgs(document);
+            for (int i = 0; i < imgs.size(); i++) {
+                ImgData imgData = imgs.get(i);
+                String[] split = imgData.src.split("\\.");
+                String[] titlesTemp = document.title().split("\\\\");
+                String[] titles;
+                if (titlesTemp.length == 1) {
+                    titles = document.title().split("/");
+                } else {
+                    titles = titlesTemp;
+                }
+                String end = "jpg";
+                if (split.length == 1) {
+                    if (imgData.src.endsWith("png")) {
+                        end = "png";
+                    } else if (imgData.src.endsWith("gif")) {
+                        end = "gif";
+                    }
+                }
+                boolean isTitle = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]).trim().length() == 4;
+                if (isTitle) {
+                    continue;
+                }
+                String imageName = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]) + i
+                        + "." + (split.length == 0 ? end : split[split.length - 1]);
+                if (imageName.contains(getGbk("正在播放"))) {
+                    continue;
+                }
+                if (justGif && ((imageName.endsWith("gif") || imageName.endsWith("GIF")))) {
+                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
+                            , imageName);
+                } else if (!justGif) {
+                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
+                            , imageName);
+                }
+            }
 //            List<String> videos = getM3U8Videos(document);
 //            if (!videos.isEmpty()) {
 //                for (String video : videos) {
@@ -236,15 +238,15 @@ public class JsoupUtils {
                                    getContent(infoData, url);
                                }
                            }*/
-        /*for (String s : temp) {
+        for (String ss : temp) {
             CustomThreadPoolExecutor threadPool = getThreadExecutor();
-            threadPool.execute(new MyRunnable(getInfoData(document), s) {
+            threadPool.execute(new MyRunnable(getInfoData(document), ss) {
                 @Override
                 public void run(InfoData infoData, String url) {
                     getContent(infoData, url);
                 }
             });
-        }*/
+        }
     }
 
     public void getHomePage(Document document) {
@@ -615,11 +617,35 @@ public class JsoupUtils {
      * @return
      */
     public static List<ImgData> getImgs(Document document) {
+        Element head = document.head();
+        Elements title = head.getElementsByTag("meta");
+        String imageTitle = null;
+        for (Element element : title) {
+            Attributes attributes = element.attributes();
+            for (int i = 0; i < attributes.size(); i++) {
+                if (attributes.asList().size() > 1 && "keywords".equals(attributes.asList().get(0).getValue()) && StringUtils.isNullOrEmpty(imageTitle)) {
+                    imageTitle = attributes.asList().get(1).getValue().split("】")[0] + "】";
+                    break;
+                }
+                if (attributes.asList().size() > 1 && "description".equals(attributes.asList().get(0).getValue()) && StringUtils.isNullOrEmpty(imageTitle)) {
+                    imageTitle = attributes.asList().get(1).getValue().split("】")[0] + "】";
+                    break;
+                }
+            }
+        }
+        if (StringUtils.isNullOrEmpty(imageTitle)) {
+            imageTitle = document.title().split("】")[0] + "】";
+        }
         Elements attr = document.getElementsByTag("img");
         List<ImgData> imgDataList = new ArrayList<ImgData>();
-        for (Element element : attr) {
+        for (int i = 0; i < attr.size(); i++) {
+            Element element = attr.get(i);
             String src = element.attr("src");
-            ImgData imgData = new ImgData(src, element.attr("alt"));//实体对象构造方法，代码省略
+            String s = StringUtils.isNullOrEmpty(element.attr("alt")) ? imageTitle : element.attr("alt");
+            if (s.startsWith("哈哈哈")) {
+                System.out.println(s);
+            }
+            ImgData imgData = new ImgData(src, s.split("】")[0] + "】" + i);//实体对象构造方法，代码省略
             imgDataList.add(imgData);
         }
         return imgDataList;
