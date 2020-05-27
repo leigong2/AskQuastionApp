@@ -1,6 +1,9 @@
 package com.example.jsoup;
 
+import com.mysql.cj.util.StringUtils;
+
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -16,18 +19,32 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class UiUtil {
-    public static void showDialog(String title, CallBack callBack) {
+    private static UiUtil sUiUtil;
+    private JTextArea textArea;
+
+    private UiUtil() {}
+    public static UiUtil getInstance() {
+        if (sUiUtil == null) {
+            sUiUtil = new UiUtil();
+        }
+        return sUiUtil;
+    }
+    public void showDialog(String title, CallBack callBack) {
         JFrame frmIpa = new JFrame();
         frmIpa.setTitle(title);
         frmIpa.setBounds(600, 300, 500, 400);
+        frmIpa.setLayout(new BorderLayout(0, 0));
+        frmIpa.setResizable(true);
         frmIpa.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // 面板1
         JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
         frmIpa.getContentPane().add(panel, BorderLayout.NORTH);
         // 可滚动面板
         JScrollPane scrollPane = new JScrollPane();
         frmIpa.getContentPane().add(scrollPane, BorderLayout.CENTER);
-        JTextArea textArea = new JTextArea();
+        textArea = new JTextArea();
+        textArea.setLineWrap(true);
 //		textArea.setFont(new Font("黑体",Font.BOLD,15));
         scrollPane.setViewportView(textArea);
         JButton button = new JButton("选择文件");
@@ -58,7 +75,7 @@ public class UiUtil {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (callBack != null) {
-                    callBack.onStatusChange(true);
+                    callBack.onStatusChange(true, textArea.getText());
                 }
             }
         });
@@ -67,7 +84,7 @@ public class UiUtil {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (callBack != null) {
-                    callBack.onStatusChange(false);
+                    callBack.onStatusChange(false, textArea.getText());
                 }
             }
         });
@@ -107,9 +124,15 @@ public class UiUtil {
         });
     }
 
+    public synchronized void setText(String text) {
+        if (textArea != null && !StringUtils.isNullOrEmpty(text)) {
+            textArea.append("\n" + text);
+        }
+    }
+
     public interface CallBack {
         void onChooseFileDir(String path);
 
-        void onStatusChange(boolean start);
+        void onStatusChange(boolean start, String path);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.jsoup.jsoup;
 
 import com.example.jsoup.MyClass;
+import com.example.jsoup.UiUtil;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.bean.ImgData;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
@@ -30,7 +31,7 @@ public class GetGifDownloader {
 
     private static CustomThreadPoolExecutor sPool;
     private int secondaryIndex;
-    public static String imageDir = "D:\\user\\zune\\img";
+    public static String imageDir = "D:\\img";
 
     public static CustomThreadPoolExecutor getsPool() {
         return sPool;
@@ -195,7 +196,9 @@ public class GetGifDownloader {
         if (MyClass.sStop) {
             return;
         }
-        System.out.println(imageName + "..................." + imageUrl);
+        String s = imageName + "..................." + imageUrl;
+        UiUtil.getInstance().setText(s);
+        System.out.println(s);
         long time = System.currentTimeMillis();
         URL url;
         int responseCode = 0;

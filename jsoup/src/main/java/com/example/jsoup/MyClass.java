@@ -3,6 +3,7 @@ package com.example.jsoup;
 import com.example.jsoup.jsoup.GetGifDownloader;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
 import com.example.jsoup.thread.SimpleThread;
+import com.mysql.cj.util.StringUtils;
 
 public class MyClass {
     public static boolean sStop;
@@ -15,16 +16,21 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
 //        simpleThread.start();
 //        GetGifDownloader.getGif();
-        UiUtil.showDialog("测试", new UiUtil.CallBack() {
+        UiUtil.getInstance().showDialog("测试", new UiUtil.CallBack() {
             @Override
             public void onChooseFileDir(String path) {
                 System.out.println("path = " + path);
-                GetGifDownloader.imageDir = path;
+                if (!StringUtils.isNullOrEmpty(path)) {
+                    GetGifDownloader.imageDir = path;
+                }
             }
 
             @Override
-            public void onStatusChange(boolean start) {
+            public void onStatusChange(boolean start, String path) {
                 System.out.println(start ? "开始下载了" : "停止下载了");
+                if (!StringUtils.isNullOrEmpty(path)) {
+                    GetGifDownloader.imageDir = path;
+                }
                 if (start) {
                     new Thread() {
                         @Override
