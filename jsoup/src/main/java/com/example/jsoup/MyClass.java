@@ -16,7 +16,7 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
 //        simpleThread.start();
 //        GetGifDownloader.getGif();
-        UiUtil.getInstance().showDialog("测试", new UiUtil.CallBack() {
+        UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
             public void onChooseFileDir(String path) {
                 System.out.println("path = " + path);

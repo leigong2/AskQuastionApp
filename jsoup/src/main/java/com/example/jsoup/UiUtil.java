@@ -47,7 +47,7 @@ public class UiUtil {
         textArea.setLineWrap(true);
 //		textArea.setFont(new Font("黑体",Font.BOLD,15));
         scrollPane.setViewportView(textArea);
-        JButton button = new JButton("选择文件");
+        JButton button = new JButton("选择文件夹");
         // 监听button的选择路径
         button.addActionListener(new ActionListener() {
             @Override
@@ -66,7 +66,7 @@ public class UiUtil {
                     }
                 } catch (Exception e2) {
                     JPanel panel3 = new JPanel();
-                    JOptionPane.showMessageDialog(panel3, "没有选中任何文件", "提示", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(panel3, "没有选中任何文件夹，默认D://img", "提示", JOptionPane.WARNING_MESSAGE);
                 }
             }
         });
