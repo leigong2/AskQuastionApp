@@ -34,6 +34,7 @@
 
     <uses-permission android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:name=".MainApp"

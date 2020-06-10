@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="image_coloum_size">6</integer>
+    <integer name="live_room_count">2</integer>
+    <dimen name="dialog_horizontal_margin">72dp</dimen>
+
+    <!--<integer name="emoji_column">8</integer>-->
+    <!--<integer name="emoji_line">5</integer>-->
+</resources>

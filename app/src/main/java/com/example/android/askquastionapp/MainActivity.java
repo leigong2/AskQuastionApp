@@ -5,13 +5,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -27,9 +27,11 @@ import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
+import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.clean.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
@@ -56,6 +58,9 @@ import com.example.jsoup.jsoup.JsoupUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -78,12 +83,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
@@ -118,6 +124,16 @@ public class MainActivity extends AppCompatActivity {
     private String movieUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/movie_db.db";
     private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
     private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
+
+    private String baseUrl = "http://192.168.200.33";
+
+    private String devolop = baseUrl + "/develop/debug/app-develop-armeabi-v7a-debug.apk";
+    private String preProducation = baseUrl + "/preProducation/debug/app-preProducation-armeabi-v7a-debug.apk";
+    private String production_blue = baseUrl + "/production_blue/debug/app-production_blue-armeabi-v7a-debug.apk";
+    private String production = baseUrl + "/production/debug/app-production-armeabi-v7a-debug.apk";
+    private String release = baseUrl + "/production/release/app-production-armeabi-v7a-release.apk";
+    private String self = baseUrl + "/other/release/app-release.apk";
+    private String imgs = baseUrl + "/img0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,13 +187,219 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
         findViewById(R.id.selenium).setOnClickListener(v -> testSelenium());
         findViewById(R.id.bazhuayu).setOnClickListener(v -> readXls());
-        startDownload();
+        findViewById(R.id.fanyiwenan).setOnClickListener(v -> startTranslate());
+        //startDownload();
+        findViewById(R.id.dabaoxiazai).setOnClickListener(v -> showDownload());
+    }
+
+    private void showDownload() {
+        if (clearHolder == null) {
+            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+        }
+        ArrayList<String> datas = new ArrayList<>();
+        datas.add("devolop");
+        datas.add("preProducation");
+        datas.add("production_blue");
+        datas.add("production");
+        datas.add("release");
+        clearHolder.stopLoad(datas, false);
+        clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String path = (String) clearHolder.getResults().getAdapter().getItem(position);
+                switch (path) {
+                    case "devolop":
+                        startDownloadApp(devolop, path);
+                        break;
+                    case "preProducation":
+                        startDownloadApp(preProducation, path);
+                        break;
+                    case "production_blue":
+                        startDownloadApp(production_blue, path);
+                        break;
+                    case "production":
+                        startDownloadApp(production, path);
+                        break;
+                    case "release":
+                        startDownloadApp(release, path);
+                        break;
+                    default:
+                        startDownloadApp(self, path);
+                        break;
+                }
+                clearHolder.dismiss();
+            }
+        });
+    }
+
+    /**
+     * 调用第三方浏览器打开
+     *
+     * @param url 要浏览的资源地址
+     */
+    private void startDownloadApp(String url, String path) {
+        Uri uri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            intent.setClassName("com.tencent.mtt", "com.tencent.mtt.MainActivity");//打开QQ浏览器
+            startActivity(intent);
+        } catch (Exception e1) {
+            try {
+                intent.setClassName("com.android.browser", "com.android.browser.BrowserActivity");
+                startActivity(intent);
+            } catch (Exception e2) {
+                try {
+                    intent.setClassName("mark.via", "mark.via.ui.activity.BrowserActivity");
+                    startActivity(intent);
+                } catch (Exception e3) {
+                    // 注意此处的判断intent.resolveActivity()可以返回显示该Intent的Activity对应的组件名
+                    // 官方解释 : Name of the component implementing an activity that can display the intent
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(Intent.createChooser(intent, "请选择浏览器"));
+                    } else {
+                        Toast.makeText(getApplicationContext(), "请下载浏览器", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+    }
+
+    private void startTranslate() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+        File fileName = FileUtil.assetsToFile(this, "待翻译文案.xls");
+        Map<String, List<List<String>>> map = ExcelManager.getInstance().analyzeXls(fileName.getPath());
+        if (map == null || map.isEmpty()) {
+            map = ExcelManager.getInstance().analyzeXlsx(fileName.getPath());
+        }
+//        [{xxx:"xxx", "xx":xx}, {yyy:"yyy", yy:"yy"}]
+//        {xxx:"xxx", xxx:"xxx"}
+        for (String key : map.keySet()) {
+            List<List<String>> lists = map.get(key);
+            if (lists == null) {
+                return;
+            }
+            List<LanguageWords> languageWords = new ArrayList<>();
+            for (int i = 1; i < lists.size(); i++) {
+                List<String> strings = lists.get(i);
+                LanguageWords languageWord = new LanguageWords();
+                for (int j = 2; j < strings.size(); j++) {
+                    LanguageWords.KeyWord keyWord = new LanguageWords.KeyWord();
+                    keyWord.key = strings.get(0);
+                    keyWord.word = strings.get(j);
+                    switch (j) {
+                        case 2:
+                            languageWord.rCN = keyWord;
+                            break;
+                        case 3:
+                            languageWord.en = keyWord;
+                            break;
+                        case 4:
+                            languageWord.ar = keyWord;
+                            break;
+                        case 5:
+                            languageWord.de = keyWord;
+                            break;
+                        case 6:
+                            languageWord.es = keyWord;
+                            break;
+                        case 7:
+                            languageWord.fr = keyWord;
+                            break;
+                        case 8:
+                            languageWord.hi = keyWord;
+                            break;
+                        case 9:
+                            languageWord.in = keyWord;
+                            break;
+                        case 10:
+                            languageWord.it = keyWord;
+                            break;
+                        case 11:
+                            languageWord.ja = keyWord;
+                            break;
+                        case 12:
+                            languageWord.ko = keyWord;
+                            break;
+                        case 13:
+                            languageWord.pt = keyWord;
+                            break;
+                        case 14:
+                            languageWord.ru = keyWord;
+                            break;
+                        case 15:
+                            languageWord.th = keyWord;
+                            break;
+                        case 16:
+                            languageWord.vi = keyWord;
+                            break;
+                        case 17:
+                            languageWord.rHK = keyWord;
+                            break;
+                    }
+                }
+                languageWords.add(languageWord);
+            }
+            appendXml(languageWords);
+            if (clearHolder == null) {
+                clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+            }
+            clearHolder.stopLoad(new ArrayList<>(), false);
+        }
+    }
+
+    private void appendXml(List<LanguageWords> languageWords) {
+        try {
+            AssetManager assets = getAssets();
+            InputStream open = assets.open("value/strings.xml");
+            //创建一个SAX解析器工厂对象;
+            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+            //通过工厂对象创建SAX解析器
+            SAXParser saxParser = saxParserFactory.newSAXParser();
+            //开始解析
+            DefaultHandler dh = new DefaultHandler() {
+                @Override
+                public void startDocument() throws SAXException {
+                    super.startDocument();
+                }
+
+                @Override
+                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                    super.startElement(uri, localName, qName, attributes);
+                    LogUtils.i("zune：", "startElement attributes = " + GsonGetter.getInstance().getGson().toJson(attributes));
+                }
+
+                @Override
+                public void endElement(String uri, String localName, String qName) throws SAXException {
+                    super.endElement(uri, localName, qName);
+                }
+
+                @Override
+                public void endDocument() throws SAXException {
+                    super.endDocument();
+                }
+            };
+            saxParser.parse(open, dh);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void startDownload() {
         if (new File(movieFile).exists()
                 && new File(musicFile).exists()
-                && new File(avFile).exists() ) {
+                && new File(avFile).exists()) {
             return;
         }
         if (clearHolder == null) {
@@ -217,6 +439,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
             }
+
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.body() == null) {
@@ -286,10 +509,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Company company = GsonGetter.getInstance().getGson().fromJson(json.toString(), Company.class);
                 if (company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓"))
-                if (!jsons.contains(company)) {
-                    jsons.add(company);
-                    datas.add(company.scale.replaceAll("\n", "").replaceAll(" ", ""));
-                }
+                    if (!jsons.contains(company)) {
+                        jsons.add(company);
+                        datas.add(company.scale.replaceAll("\n", "").replaceAll(" ", ""));
+                    }
             }
             String msg = GsonGetter.getInstance().getGson().toJson(jsons);
             Log.i("zune", msg);

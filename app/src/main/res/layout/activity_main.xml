@@ -176,6 +176,21 @@
                 android:gravity="center"
                 android:text="八爪鱼" />
 
+            <TextView
+                android:id="@+id/fanyiwenan"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="翻译文案" />
+
+            <TextView
+                android:id="@+id/dabaoxiazai"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="下载app" />
+
+
         </LinearLayout>
     </ScrollView>
 
