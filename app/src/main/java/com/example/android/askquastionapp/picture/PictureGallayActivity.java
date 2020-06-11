@@ -468,7 +468,7 @@ public class PictureGallayActivity extends AppCompatActivity {
             } else {
                 if (android.os.Build.VERSION.SDK_INT >= 17) {
                     if (GlideUtils.getInstance().getLocalCache(PictureGallayActivity.this, url) != null) {
-                        return;
+                        continue;
                     }
                     FutureTarget<File> submit = Glide.with(this)
                             .asFile()
