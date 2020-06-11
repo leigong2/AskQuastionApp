@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,23 +25,39 @@ import android.widget.TextView;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.StringUtils;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.jsoup.GsonGetter;
+import com.example.jsoup.bean.HrefData;
+import com.example.jsoup.jsoup.JsoupUtils;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class PictureActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SmartRefreshLayout refreshLayout;
-    private List<String> mDatas;
+    private List<HrefData> mDatas = new ArrayList<>();
     private String path;
+    private String imgUrls;
 
-    public static void start(Context context, String path) {
+    public static void start(Context context, String path, String imgUrls) {
         if (Build.VERSION.SDK_INT >= 23) {
             int writePermission = ContextCompat.checkSelfPermission(context,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -53,8 +71,10 @@ public class PictureActivity extends AppCompatActivity {
         }
         Intent intent = new Intent(context, PictureActivity.class);
         intent.putExtra("path", path);
+        intent.putExtra("imgUrls", imgUrls);
         context.startActivity(intent);
     }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,10 +100,10 @@ public class PictureActivity extends AppCompatActivity {
                     @Override
                     public boolean onLongClick(View view) {
                         int position = (int) view.getTag();
-                        String url = mDatas.get(position);
+                        HrefData url = mDatas.get(position);
                         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                         if (cm != null) {
-                            ClipData mClipData = ClipData.newPlainText("Label", url);
+                            ClipData mClipData = ClipData.newPlainText("Label", url.text);
                             cm.setPrimaryClip(mClipData);
                             ToastUtils.showShort("链接已复制");
                         }
@@ -97,7 +117,7 @@ public class PictureActivity extends AppCompatActivity {
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
                 if (viewHolder instanceof WatchVideoActivity.ViewHolder) {
                     TextView textView = viewHolder.itemView.findViewById(R.id.text_view);
-                    textView.setText(mDatas.get(i));
+                    textView.setText(mDatas.get(i).text);
                     viewHolder.itemView.setTag(i);
                 }
             }
@@ -107,8 +127,8 @@ public class PictureActivity extends AppCompatActivity {
                 return mDatas.size();
             }
         });
-        mDatas = new ArrayList<>();
         path = getIntent().getStringExtra("path");
+        imgUrls = getIntent().getStringExtra("imgUrls");
         loadData();
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
@@ -120,6 +140,7 @@ public class PictureActivity extends AppCompatActivity {
     }
 
     private void loadData() {
+        mDatas.clear();
         if (recyclerView.getAdapter() == null) {
             return;
         }
@@ -127,19 +148,79 @@ public class PictureActivity extends AppCompatActivity {
         if (!dir.exists()) {
             recyclerView.getAdapter().notifyDataSetChanged();
             refreshLayout.finishRefresh();
+            if (mDatas.isEmpty()) {
+                loadNetDatas(imgUrls);
+            }
             return;
         }
         File[] files = dir.listFiles();
         if (files == null || files.length == 0) {
             recyclerView.getAdapter().notifyDataSetChanged();
             refreshLayout.finishRefresh();
+            if (mDatas.isEmpty()) {
+                loadNetDatas(imgUrls);
+            }
             return;
         }
         for (File file : files) {
-            mDatas.add(file.getPath());
+            String path = file.getPath();
+            HrefData hrefData = new HrefData("", "", path);
+            mDatas.add(hrefData);
         }
-        Collections.sort(mDatas);
+        Collections.sort(mDatas, new Comparator<HrefData>() {
+            @Override
+            public int compare(HrefData o1, HrefData o2) {
+                return o1.text.compareTo(o2.text);
+            }
+        });
         recyclerView.getAdapter().notifyDataSetChanged();
         refreshLayout.finishRefresh();
+        if (mDatas.isEmpty()) {
+            loadNetDatas(imgUrls);
+        }
     }
+
+    private void loadNetDatas(String imgUrls) {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        final Request request = new Request.Builder()
+                .url(imgUrls)
+                .get()//默认就是GET请求，可以不写
+                .build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@Nullable Call call, @Nullable IOException e) {
+                Log.i("zune", GsonGetter.getInstance().getGson().toJson(e));
+            }
+
+            @Override
+            public void onResponse(@Nullable Call call, @Nullable Response response) throws IOException {
+                if (response != null && response.body() != null) {
+                    String html = new String(response.body().bytes());
+                    Document document = Jsoup.parseBodyFragment(html);
+                    mDatas.addAll(JsoupUtils.getHrefs(document));
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Collections.sort(mDatas, new Comparator<HrefData>() {
+                                @Override
+                                public int compare(HrefData o1, HrefData o2) {
+                                    return o1.text.compareTo(o2.text);
+                                }
+                            });
+                            if (recyclerView.getAdapter() != null) {
+                                recyclerView.getAdapter().notifyDataSetChanged();
+                            }
+                            refreshLayout.finishRefresh();
+                            refreshLayout.finishLoadMore();
+                        }
+                    });
+                } else {
+                    onFailure(call, null);
+                }
+            }
+        });
+    }
+
+    private Handler mHandler = new Handler();
 }

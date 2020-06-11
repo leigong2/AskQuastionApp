@@ -53,6 +53,10 @@
             android:adjustViewBounds="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
     </FrameLayout>
+
+    <include layout="@layout/layout_clear"
+        android:visibility="gone"/>
 
 </LinearLayout>

@@ -48,6 +48,9 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
+        <meta-data
+        android:name="com.example.android.askquastionapp.utils.CustomGlideModule"
+        android:value="CustomGlideModule" />
         <!--google 地图start ========================================-->
         <uses-library
             android:name="org.apache.http.legacy"

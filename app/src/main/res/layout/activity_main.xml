@@ -190,7 +190,6 @@
                 android:gravity="center"
                 android:text="下载app" />
 
-
         </LinearLayout>
     </ScrollView>
 
