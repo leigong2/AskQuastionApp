@@ -8,26 +8,36 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
@@ -45,6 +55,7 @@ import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.ContactsUtils;
+import com.example.android.askquastionapp.utils.CustomItemTouchHelperCallBack;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
@@ -55,6 +66,7 @@ import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.jsoup.JsoupUtils;
+import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -67,6 +79,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -82,6 +95,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -125,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
     private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
     private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
 
-    public static String baseUrl = "http://192.168.200.33";
+    public static String baseUrl = "http://192.168.200.51";
 
     private String devolop = baseUrl + "/develop/debug/app-develop-armeabi-v7a-debug.apk";
     private String preProducation = baseUrl + "/preProducation/debug/app-preProducation-armeabi-v7a-debug.apk";
@@ -134,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
     private String release = baseUrl + "/production/release/app-production-armeabi-v7a-release.apk";
     private String self = baseUrl + "/other/release/app-release.apk";
     private String imgs = baseUrl + "/img0";
+    private List<String> mMainTags = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,51 +160,219 @@ public class MainActivity extends AppCompatActivity {
         movieFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "movie_db.db";
         avFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "av_db.db";
         requestPermiss();
-        findViewById(R.id.read_txt).setOnClickListener(v -> startReadTxt());
-        findViewById(R.id.fenbei).setOnClickListener(v -> starFenbei());
-        findViewById(R.id.map).setOnClickListener((v) -> LocationActivity.start(MainActivity.this));
-        findViewById(R.id.besar).setOnClickListener(v -> BesarActivity.start(MainActivity.this));
-        findViewById(R.id.math).setOnClickListener(v -> MathFunActivity.start(MainActivity.this));
-        findViewById(R.id.constants).setOnClickListener(v -> getConstants());
-        findViewById(R.id.delete_dir).setOnClickListener(v -> deleteDir());
-        findViewById(R.id.share).setOnClickListener(v -> share());
-        findViewById(R.id.parse_xsl).setOnClickListener(v -> parseXsl());
-        findViewById(R.id.parse_url).setOnClickListener(v -> parseUrl());
-        findViewById(R.id.normal_video).setOnClickListener(v -> {
-            if (new File(movieFile).exists()) {
-                WatchVideoActivity.start(MainActivity.this, movieFile);
-            } else {
-                gzipFiles();
+        initMainTags();
+        RecyclerView recyclerView = findViewById(R.id.main_tags);
+        recyclerView.setLayoutManager(ChipsLayoutManager.newBuilder(this).setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT).setOrientation(ChipsLayoutManager.HORIZONTAL).build());
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter
+                = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+                View itemView = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_main_tag, viewGroup, false);
+                itemView.setOnClickListener(v -> onTagClick((String) v.getTag()));
+                return new RecyclerView.ViewHolder(itemView) {
+                };
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
+                TextView textTag = viewHolder.itemView.findViewById(R.id.tag);
+                textTag.setText(mMainTags.get(position));
+                viewHolder.itemView.setTag(textTag.getText().toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.bg_main_tag);
+                    String[] randColor = getRandColor().split("\\*");
+                    drawable.setTint(Color.parseColor(randColor[0]));
+                    textTag.setBackground(drawable);
+                    BigInteger bigint=new BigInteger(randColor[1], 16);
+                    int textColor=bigint.intValue();
+                    textTag.setTextColor(Color.BLACK);
+                }
+            }
+
+            @Override
+            public int getItemCount() {
+                return mMainTags.size();
+            }
+        };
+        CustomItemTouchHelperCallBack callback = new CustomItemTouchHelperCallBack();
+        callback.setOnItemMove(new CustomItemTouchHelperCallBack.OnItemMove() {
+            @Override
+            public boolean onMove(int fromPosition, int toPosition) {
+                //1、交换数据
+                sort(mMainTags,fromPosition, toPosition);
+                //2、刷新
+                adapter.notifyItemMoved(fromPosition, toPosition);
+                return true;
             }
         });
-        findViewById(R.id.av_video).setOnClickListener(v -> {
-            if (new File(avFile).exists()) {
-                WatchVideoActivity.start(MainActivity.this, avFile);
-            } else {
-                gzipFiles();
-            }
-        });
-        findViewById(R.id.single_music).setOnClickListener(v -> {
-            if (new File(musicFile).exists()) {
-                ListenMusicActivity.start(MainActivity.this, musicFile);
-            } else {
-                gzipFiles();
-            }
-        });
-        findViewById(R.id.replace_bitmap).setOnClickListener(v -> replaceBitmap());
-        findViewById(R.id.look_pic).setOnClickListener(v -> lookPic());
-        findViewById(R.id.reader).setOnClickListener(v -> ReaderListActivity.start(MainActivity.this));
-        findViewById(R.id.js_save).setOnClickListener(v -> saveJs());
-        findViewById(R.id.js_read).setOnClickListener(v -> readJs());
-        findViewById(R.id.android_q).setOnClickListener(v -> startNotifycationQ());
+        ItemTouchHelper helper = new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(recyclerView);
+        recyclerView.setAdapter(adapter);
         ClearUtils.getInstance().getAppProcessName(this);
-        findViewById(R.id.src_image).setOnClickListener(v -> startLoadImg());
-        findViewById(R.id.sd_card).setOnClickListener(v -> sdCard());
-        findViewById(R.id.selenium).setOnClickListener(v -> testSelenium());
-        findViewById(R.id.bazhuayu).setOnClickListener(v -> readXls());
-        findViewById(R.id.fanyiwenan).setOnClickListener(v -> startTranslate());
-        //startDownload();
-        findViewById(R.id.dabaoxiazai).setOnClickListener(v -> showDownload());
+    }
+
+    /*zune: 将fromPosition，转移到toPosition, 缺位的顺次补上**/
+    private void sort(List<String> mainTags, int fromPosition, int toPosition) {
+        List<String> tempSrc = new ArrayList<>(mainTags);
+        if (fromPosition < toPosition) {
+            for (int i = 0; i < mainTags.size(); i++) {
+                if (i == fromPosition) {
+                    for (int j = 0; j < toPosition - fromPosition; j++) {
+                        mainTags.set(i + j, tempSrc.get(i + j + 1));
+                    }
+                    mainTags.set(toPosition, tempSrc.get(fromPosition));
+                    break;
+                }
+            }
+        }
+        if (fromPosition > toPosition) {
+            for (int i = 0; i < mainTags.size(); i++) {
+                if (i == toPosition) {
+                    mainTags.set(toPosition, tempSrc.get(fromPosition));
+                    for (int j = 0; j < fromPosition - toPosition; j++) {
+                        mainTags.set(i + j + 1, tempSrc.get(i + j));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private void initMainTags() {
+        String json = SPUtils.getInstance().getString("mMainTags");
+        List<String> temp = GsonGetter.getInstance().getGson().fromJson(json, new TypeToken<List<String>>() {
+        }.getType());
+        if (temp != null && !temp.isEmpty()) {
+            mMainTags.addAll(temp);
+            return;
+        }
+        this.mMainTags.add("阅读");
+        this.mMainTags.add("数学");
+        this.mMainTags.add("贝塞尔曲线");
+        this.mMainTags.add("分贝");
+        this.mMainTags.add("Google地图");
+        this.mMainTags.add("删除冗余文件夹");
+        this.mMainTags.add("通讯录");
+        this.mMainTags.add("分享");
+        this.mMainTags.add("解析excel");
+        this.mMainTags.add("爬虫测试");
+        this.mMainTags.add("电影");
+        this.mMainTags.add("视频");
+        this.mMainTags.add("歌曲");
+        this.mMainTags.add("去水印");
+        this.mMainTags.add("图片");
+        this.mMainTags.add("读者");
+        this.mMainTags.add("js存储");
+        this.mMainTags.add("js读取");
+        this.mMainTags.add("androidQ notify");
+        this.mMainTags.add("加载圆图");
+        this.mMainTags.add("sd卡");
+        this.mMainTags.add("selenium测试");
+        this.mMainTags.add("八爪鱼");
+        this.mMainTags.add("翻译文案");
+        this.mMainTags.add("下载app");
+        this.mMainTags.add("测试");
+    }
+
+    private void onTagClick(String text) {
+        switch (text) {
+            case "阅读":
+                startReadTxt();
+                break;
+            case "数学":
+                MathFunActivity.start(MainActivity.this);
+                break;
+            case "贝塞尔曲线":
+                BesarActivity.start(MainActivity.this);
+                break;
+            case "分贝": //"分贝");
+                starFenbei();
+                break;
+            case "Google地图": //Google地图");
+                LocationActivity.start(MainActivity.this);
+                break;
+            case "删除冗余文件夹": //删除冗余文件夹");
+                deleteDir();
+                break;
+            case "通讯录": //通讯录");
+                getConstants();
+                break;
+            case "分享": //分享");
+                share();
+                break;
+            case "解析excel": //解析excel");
+                parseXsl();
+                break;
+            case "爬虫测试": //爬虫测试");
+                parseUrl();
+                break;
+            case "电影": //电影");
+                if (new File(movieFile).exists()) {
+                    WatchVideoActivity.start(MainActivity.this, movieFile);
+                } else {
+                    gzipFiles();
+                }
+                break;
+            case "视频": //视频");
+                if (new File(avFile).exists()) {
+                    WatchVideoActivity.start(MainActivity.this, avFile);
+                } else {
+                    gzipFiles();
+                }
+                break;
+            case "歌曲": //歌曲");
+                if (new File(musicFile).exists()) {
+                    ListenMusicActivity.start(MainActivity.this, musicFile);
+                } else {
+                    gzipFiles();
+                }
+                break;
+            case "去水印": //去水印");
+                replaceBitmap();
+                break;
+            case "图片": //图片");
+                lookPic();
+                break;
+            case "读者": //读者");
+                ReaderListActivity.start(MainActivity.this);
+                break;
+            case "js存储": //js存储");
+                saveJs();
+                break;
+            case "js读取": //js读取");
+                readJs();
+                break;
+            case "androidQ notify": //androidQ notify");
+                startNotifycationQ();
+                break;
+            case "加载圆图": //加载圆图");
+                startLoadImg();
+                break;
+            case "sd卡": //sd卡");
+                sdCard();
+                break;
+            case "selenium测试": //selenium测试");
+                testSelenium();
+                break;
+            case "八爪鱼": //八爪鱼");
+                readXls();
+                break;
+            case "翻译文案": //翻译文案");
+                startTranslate();
+                break;
+            case "下载app": //下载app");
+                showDownload();
+                break;
+            case "测试": //测试");
+                break;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SPUtils.getInstance().put("mMainTags", GsonGetter.getInstance().getGson().toJson(mMainTags));
     }
 
     private void showDownload() {
@@ -1325,5 +1508,31 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(c, userKey + "", Toast.LENGTH_SHORT).show();
             Log.e("Tag", "读取到userKey : " + userKey);
         }
+    }
+
+    /**
+     * 获取十六进制的颜色代码.例如  "#5A6677"
+     * 分别取R、G、B的随机值，然后加起来即可
+     *
+     * @return String
+     */
+    public static String getRandColor() {
+        String R, G, B, R1, G1, B1;
+        Random random = new Random();
+        int r = random.nextInt(256);
+        R1 = Integer.toHexString(255 - r).toUpperCase();
+        R = Integer.toHexString(r).toUpperCase();
+        int g = random.nextInt(256);
+        G1 = Integer.toHexString(255 - g).toUpperCase();
+        G = Integer.toHexString(g).toUpperCase();
+        int b = random.nextInt(256);
+        B1 = Integer.toHexString(255 - b).toUpperCase();
+        B = Integer.toHexString(b).toUpperCase();
+
+        R = R.length() == 1 ? "0" + R : R;
+        G = G.length() == 1 ? "0" + G : G;
+        B = B.length() == 1 ? "0" + B : B;
+
+        return "#80" + R + G + B + "*" + "FF" + R1 + G1 + B1;
     }
 }
