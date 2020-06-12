@@ -56,6 +56,7 @@ public class PictureActivity extends AppCompatActivity {
     private List<HrefData> mDatas = new ArrayList<>();
     private String path;
     private String imgUrls;
+    public static boolean sRandomSort;
 
     public static void start(Context context, String path, String imgUrls) {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -202,12 +203,17 @@ public class PictureActivity extends AppCompatActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Collections.sort(mDatas, new Comparator<HrefData>() {
-                                @Override
-                                public int compare(HrefData o1, HrefData o2) {
-                                    return o1.text.compareTo(o2.text);
-                                }
-                            });
+                            if (sRandomSort) {
+                                Collections.shuffle(mDatas);
+                            } else {
+                                sRandomSort = true;
+                                Collections.sort(mDatas, new Comparator<HrefData>() {
+                                    @Override
+                                    public int compare(HrefData o1, HrefData o2) {
+                                        return o1.text.compareTo(o2.text);
+                                    }
+                                });
+                            }
                             if (recyclerView.getAdapter() != null) {
                                 recyclerView.getAdapter().notifyDataSetChanged();
                             }

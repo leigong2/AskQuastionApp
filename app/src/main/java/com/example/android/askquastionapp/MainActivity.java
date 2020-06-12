@@ -162,7 +162,9 @@ public class MainActivity extends AppCompatActivity {
         requestPermiss();
         initMainTags();
         RecyclerView recyclerView = findViewById(R.id.main_tags);
-        recyclerView.setLayoutManager(ChipsLayoutManager.newBuilder(this).setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT).setOrientation(ChipsLayoutManager.HORIZONTAL).build());
+        recyclerView.setLayoutManager(ChipsLayoutManager.newBuilder(this)
+                .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
+                .setOrientation(ChipsLayoutManager.HORIZONTAL).build());
         RecyclerView.Adapter<RecyclerView.ViewHolder> adapter
                 = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             @NonNull
