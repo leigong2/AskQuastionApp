@@ -89,6 +89,9 @@ public class PictureGallayActivity extends AppCompatActivity {
             paths = new ArrayList<>();
         }
         curPosition = MemoryCache.getInstance().remove("position");
+        if (curPosition == null) {
+            curPosition = 0;
+        }
         this.path = paths.get(curPosition);
         recyclerView = findViewById(R.id.recycler_view);
         refreshLayout = findViewById(R.id.refresh_layout);

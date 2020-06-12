@@ -59,6 +59,7 @@ import com.example.android.askquastionapp.utils.CustomItemTouchHelperCallBack;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
+import com.example.android.askquastionapp.utils.SetIpDialog;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.web.WebViewUtils;
@@ -274,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
         this.mMainTags.add("八爪鱼");
         this.mMainTags.add("翻译文案");
         this.mMainTags.add("下载app");
+        this.mMainTags.add("设置ip");
         this.mMainTags.add("测试");
     }
 
@@ -365,6 +367,17 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "下载app": //下载app");
                 showDownload();
+                break;
+            case "设置ip": //设置ip");
+                SetIpDialog setIpDialog = SetIpDialog.showDialog(this);
+                setIpDialog.setOnResultListener(new SetIpDialog.OnResultListener() {
+                    @Override
+                    public void onResult(String ip) {
+                        if (!TextUtils.isEmpty(ip)) {
+                            baseUrl = ip;
+                        }
+                    }
+                });
                 break;
             case "测试": //测试");
                 break;
