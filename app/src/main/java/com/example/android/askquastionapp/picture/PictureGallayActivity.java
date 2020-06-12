@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,12 +25,9 @@ import android.widget.ImageView;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.FutureTarget;
 import com.example.android.askquastionapp.MainActivity;
 import com.example.android.askquastionapp.MemoryCache;
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.utils.CustomGlideModule;
 import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.jsoup.GsonGetter;
@@ -42,14 +41,13 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.Call;
@@ -59,8 +57,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
-
-import static java.io.File.separator;
 
 public class PictureGallayActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -72,6 +68,7 @@ public class PictureGallayActivity extends AppCompatActivity {
     private Integer curPosition;
     private List<HrefData> paths;
     private View loading;
+    private Bitmap mDefaultBitmap;
 
     public static void start(Context context, List<HrefData> path, int position) {
         Intent intent = new Intent(context, PictureGallayActivity.class);
@@ -127,13 +124,30 @@ public class PictureGallayActivity extends AppCompatActivity {
                 loadData();
             }
         });
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new RecyclerView.Adapter() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
+            @Override
+            protected int getExtraLayoutSpace(RecyclerView.State state) {
+                if (state.hasTargetScrollPosition()) {
+                    return getResources().getDisplayMetrics().heightPixels * 5;
+                } else {
+                    return super.getExtraLayoutSpace(state);
+                }
+            }
+        };
+        layoutManager.setItemPrefetchEnabled(true);
+        layoutManager.setInitialPrefetchItemCount(5);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
                 WatchVideoActivity.ViewHolder viewHolder = new WatchVideoActivity.ViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_image, viewGroup, false));
+                ImageView imageView = viewHolder.itemView.findViewById(R.id.image_view);
+                GifImageView gifView = viewHolder.itemView.findViewById(R.id.gif_view);
+                if (mDefaultBitmap != null) {
+                    imageView.getLayoutParams().height = (int) ((float) mDefaultBitmap.getHeight() / mDefaultBitmap.getWidth() * ScreenUtils.getScreenWidth());
+                    gifView.getLayoutParams().height = (int) ((float) mDefaultBitmap.getHeight() / mDefaultBitmap.getWidth() * ScreenUtils.getScreenWidth());
+                }
                 if (viewHolder.itemView.getTag() == null) {
                     viewHolder.itemView.setTag(0);
                 }
@@ -167,13 +181,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                     if (mDatas.get(i).text.endsWith("gif")) {
                         gifView.setVisibility(View.VISIBLE);
                         imageView.setVisibility(View.GONE);
-                        try {
-                            GifDrawable gifFromUri = new GifDrawable(new File(mDatas.get(i).text));
-                            gifView.setImageDrawable(gifFromUri);
-                            gifView.getLayoutParams().height = (int) ((float) gifFromUri.getIntrinsicHeight() / gifFromUri.getIntrinsicWidth() * ScreenUtils.getScreenWidth());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        GlideUtils.getInstance().setFileToView(new File(mDatas.get(i).text), gifView, true);
                     } else {
                         gifView.setVisibility(View.GONE);
                         imageView.setVisibility(View.VISIBLE);
@@ -186,34 +194,15 @@ public class PictureGallayActivity extends AppCompatActivity {
                 } else if (viewHolder instanceof WatchVideoActivity.ViewHolder) {
                     gifView.setVisibility(View.GONE);
                     imageView.setVisibility(View.VISIBLE);
+                    String url = MainActivity.baseUrl + mDatas.get(i).href;
                     if (mDatas.get(i).text.endsWith("gif")) {
                         gifView.setVisibility(View.VISIBLE);
                         imageView.setVisibility(View.GONE);
-                        if (android.os.Build.VERSION.SDK_INT >= 17) {
-                            File localCache = GlideUtils.getInstance().getLocalCache(PictureGallayActivity.this, MainActivity.baseUrl + mDatas.get(i).href);
-                            if (localCache != null) {
-                                try {
-                                    GifDrawable gifFromUri = new GifDrawable(localCache);
-                                    gifView.setImageDrawable(gifFromUri);
-                                    gifView.getLayoutParams().height = (int) ((float) gifFromUri.getIntrinsicHeight() / gifFromUri.getIntrinsicWidth() * ScreenUtils.getScreenWidth());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
+                        GlideUtils.getInstance().loadUrl(url, gifView, true);
                     } else {
                         gifView.setVisibility(View.GONE);
                         imageView.setVisibility(View.VISIBLE);
-                        if (android.os.Build.VERSION.SDK_INT >= 17) {
-                            File localCache = GlideUtils.getInstance().getLocalCache(PictureGallayActivity.this, MainActivity.baseUrl + mDatas.get(i).href);
-                            if (localCache != null) {
-                                Bitmap bm = resizeBitmap(localCache.getPath());
-                                if (bm != null) {
-                                    imageView.setImageBitmap(bm);
-                                    imageView.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
-                                }
-                            }
-                        }
+                        GlideUtils.getInstance().loadUrl(url, imageView, true);
                     }
                 }
             }
@@ -223,66 +212,13 @@ public class PictureGallayActivity extends AppCompatActivity {
                 return mDatas.size();
             }
         });
+        Drawable drawable = getResources().getDrawable(R.mipmap.place_loading);
+        BitmapDrawable bd = (BitmapDrawable) drawable;
+        mDefaultBitmap = bd.getBitmap();
         loadData();
     }
 
     private Handler mHandler = new Handler();
-
-
-    private void resaveFile(File src) {
-        long length = src.length();
-        if (!src.exists()) {
-            return;
-        }
-        String srcName = src.getName();
-        String parent = src.getParent();
-        File tempDir = new File(CustomGlideModule.directory + separator + "temp");
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-        File temp = new File(tempDir, src.getName());
-        if (!temp.exists()) {
-            try {
-                temp.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        //实现压缩，并重新生成BitMap对象
-        BitmapFactory.Options newOpts = new BitmapFactory.Options();
-        // 开始读入图片，此时把options.inJustDecodeBounds 设回true了
-        newOpts.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(src.getAbsolutePath(), newOpts);
-        float w = newOpts.outWidth;
-        int scaleWidth = (int) (w / ScreenUtils.getScreenWidth() + 1);
-        if (scaleWidth <= 1) {
-            scaleWidth = 1;
-        }
-        newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-        newOpts.inSampleSize = scaleWidth;// 设置缩放比例, 以宽度为基准
-        newOpts.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(src.getAbsolutePath(), newOpts);
-        try {
-            FileOutputStream out = new FileOutputStream(temp);
-            BufferedOutputStream bos = new BufferedOutputStream(out);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-            //已将压缩图片保存为temp文件
-            out.flush();
-            out.close();
-            bos.flush();
-            bos.close();
-            boolean delete = src.delete();
-            File dest = new File(parent, srcName);
-            boolean b = temp.renameTo(dest);
-            Log.i("zune:", "resaveFile: delete = " + delete + ", rename = " + b + ", count = " + mCount++ + ", 原bitmap w = " + w + ", 压缩后bitmap w = " + bitmap.getWidth()
-                    + "压缩前的length = " + length
-                    + "srcLength = " + dest.length());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private int mCount;
 
     private int mCurAnimPosition;
     private Runnable animRunnable = new Runnable() {
@@ -293,10 +229,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(mDatas.get(mCurAnimPosition).href)) {
                     anim.setImageBitmap(resizeBitmap(mDatas.get(mCurAnimPosition).text));
                 } else {
-                    File localCache = GlideUtils.getInstance().getLocalCache(PictureGallayActivity.this, MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href);
-                    if (localCache != null) {
-                        anim.setImageBitmap(resizeBitmap(localCache.getPath()));
-                    }
+                    GlideUtils.getInstance().loadUrl(MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href, anim, false);
                 }
                 mHandler.postDelayed(animRunnable, 100);
             } else {
@@ -422,18 +355,30 @@ public class PictureGallayActivity extends AppCompatActivity {
                             try {
                                 String html = new String(response.body().bytes());
                                 Document document = Jsoup.parseBodyFragment(html);
-                                mDatas.addAll(JsoupUtils.getHrefs(document));
-                                preloadData();
+                                List<HrefData> hrefs = JsoupUtils.getHrefs(document);
+                                if (!hrefs.isEmpty()) {
+                                    mDatas.addAll(hrefs.subList(1, hrefs.size() - 1));
+                                }
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         Collections.sort(mDatas, new Comparator<HrefData>() {
                                             @Override
                                             public int compare(HrefData o1, HrefData o2) {
-                                                return o1.text.compareTo(o2.text);
+                                                Pattern pattern = Pattern.compile("[0-9]+(?=[^0-9]*$)", Pattern.CASE_INSENSITIVE);
+                                                Matcher matcher = pattern.matcher(o1.text);
+                                                String group = ".0.";
+                                                while (matcher.find()) {
+                                                    group = matcher.group();
+                                                }
+                                                Matcher matcher2 = pattern.matcher(o2.text);
+                                                String group2 = ".0.";
+                                                while (matcher2.find()) {
+                                                    group2 = matcher2.group();
+                                                }
+                                                return Integer.parseInt(group) - Integer.parseInt(group2);
                                             }
                                         });
-                                        Log.i("zune: ", "run: mDatas.size = " + mDatas.size());
                                         if (recyclerView.getAdapter() != null) {
                                             recyclerView.getAdapter().notifyDataSetChanged();
                                         }
@@ -453,36 +398,6 @@ public class PictureGallayActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private void preloadData() {
-        for (HrefData data : mDatas) {
-            String url = MainActivity.baseUrl + data.href;
-            if (data.text.endsWith("gif")) {
-                if (android.os.Build.VERSION.SDK_INT >= 17) {
-                    Glide.with(this)
-                            .asFile()
-                            .load(url)
-                            .submit();
-                }
-            } else {
-                if (android.os.Build.VERSION.SDK_INT >= 17) {
-                    if (GlideUtils.getInstance().getLocalCache(PictureGallayActivity.this, url) != null) {
-                        continue;
-                    }
-                    FutureTarget<File> submit = Glide.with(this)
-                            .asFile()
-                            .load(url)
-                            .submit();
-                    try {
-                        File file = submit.get();
-                        resaveFile(file);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
     }
 
     private int getPosition(String o1) {

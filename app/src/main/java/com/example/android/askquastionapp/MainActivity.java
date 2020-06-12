@@ -2,7 +2,6 @@ package com.example.android.askquastionapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -27,14 +25,10 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.FutureTarget;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.LanguageWords;
@@ -46,16 +40,13 @@ import com.example.android.askquastionapp.location.LocationActivity;
 import com.example.android.askquastionapp.math.MathFunActivity;
 import com.example.android.askquastionapp.picture.ImageViewActivity;
 import com.example.android.askquastionapp.picture.PictureActivity;
-import com.example.android.askquastionapp.picture.PictureGallayActivity;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.ContactsUtils;
-import com.example.android.askquastionapp.utils.CustomGlideModule;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
-import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
@@ -199,23 +190,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.fanyiwenan).setOnClickListener(v -> startTranslate());
         //startDownload();
         findViewById(R.id.dabaoxiazai).setOnClickListener(v -> showDownload());
-    }
-
-    private Handler mHandler = new Handler();
-
-    public Bitmap resizeBitmap(String filePath) {
-        BitmapFactory.Options newOpts = new BitmapFactory.Options();
-        // 开始读入图片，此时把options.inJustDecodeBounds 设回true了
-        newOpts.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, newOpts);
-        newOpts.inJustDecodeBounds = false;
-        int w = newOpts.outWidth;
-        int scaleWidth = (int) (w / 640);
-        if (scaleWidth <= 1) {
-            scaleWidth = 1;
-        }
-        newOpts.inSampleSize = scaleWidth;// 设置缩放比例, 以宽度为基准
-        return BitmapFactory.decodeFile(filePath, newOpts);
     }
 
     private void showDownload() {
