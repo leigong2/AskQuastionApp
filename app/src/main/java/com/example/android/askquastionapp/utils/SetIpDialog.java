@@ -63,7 +63,7 @@ public class SetIpDialog extends DialogFragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 //回车键
-                if(actionId == EditorInfo.IME_ACTION_DONE){
+                if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO){
                     if (onResultListener != null) {
                         onResultListener.onResult(editIp.getText().toString());
                     }

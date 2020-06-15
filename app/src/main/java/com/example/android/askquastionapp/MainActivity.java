@@ -135,20 +135,13 @@ public class MainActivity extends AppCompatActivity {
     private String avFile;
     private String baseDir;
     public static String imageDir;
-    public static List<String> sExtSdCardPaths = new ArrayList<>();
     private String movieUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/movie_db.db";
     private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
     private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
 
-    public static String baseUrl = "http://192.168.200.51";
+    public static String baseUrl = TextUtils.isEmpty(SPUtils.getInstance().getString("baseUrl")) ? "http://192.168.200.51" : SPUtils.getInstance().getString("baseUrl");
 
-    private String devolop = baseUrl + "/develop/debug/app-develop-armeabi-v7a-debug.apk";
-    private String preProducation = baseUrl + "/preProducation/debug/app-preProducation-armeabi-v7a-debug.apk";
-    private String production_blue = baseUrl + "/production_blue/debug/app-production_blue-armeabi-v7a-debug.apk";
-    private String production = baseUrl + "/production/debug/app-production-armeabi-v7a-debug.apk";
-    private String release = baseUrl + "/production/release/app-production-armeabi-v7a-release.apk";
-    private String self = baseUrl + "/other/release/app-release.apk";
-    private String imgs = baseUrl + "/img0";
+    private String devolop, preProducation, production_blue, production, release, self, imgs;
     private List<String> mMainTags = new ArrayList<>();
 
     @Override
@@ -187,8 +180,8 @@ public class MainActivity extends AppCompatActivity {
                     String[] randColor = getRandColor().split("\\*");
                     drawable.setTint(Color.parseColor(randColor[0]));
                     textTag.setBackground(drawable);
-                    BigInteger bigint=new BigInteger(randColor[1], 16);
-                    int textColor=bigint.intValue();
+                    BigInteger bigint = new BigInteger(randColor[1], 16);
+                    int textColor = bigint.intValue();
                     textTag.setTextColor(Color.BLACK);
                 }
             }
@@ -203,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onMove(int fromPosition, int toPosition) {
                 //1、交换数据
-                sort(mMainTags,fromPosition, toPosition);
+                sort(mMainTags, fromPosition, toPosition);
                 //2、刷新
                 adapter.notifyItemMoved(fromPosition, toPosition);
                 return true;
@@ -213,6 +206,18 @@ public class MainActivity extends AppCompatActivity {
         helper.attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(adapter);
         ClearUtils.getInstance().getAppProcessName(this);
+        resetIp();
+        setTitle("ip = " + baseUrl);
+    }
+
+    private void resetIp() {
+        devolop = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/develop/debug/app-develop-armeabi-v7a-debug.apk";
+        preProducation = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/preProducation/debug/app-preProducation-armeabi-v7a-debug.apk";
+        production_blue = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/production_blue/debug/app-production_blue-armeabi-v7a-debug.apk";
+        production = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/production/debug/app-production-armeabi-v7a-debug.apk";
+        release = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/production/release/app-production-armeabi-v7a-release.apk";
+        self = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/other/release/app-release.apk";
+        imgs = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/img0";
     }
 
     /*zune: 将fromPosition，转移到toPosition, 缺位的顺次补上**/
@@ -374,7 +379,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResult(String ip) {
                         if (!TextUtils.isEmpty(ip)) {
-                            baseUrl = ip;
+                            baseUrl = ip.startsWith("http://") ? ip : "http://" + ip;
+                            resetIp();
+                            SPUtils.getInstance().put("baseUrl", baseUrl);
                         }
                     }
                 });

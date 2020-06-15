@@ -93,8 +93,11 @@ public class PictureActivity extends AppCompatActivity {
                 viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
                     @Override
                     public void onClick(View view, int position) {
-                        int positions = (int) view.getTag();
-                        PictureGallayActivity.start(PictureActivity.this, mDatas, (Integer) viewHolder.itemView.getTag());
+                        if (mDatas == null || mDatas.isEmpty()) {
+                            ToastUtils.showShort("图片为空文件夹");
+                            return;
+                        }
+                        PictureGallayActivity.start(PictureActivity.this, mDatas, (int) view.getTag());
                     }
                 });
                 viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

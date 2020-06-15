@@ -92,6 +92,11 @@ public class PictureGallayActivity extends AppCompatActivity {
         if (curPosition == null) {
             curPosition = 0;
         }
+        if (paths.isEmpty()) {
+            finish();
+            ToastUtils.showShort("文件夹为空");
+            return;
+        }
         this.path = paths.get(curPosition);
         recyclerView = findViewById(R.id.recycler_view);
         refreshLayout = findViewById(R.id.refresh_layout);
@@ -257,7 +262,9 @@ public class PictureGallayActivity extends AppCompatActivity {
 
     private void dismissAnim() {
         mCurAnimPosition = 0;
-        animLay.setVisibility(View.GONE);
+        if (animLay != null) {
+            animLay.setVisibility(View.GONE);
+        }
         mHandler.removeCallbacks(animRunnable);
     }
 
@@ -282,8 +289,8 @@ public class PictureGallayActivity extends AppCompatActivity {
         // 开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(filePath, newOpts);
-        int w = newOpts.outWidth;
-        int scaleWidth = (int) (w / 640);
+        float w = newOpts.outWidth;
+        int scaleWidth = (int) (w / ScreenUtils.getScreenWidth() + 1);
         if (scaleWidth <= 1) {
             scaleWidth = 1;
         }

@@ -11,8 +11,9 @@
         android:layout_margin="10dp"
         android:background="@color/white"
         android:padding="10dp"
-        android:hint="请输入ip: http://"
+        android:hint="请输入ip: "
         android:imeOptions="actionDone"
+        android:inputType="text"
         android:singleLine="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
