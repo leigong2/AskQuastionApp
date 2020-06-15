@@ -234,7 +234,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(mDatas.get(mCurAnimPosition).href)) {
                     anim.setImageBitmap(resizeBitmap(mDatas.get(mCurAnimPosition).text));
                 } else {
-                    GlideUtils.getInstance().loadUrl(MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href, anim, true, false);
+                    GlideUtils.getInstance().loadUrlWithoutDefault(MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href, anim);
                 }
                 mHandler.postDelayed(animRunnable, 100);
             } else {

@@ -149,13 +149,21 @@ public class GlideUtils {
         }
     }
 
+    public void loadUrlWithoutDefault(String url, View view) {
+        loadUrl(url, view, true, false, true);
+    }
+
     public void loadUrl(String url, View view, boolean control, boolean isPath) {
+        loadUrl(url, view, control, isPath, false);
+    }
+
+    private void loadUrl(String url, View view, boolean control, boolean isPath, boolean withoutDefault) {
         File localCache = GlideUtils.getInstance().getLocalCache(view.getContext(), url);
         if (localCache != null) {
             setFileToView(localCache, view, control);
             return;
         }
-        if (control) {
+        if (control && !withoutDefault) {
             if (view instanceof GifImageView) {
                 try {
                     GifDrawable gifFromUri = new GifDrawable(view.getResources(), R.mipmap.place_loading);
