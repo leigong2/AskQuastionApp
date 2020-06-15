@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.StringUtils;
@@ -30,6 +31,7 @@ import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.jsoup.JsoupUtils;
+import com.google.gson.reflect.TypeToken;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
@@ -195,6 +197,22 @@ public class PictureActivity extends AppCompatActivity {
             @Override
             public void onFailure(@Nullable Call call, @Nullable IOException e) {
                 Log.i("zune", GsonGetter.getInstance().getGson().toJson(e));
+                String json = SPUtils.getInstance().getString("PictureActivityData");
+                List<HrefData> data = GsonGetter.getInstance().getGson().fromJson(json, new TypeToken<List<HrefData>>() {
+                }.getType());
+                if (data != null) {
+                    mDatas.addAll(data);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (recyclerView.getAdapter() != null) {
+                                recyclerView.getAdapter().notifyDataSetChanged();
+                            }
+                            refreshLayout.finishRefresh();
+                            refreshLayout.finishLoadMore();
+                        }
+                    });
+                }
             }
 
             @Override
@@ -202,7 +220,8 @@ public class PictureActivity extends AppCompatActivity {
                 if (response != null && response.body() != null) {
                     String html = new String(response.body().bytes());
                     Document document = Jsoup.parseBodyFragment(html);
-                    mDatas.addAll(JsoupUtils.getHrefs(document));
+                    List<HrefData> hrefs = JsoupUtils.getHrefs(document);
+                    mDatas.addAll(hrefs);
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -232,4 +251,11 @@ public class PictureActivity extends AppCompatActivity {
     }
 
     private Handler mHandler = new Handler();
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacks(null);
+        SPUtils.getInstance().put("PictureActivityData", GsonGetter.getInstance().getGson().toJson(mDatas));
+    }
 }

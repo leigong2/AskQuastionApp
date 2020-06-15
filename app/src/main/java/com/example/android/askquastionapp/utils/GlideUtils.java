@@ -149,7 +149,7 @@ public class GlideUtils {
         }
     }
 
-    public void loadUrl(String url, View view, boolean control) {
+    public void loadUrl(String url, View view, boolean control, boolean isPath) {
         File localCache = GlideUtils.getInstance().getLocalCache(view.getContext(), url);
         if (localCache != null) {
             setFileToView(localCache, view, control);
@@ -187,11 +187,12 @@ public class GlideUtils {
         Observable.just(url).map(new Function<String, File>() {
             @Override
             public File apply(String url) throws Exception {
+                Object model = isPath ? new File(url) : url;
                 if (url.endsWith("gif")) {
                     if (android.os.Build.VERSION.SDK_INT >= 17) {
                         return Glide.with(view.getContext())
                                 .asFile()
-                                .load(url)
+                                .load(model)
                                 .submit()
                                 .get();
                     }
@@ -199,7 +200,7 @@ public class GlideUtils {
                     if (android.os.Build.VERSION.SDK_INT >= 17) {
                         File file = Glide.with(view.getContext())
                                 .asFile()
-                                .load(url)
+                                .load(model)
                                 .submit()
                                 .get();
                         return reSaveFile(file);

@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.MainActivity;
@@ -33,6 +34,7 @@ import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.jsoup.JsoupUtils;
+import com.google.gson.reflect.TypeToken;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
@@ -55,7 +57,6 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 public class PictureGallayActivity extends AppCompatActivity {
@@ -193,11 +194,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                     } else {
                         gifView.setVisibility(View.GONE);
                         imageView.setVisibility(View.VISIBLE);
-                        Bitmap bm = resizeBitmap(mDatas.get(i).text);
-                        if (bm != null) {
-                            imageView.setImageBitmap(bm);
-                            imageView.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
-                        }
+                        GlideUtils.getInstance().loadUrl(mDatas.get(i).text, imageView, true, true);
                     }
                 } else if (viewHolder instanceof WatchVideoActivity.ViewHolder) {
                     gifView.setVisibility(View.GONE);
@@ -206,11 +203,11 @@ public class PictureGallayActivity extends AppCompatActivity {
                     if (mDatas.get(i).text.endsWith("gif")) {
                         gifView.setVisibility(View.VISIBLE);
                         imageView.setVisibility(View.GONE);
-                        GlideUtils.getInstance().loadUrl(url, gifView, true);
+                        GlideUtils.getInstance().loadUrl(url, gifView, true, false);
                     } else {
                         gifView.setVisibility(View.GONE);
                         imageView.setVisibility(View.VISIBLE);
-                        GlideUtils.getInstance().loadUrl(url, imageView, true);
+                        GlideUtils.getInstance().loadUrl(url, imageView, true, false);
                     }
                 }
             }
@@ -237,7 +234,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(mDatas.get(mCurAnimPosition).href)) {
                     anim.setImageBitmap(resizeBitmap(mDatas.get(mCurAnimPosition).text));
                 } else {
-                    GlideUtils.getInstance().loadUrl(MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href, anim, false);
+                    GlideUtils.getInstance().loadUrl(MainActivity.baseUrl + mDatas.get(mCurAnimPosition).href, anim, true, false);
                 }
                 mHandler.postDelayed(animRunnable, 100);
             } else {
@@ -251,6 +248,9 @@ public class PictureGallayActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         dismissAnim();
+        if (path != null && !TextUtils.isEmpty(path.href) && !mDatas.isEmpty()) {
+            SPUtils.getInstance().put(MainActivity.baseUrl + path.href, GsonGetter.getInstance().getGson().toJson(mDatas));
+        }
     }
 
     private void showAnim() {
@@ -353,6 +353,13 @@ public class PictureGallayActivity extends AppCompatActivity {
             @Override
             public void onFailure(@Nullable Call call, @Nullable IOException e) {
                 Log.i("zune", GsonGetter.getInstance().getGson().toJson(e));
+                if (path != null && !TextUtils.isEmpty(path.href)) {
+                    String json = SPUtils.getInstance().getString(MainActivity.baseUrl + path.href);
+                    List<HrefData> data = GsonGetter.getInstance().getGson().fromJson(json, new TypeToken<List<HrefData>>() {
+                    }.getType());
+                    mDatas.addAll(data);
+                    dispatchCurData();
+                }
             }
 
             @Override
@@ -369,34 +376,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                                 if (!hrefs.isEmpty()) {
                                     mDatas.addAll(hrefs.subList(1, hrefs.size() - 1));
                                 }
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Collections.sort(mDatas, new Comparator<HrefData>() {
-                                            @Override
-                                            public int compare(HrefData o1, HrefData o2) {
-                                                Pattern pattern = Pattern.compile("[0-9]+(?=[^0-9]*$)", Pattern.CASE_INSENSITIVE);
-                                                Matcher matcher = pattern.matcher(o1.text);
-                                                String group = ".0.";
-                                                while (matcher.find()) {
-                                                    group = matcher.group();
-                                                }
-                                                Matcher matcher2 = pattern.matcher(o2.text);
-                                                String group2 = ".0.";
-                                                while (matcher2.find()) {
-                                                    group2 = matcher2.group();
-                                                }
-                                                return Integer.parseInt(group) - Integer.parseInt(group2);
-                                            }
-                                        });
-                                        if (recyclerView.getAdapter() != null) {
-                                            recyclerView.getAdapter().notifyDataSetChanged();
-                                        }
-                                        refreshLayout.finishRefresh();
-                                        refreshLayout.finishLoadMore();
-                                        loading.setVisibility(View.GONE);
-                                    }
-                                });
+                                dispatchCurData();
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 onFailure(call, null);
@@ -406,6 +386,37 @@ public class PictureGallayActivity extends AppCompatActivity {
                 } else {
                     onFailure(call, null);
                 }
+            }
+        });
+    }
+
+    private void dispatchCurData() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Collections.sort(mDatas, new Comparator<HrefData>() {
+                    @Override
+                    public int compare(HrefData o1, HrefData o2) {
+                        Pattern pattern = Pattern.compile("[0-9]+(?=[^0-9]*$)", Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = pattern.matcher(o1.text);
+                        String group = ".0.";
+                        while (matcher.find()) {
+                            group = matcher.group();
+                        }
+                        Matcher matcher2 = pattern.matcher(o2.text);
+                        String group2 = ".0.";
+                        while (matcher2.find()) {
+                            group2 = matcher2.group();
+                        }
+                        return Integer.parseInt(group) - Integer.parseInt(group2);
+                    }
+                });
+                if (recyclerView.getAdapter() != null) {
+                    recyclerView.getAdapter().notifyDataSetChanged();
+                }
+                refreshLayout.finishRefresh();
+                refreshLayout.finishLoadMore();
+                loading.setVisibility(View.GONE);
             }
         });
     }
