@@ -44,6 +44,7 @@ import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.expand.ExpandActivity;
+import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.views.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
 import com.example.android.askquastionapp.fenbei.FenBeiActivity;
@@ -392,6 +393,10 @@ public class MainActivity extends AppCompatActivity {
                 ExpandActivity.start(this);
                 break;
             case "测试": //测试");
+                String test = "http://192.168.200.60/img0/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]19.jpeg";
+//                String test = "http://192.168.200.60/img0/0689%E6%9D%BE%E4%BA%95%E5%9C%A3%E5%A5%8828%E6%AD%B3%5B30P%5D/0689%E6%9D%BE%E4%BA%95%E5%9C%A3%E5%A5%8828%E6%AD%B3%5B30P%5D1.jpg";
+                GlideUtils.getInstance().loadUrl(test, findViewById(R.id.test), true, false);
+                File localCache = GlideUtils.getInstance().getLocalCache(this, test);
                 break;
         }
     }

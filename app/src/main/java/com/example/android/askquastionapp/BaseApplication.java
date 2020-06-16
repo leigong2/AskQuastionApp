@@ -1,12 +1,17 @@
 package com.example.android.askquastionapp;
 
-import android.app.Application;
+import android.os.Handler;
 import android.support.multidex.MultiDexApplication;
 
 public class BaseApplication extends MultiDexApplication {
-    private static Application application;
+    private static BaseApplication application;
+    private static Handler sHandler;
 
-    public static Application getInstance() {
+    public Handler getHandler() {
+        return sHandler;
+    }
+
+    public static BaseApplication getInstance() {
         return application;
     }
 
@@ -14,5 +19,6 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         application = this;
+        sHandler = new Handler();
     }
 }

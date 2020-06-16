@@ -15,15 +15,21 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.bumptech.glide.load.Key;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.EmptySignature;
 import com.bumptech.glide.util.LruCache;
 import com.bumptech.glide.util.Util;
+import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +38,11 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
@@ -71,6 +82,27 @@ public class GlideUtils {
                 return value.getFile(0);
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public File putLocalCache(String url, byte[] bitmap) {
+        try {
+            OriginalKey originalKey = new OriginalKey(url, EmptySignature.obtain());
+            String safeKey = mSafeKeyGenerator.getSafeKey(originalKey);
+            File cache = new File(CustomGlideModule.directory, safeKey + ".0");
+            OutputStream out = new FileOutputStream(cache);
+            InputStream is = new ByteArrayInputStream(bitmap);
+            byte[] buff = new byte[1024];
+            int len;
+            while((len=is.read(buff))!=-1){
+                out.write(buff, 0, len);
+            }
+            is.close();
+            out.close();
+            return cache;
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -150,14 +182,18 @@ public class GlideUtils {
     }
 
     public void loadUrlWithoutDefault(String url, View view) {
-        loadUrl(url, view, true, false, true);
+        loadUrl(url, view, true, false, true, -1);
     }
 
     public void loadUrl(String url, View view, boolean control, boolean isPath) {
-        loadUrl(url, view, control, isPath, false);
+        loadUrl(url, view, control, isPath, false, -1);
     }
 
-    private void loadUrl(String url, View view, boolean control, boolean isPath, boolean withoutDefault) {
+    public void loadUrl(String url, View view, boolean control, boolean isPath, int position) {
+        loadUrl(url, view, control, isPath, false, position);
+    }
+
+    private void loadUrl(String url, View view, boolean control, boolean isPath, boolean withoutDefault, int position) {
         File localCache = GlideUtils.getInstance().getLocalCache(view.getContext(), url);
         if (localCache != null) {
             setFileToView(localCache, view, control);
@@ -201,6 +237,7 @@ public class GlideUtils {
                         return Glide.with(view.getContext())
                                 .asFile()
                                 .load(model)
+                                .apply(new RequestOptions().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL))
                                 .submit()
                                 .get();
                     }
@@ -209,6 +246,7 @@ public class GlideUtils {
                         File file = Glide.with(view.getContext())
                                 .asFile()
                                 .load(model)
+                                .apply(new RequestOptions().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL))
                                 .submit()
                                 .get();
                         return reSaveFile(file);
@@ -220,6 +258,48 @@ public class GlideUtils {
             @Override
             public void onNext(File file, View view) {
                 setFileToView(file, view, control);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                loadUrlFromHttp(url, view, control, isPath, withoutDefault, position);
+            }
+        });
+    }
+
+    /*zune: 如果图片加载不到的话，用http强制加载**/
+    private void loadUrlFromHttp(String url, View view, boolean control, boolean isPath, boolean withoutDefault, int position) {
+        //1.创建一个okhttpclient对象
+        OkHttpClient okHttpClient = new OkHttpClient();
+        //2.创建Request.Builder对象，设置参数，请求方式如果是Get，就不用设置，默认就是Get
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        //3.创建一个Call对象，参数是request对象，发送请求
+        Call call = okHttpClient.newCall(request);
+        //4.异步请求，请求加入调度
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.i("zune", "run: onFailure = " + e);
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //得到从网上获取资源，转换成我们想要的类型
+                byte[] pictureBt = response.body().bytes();
+                File file = putLocalCache(url, pictureBt);
+                BaseApplication.getInstance().getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        File localCache = GlideUtils.getInstance().getLocalCache(BaseApplication.getInstance(), url);
+                        if (localCache == null) {
+                            setFileToView(file, view, control);
+                        } else {
+                            setFileToView(localCache, view, control);
+                        }
+                    }
+                });
             }
         });
     }
@@ -306,9 +386,9 @@ public class GlideUtils {
             boolean delete = src.delete();
             File dest = new File(parent, srcName);
             boolean b = temp.renameTo(dest);
-            Log.i("zune:", "resaveFile: delete = " + delete + ", rename = " + b + ", 原bitmap w = " + w + ", 压缩后bitmap w = " + bitmap.getWidth()
+            /*Log.i("zune:", "resaveFile: delete = " + delete + ", rename = " + b + ", 原bitmap w = " + w + ", 压缩后bitmap w = " + bitmap.getWidth()
                     + "压缩前的length = " + length
-                    + "srcLength = " + dest.length());
+                    + "srcLength = " + dest.length());*/
             return dest;
         } catch (IOException e) {
             e.printStackTrace();

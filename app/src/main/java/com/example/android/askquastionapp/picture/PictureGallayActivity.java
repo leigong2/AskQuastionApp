@@ -136,7 +136,7 @@ public class PictureGallayActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
             @Override
             protected int getExtraLayoutSpace(RecyclerView.State state) {
-                if (state.hasTargetScrollPosition() || true) {
+                if (state.hasTargetScrollPosition() && false) {
                     return getResources().getDisplayMetrics().heightPixels * 5;
                 } else {
                     return super.getExtraLayoutSpace(state);
@@ -206,7 +206,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                     } else {
                         gifView.setVisibility(View.GONE);
                         imageView.setVisibility(View.VISIBLE);
-                        GlideUtils.getInstance().loadUrl(url, imageView, true, false);
+                        GlideUtils.getInstance().loadUrl(url, imageView, true, false, i);
                     }
                 }
             }
