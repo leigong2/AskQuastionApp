@@ -11,7 +11,7 @@ import android.util.TypedValue;
 import android.widget.EditText;
 
 import com.blankj.utilcode.util.SizeUtils;
-import com.example.android.askquastionapp.MemoryCache;
+import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.R;
 
 public class SoupActivity extends AppCompatActivity {

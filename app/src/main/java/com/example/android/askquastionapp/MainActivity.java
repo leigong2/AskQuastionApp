@@ -43,7 +43,8 @@ import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
-import com.example.android.askquastionapp.clean.ClearHolder;
+import com.example.android.askquastionapp.expand.ExpandActivity;
+import com.example.android.askquastionapp.views.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
 import com.example.android.askquastionapp.fenbei.FenBeiActivity;
 import com.example.android.askquastionapp.location.LocationActivity;
@@ -281,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
         this.mMainTags.add("翻译文案");
         this.mMainTags.add("下载app");
         this.mMainTags.add("设置ip");
+        this.mMainTags.add("展开文本");
         this.mMainTags.add("测试");
     }
 
@@ -385,6 +387,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+                break;
+            case "展开文本":
+                ExpandActivity.start(this);
                 break;
             case "测试": //测试");
                 break;

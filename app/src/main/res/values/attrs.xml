@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ExpandableImageTextView">
+        <!--       最大行数-->
+        <attr name="expand_max_line" format="integer"/>
+        <!--       展开按钮与文本的间距  默认是10dp-->
+        <attr name="expand_space" format="dimension" />
+        <attr name="expand_drawable" format="reference"/>
+    </declare-styleable>
+</resources>

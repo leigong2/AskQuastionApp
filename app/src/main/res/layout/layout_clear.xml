@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.android.askquastionapp.clean.WaveView
+    <com.example.android.askquastionapp.views.WaveView
         android:id="@+id/progress"
         tools:visibility="visible"
         android:visibility="gone"

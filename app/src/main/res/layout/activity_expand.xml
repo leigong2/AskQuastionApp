@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimaryDark"
+    android:orientation="vertical"
+    android:padding="15dp">
+
+    <com.example.android.askquastionapp.views.ExpandableImageTextView
+        android:id="@+id/tv_expandable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        app:expand_drawable="@mipmap/icon_expand_more"
+        app:expand_max_line="3"
+        app:expand_space="10dp"
+        tools:text="sdfsadf是的发生发发呆防守的防守打法斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬sdfsadf是的发生发发呆防守的防守打法斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬sdfsadf是的发生发发呆防守的防守打法斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬" />
+
+    <com.example.android.askquastionapp.views.ExpandableImageTextView
+        android:id="@+id/tv_expandable2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        app:expand_drawable="@mipmap/icon_expand_more"
+        app:expand_max_line="3"
+        app:expand_space="10dp"
+        tools:text="sdfsadf是的发生发发呆防守的防守打法斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬sdfsadf是的发生发发呆防守的防守打法斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬斯蒂芬" />
+
+
+</LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.android.askquastionapp.clean;
+package com.example.android.askquastionapp.views;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;

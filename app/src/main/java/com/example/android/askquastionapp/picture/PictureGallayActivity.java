@@ -27,7 +27,7 @@ import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.MainActivity;
-import com.example.android.askquastionapp.MemoryCache;
+import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
@@ -136,16 +136,15 @@ public class PictureGallayActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
             @Override
             protected int getExtraLayoutSpace(RecyclerView.State state) {
-                if (state.hasTargetScrollPosition()) {
+                if (state.hasTargetScrollPosition() || true) {
                     return getResources().getDisplayMetrics().heightPixels * 5;
                 } else {
                     return super.getExtraLayoutSpace(state);
                 }
             }
         };
-        layoutManager.setItemPrefetchEnabled(true);
-        layoutManager.setInitialPrefetchItemCount(5);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemViewCacheSize(20);
         recyclerView.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             @NonNull
             @Override

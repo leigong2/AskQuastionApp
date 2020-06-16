@@ -16,7 +16,7 @@ import android.os.IBinder;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
-import com.example.android.askquastionapp.MemoryCache;
+import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.R;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.example.android.askquastionapp;
+package com.example.android.askquastionapp.utils;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -29,12 +29,14 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+    <uses-permission
+        android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
 
-    <uses-permission android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS"
+    <uses-permission
+        android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".MainApp"
@@ -49,8 +51,8 @@
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
         <meta-data
-        android:name="com.example.android.askquastionapp.utils.CustomGlideModule"
-        android:value="CustomGlideModule" />
+            android:name="com.example.android.askquastionapp.utils.CustomGlideModule"
+            android:value="CustomGlideModule" />
         <!--google 地图start ========================================-->
         <uses-library
             android:name="org.apache.http.legacy"
@@ -144,7 +146,6 @@
 
         <service android:name=".video.MusicPlayService" />
 
-        <activity android:name=".ScrollActivity" />
         <activity android:name=".picture.PictureActivity" />
         <activity
             android:name=".picture.PictureGallayActivity"
@@ -153,8 +154,11 @@
         <activity android:name=".reader.ReaderListActivity" />
         <activity android:name=".reader.ReaderActivity" />
         <activity android:name=".reader.ReaderDetailActivity" />
+
         <service android:name=".TestNotifyService" />
+
         <activity android:name=".picture.ImageViewActivity" />
+        <activity android:name=".expand.ExpandActivity" />
     </application>
 
 </manifest>
