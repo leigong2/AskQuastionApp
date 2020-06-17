@@ -307,19 +307,7 @@ public class PictureGallayActivity extends AppCompatActivity {
         mDatas.clear();
         if (TextUtils.isEmpty(path.href)) {
             File dir = new File(path.text);
-            File[] files = dir.listFiles();
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    for (File listFile : file.listFiles()) {
-                        String path = listFile.getPath();
-                        HrefData hrefData = new HrefData("", "", path);
-                        mDatas.add(hrefData);
-                    }
-                } else {
-                    HrefData hrefData = new HrefData("", "", file.getPath());
-                    mDatas.add(hrefData);
-                }
-            }
+            addAllFile(dir);
             if (!mDatas.isEmpty()) {
                 Collections.sort(mDatas, new Comparator<HrefData>() {
                     @Override
@@ -337,6 +325,18 @@ public class PictureGallayActivity extends AppCompatActivity {
             }
         } else {
             loadNetData();
+        }
+    }
+
+    private void addAllFile(File dir) {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                addAllFile(file);
+            } else {
+                HrefData hrefData = new HrefData("", "", file.getPath());
+                mDatas.add(hrefData);
+            }
         }
     }
 

@@ -200,33 +200,7 @@ public class GlideUtils {
             return;
         }
         if (control && !withoutDefault) {
-            if (view instanceof GifImageView) {
-                try {
-                    GifDrawable gifFromUri = new GifDrawable(view.getResources(), R.mipmap.place_loading);
-                    ((GifImageView) view).setImageDrawable(gifFromUri);
-                    view.getLayoutParams().height = (int) ((float) gifFromUri.getIntrinsicHeight() / gifFromUri.getIntrinsicWidth() * ScreenUtils.getScreenWidth());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else if (view instanceof ImageView) {
-                Drawable drawable = view.getResources().getDrawable(R.mipmap.place_loading);
-                BitmapDrawable bd = (BitmapDrawable) drawable;
-                Bitmap bm = bd.getBitmap();
-                if (bm != null) {
-                    ((ImageView) view).setImageBitmap(bm);
-                    view.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
-                }
-            } else {
-                Drawable drawable = view.getResources().getDrawable(R.mipmap.place_loading);
-                BitmapDrawable bd = (BitmapDrawable) drawable;
-                Bitmap bm = bd.getBitmap();
-                if (bm != null) {
-                    view.setBackground(bd);
-                    if (control) {
-                        view.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
-                    }
-                }
-            }
+            loadDefaultIcon(view, true);
         }
         Observable.just(url).map(new Function<String, File>() {
             @Override
@@ -257,6 +231,9 @@ public class GlideUtils {
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<File, View>(view, control) {
             @Override
             public void onNext(File file, View view) {
+                if (file == null) {
+                    loadDefaultIcon(view, true);
+                }
                 setFileToView(file, view, control);
             }
 
@@ -266,6 +243,36 @@ public class GlideUtils {
                 loadUrlFromHttp(url, view, control, isPath, withoutDefault, position);
             }
         });
+    }
+
+    private void loadDefaultIcon(View view, boolean control) {
+        if (view instanceof GifImageView) {
+            try {
+                GifDrawable gifFromUri = new GifDrawable(view.getResources(), R.mipmap.place_loading);
+                ((GifImageView) view).setImageDrawable(gifFromUri);
+                view.getLayoutParams().height = (int) ((float) gifFromUri.getIntrinsicHeight() / gifFromUri.getIntrinsicWidth() * ScreenUtils.getScreenWidth());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (view instanceof ImageView) {
+            Drawable drawable = view.getResources().getDrawable(R.mipmap.place_loading);
+            BitmapDrawable bd = (BitmapDrawable) drawable;
+            Bitmap bm = bd.getBitmap();
+            if (bm != null) {
+                ((ImageView) view).setImageBitmap(bm);
+                view.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
+            }
+        } else {
+            Drawable drawable = view.getResources().getDrawable(R.mipmap.place_loading);
+            BitmapDrawable bd = (BitmapDrawable) drawable;
+            Bitmap bm = bd.getBitmap();
+            if (bm != null) {
+                view.setBackground(bd);
+                if (control) {
+                    view.getLayoutParams().height = (int) ((float) bm.getHeight() / bm.getWidth() * ScreenUtils.getScreenWidth());
+                }
+            }
+        }
     }
 
     /*zune: 如果图片加载不到的话，用http强制加载**/
@@ -390,7 +397,7 @@ public class GlideUtils {
                     + "压缩前的length = " + length
                     + "srcLength = " + dest.length());*/
             return dest;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return src;
