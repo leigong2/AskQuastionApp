@@ -96,7 +96,7 @@ public class GlideUtils {
             InputStream is = new ByteArrayInputStream(bitmap);
             byte[] buff = new byte[1024];
             int len;
-            while((len=is.read(buff))!=-1){
+            while ((len = is.read(buff)) != -1) {
                 out.write(buff, 0, len);
             }
             is.close();
@@ -223,7 +223,7 @@ public class GlideUtils {
                                 .apply(new RequestOptions().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL))
                                 .submit()
                                 .get();
-                        return reSaveFile(file);
+                        return reSaveFile(file, isPath ? url : null);
                     }
                 }
                 return null;
@@ -291,6 +291,7 @@ public class GlideUtils {
             public void onFailure(Call call, IOException e) {
                 Log.i("zune", "run: onFailure = " + e);
             }
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 //得到从网上获取资源，转换成我们想要的类型
@@ -345,7 +346,7 @@ public class GlideUtils {
         }
     }
 
-    private File reSaveFile(File src) {
+    private File reSaveFile(File src, String path) {
         if (src == null) {
             return null;
         }
@@ -354,6 +355,11 @@ public class GlideUtils {
             return src;
         }
         String srcName = src.getName();
+        int bitmapDegree = 0;
+        if (path != null) {
+            bitmapDegree = BitmapUtil.getBitmapDegree(path);
+            Log.i("zune: ", "reSaveFile: bitmapDegree = " + bitmapDegree);
+        }
         String parent = src.getParent();
         File tempDir = new File(CustomGlideModule.directory + separator + "temp");
         if (!tempDir.exists()) {
@@ -381,6 +387,9 @@ public class GlideUtils {
         newOpts.inSampleSize = scaleWidth;// 设置缩放比例, 以宽度为基准
         newOpts.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(src.getAbsolutePath(), newOpts);
+        if (bitmapDegree > 0) {
+            bitmap = BitmapUtil.rotateBitmap(bitmap, bitmapDegree);
+        }
         try {
             FileOutputStream out = new FileOutputStream(temp);
             BufferedOutputStream bos = new BufferedOutputStream(out);
