@@ -11,6 +11,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.StaticLayout;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.view.View;
@@ -56,6 +57,7 @@ public class ExpandableImageTextView extends TextView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int measuredWidth = getMeasuredWidth();
         if (!mMeasured && !TextUtils.isEmpty(getText())) {
+            mMeasured = true;
             SpannableStringBuilder spannableStringBuilder = measureSpec(measuredWidth, getText());
             setText(spannableStringBuilder, NORMAL);
         }
@@ -95,14 +97,14 @@ public class ExpandableImageTextView extends TextView {
     private SpannableStringBuilder appendIcon(String endLineText) {
         SpannableStringBuilder span = new SpannableStringBuilder();
         StringBuilder temp = new StringBuilder();
+        int minimumWidth = mExpandDrawable.getMinimumWidth();
+        int minimumHeight = mExpandDrawable.getMinimumHeight();
         for (int i = endLineText.length() - 1; i >= 0; i--) {
             temp.append(endLineText.charAt(i));
             float measureTextWidth = getPaint().measureText(temp.toString());
-            if (measureTextWidth >= (getPaint().measureText("...   ") + DensityUtil.dp2px(13.5f))) {
+            if (measureTextWidth >= (getPaint().measureText("...    ") + minimumWidth)) {
                 span.append(endLineText.substring(0, i));
                 span.append("...").append("    ");
-                int minimumWidth = mExpandDrawable.getMinimumWidth();
-                int minimumHeight = mExpandDrawable.getMinimumHeight();
                 mExpandDrawable.setBounds(0, 0, minimumWidth, minimumHeight);
                 span.setSpan(new VerticalCenterSpan(mExpandDrawable), span.length() - 1, span.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 span.setSpan(new ClickableSpan() {
@@ -113,6 +115,7 @@ public class ExpandableImageTextView extends TextView {
                         }
                     }
                 }, span.length() - 1, span.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                setMovementMethod(LinkMovementMethod.getInstance());
                 return span;
             }
         }

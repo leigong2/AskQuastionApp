@@ -328,7 +328,14 @@ public class GlideUtils {
                 e.printStackTrace();
             }
         } else if (view instanceof ImageView) {
-            Bitmap bm = BitmapFactory.decodeFile(file.getPath());
+            String path = file.getPath();
+            Bitmap bm = BitmapFactory.decodeFile(path);
+            if (path != null && bm != null) {
+                int bitmapDegree = BitmapUtil.getBitmapDegree(path);
+                if (bitmapDegree > 0) {
+                    bm = BitmapUtil.rotateBitmap(bm, bitmapDegree);
+                }
+            }
             if (bm != null) {
                 ((ImageView) view).setImageBitmap(bm);
                 if (control) {
@@ -358,7 +365,6 @@ public class GlideUtils {
         int bitmapDegree = 0;
         if (path != null) {
             bitmapDegree = BitmapUtil.getBitmapDegree(path);
-            Log.i("zune: ", "reSaveFile: bitmapDegree = " + bitmapDegree);
         }
         String parent = src.getParent();
         File tempDir = new File(CustomGlideModule.directory + separator + "temp");
@@ -379,12 +385,23 @@ public class GlideUtils {
         newOpts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(src.getAbsolutePath(), newOpts);
         float w = newOpts.outWidth;
-        int scaleWidth = (int) (w / ScreenUtils.getScreenWidth() + 1);
-        if (scaleWidth <= 1) {
-            scaleWidth = 1;
+        int scaleWidth = 1;
+        int screenWidth = ScreenUtils.getScreenWidth();
+        if (w >= screenWidth) {
+            scaleWidth = (int) (w / ScreenUtils.getScreenWidth() + 1);
+            if (scaleWidth <= 1) {
+                scaleWidth = 1;
+            }
         }
-        newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-        newOpts.inSampleSize = scaleWidth;// 设置缩放比例, 以宽度为基准
+        Log.i("zune", "reSaveFile: file = " + src.getPath() + ", scaleWidth = " + scaleWidth);
+        if (scaleWidth > 1) {
+            newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
+            newOpts.inSampleSize = scaleWidth;// 设置缩放比例, 以宽度为基准
+        } else {
+            tempDir.delete();
+            temp.delete();
+            return src;
+        }
         newOpts.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(src.getAbsolutePath(), newOpts);
         if (bitmapDegree > 0) {
