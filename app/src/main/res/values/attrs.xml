@@ -6,5 +6,8 @@
         <!--       展开按钮与文本的间距  默认是10dp-->
         <attr name="expand_space" format="dimension" />
         <attr name="expand_drawable" format="reference"/>
+        <attr name="enfold_drawable" format="reference"/>
+        <attr name="show_enfold_icon" format="boolean"/>
+        <attr name="alertLayout" format="boolean"/>
     </declare-styleable>
 </resources>

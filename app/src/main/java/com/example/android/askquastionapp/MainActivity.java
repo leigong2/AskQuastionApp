@@ -44,6 +44,7 @@ import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.expand.ExpandActivity;
+import com.example.android.askquastionapp.expand.PushActivity;
 import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.views.ClearHolder;
 import com.example.android.askquastionapp.contacts.ContactBean;
@@ -285,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
         this.mMainTags.add("设置ip");
         this.mMainTags.add("展开文本");
         this.mMainTags.add("测试");
+        this.mMainTags.add("测试@#");
     }
 
     private void onTagClick(String text) {
@@ -391,6 +393,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "展开文本":
                 ExpandActivity.start(this);
+                break;
+            case "测试@#":
+                PushActivity.start(this);
                 break;
             case "测试": //测试");
                 String test = "http://192.168.200.60/img0/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]19.jpeg";

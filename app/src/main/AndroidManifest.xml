@@ -159,6 +159,7 @@
 
         <activity android:name=".picture.ImageViewActivity" />
         <activity android:name=".expand.ExpandActivity" />
+        <activity android:name=".expand.PushActivity" />
     </application>
 
 </manifest>
