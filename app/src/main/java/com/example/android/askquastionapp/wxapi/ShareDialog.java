@@ -31,13 +31,18 @@ import android.widget.ImageView;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-
-import cn.sharesdk.framework.Platform;
-import cn.sharesdk.framework.ShareSDK;
-import cn.sharesdk.wechat.friends.Wechat;
-import cn.sharesdk.wechat.moments.WechatMoments;
+import java.io.IOException;
+import java.net.URL;
 
 import static com.example.android.askquastionapp.utils.FileUtil.getDataColumn;
 import static com.example.android.askquastionapp.utils.FileUtil.isDownloadsDocument;
@@ -81,7 +86,8 @@ public class ShareDialog extends DialogFragment {
         rootView.findViewById(R.id.select_image).setOnClickListener(v -> selectImage());
         rootView.findViewById(R.id.share_to_wechat).setOnClickListener(v -> checkShare(1));
         rootView.findViewById(R.id.share_to_friend).setOnClickListener(v -> checkShare(2));
-        rootView.findViewById(R.id.center_lay).setOnClickListener(v -> {});
+        rootView.findViewById(R.id.center_lay).setOnClickListener(v -> {
+        });
         mContext = getContext();
         return rootView;
     }
@@ -112,30 +118,79 @@ public class ShareDialog extends DialogFragment {
         if (TextUtils.isEmpty(selectPath)) {
             share(shareUrl.getText().toString(), imageUrl.getText().toString(), shareTitle.getText().toString(), shareText.getText().toString(), weixin);
         } else {
-            sharePath(shareUrl.getText().toString(), selectPath, shareTitle.getText().toString(), shareText.getText().toString(), weixin);
+            share(shareUrl.getText().toString(), selectPath, shareTitle.getText().toString(), shareText.getText().toString(), weixin);
         }
     }
 
+    public static final String APP_ID = "wxc7d0db8854fadb5b";
+    public static final String APP_KEY = "63c8562f0a36e601bae0dcd0ff029624";
+    private IWXAPI api;
+
     private void share(String shareUrl, String image, String title, String text, int weixin) {
-        Platform platform = ShareSDK.getPlatform(weixin == 1 ? Wechat.NAME : WechatMoments.NAME);
-        Platform.ShareParams shareParams = new Platform.ShareParams();
-        shareParams.setImageUrl(image);
-        shareParams.setTitle(title);
-        shareParams.setText(text);
-        shareParams.setUrl(shareUrl);
-        shareParams.setShareType(Platform.SHARE_WEBPAGE);
-        platform.share(shareParams);
+        if (getActivity() == null) {
+            return;
+        }
+        if (api == null) {
+            api = WXAPIFactory.createWXAPI(getActivity(), APP_ID, true);//创建一个实例
+            api.registerApp(APP_ID);//注册实例
+        }
+        try {
+            if (weixin == 1) {
+                SendMessageToWX.Req req = getReq(shareUrl, image, title, text, SendMessageToWX.Req.WXSceneSession, image);
+                api.sendReq(req);
+            } else {
+                SendMessageToWX.Req req = getReq(shareUrl, image, title, text, SendMessageToWX.Req.WXSceneTimeline, image);
+                api.sendReq(req);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void sharePath(String shareUrl, String imagePath, String title, String text, int weixin) {
-        Platform platform = ShareSDK.getPlatform(weixin == 1 ? Wechat.NAME : WechatMoments.NAME);
-        Platform.ShareParams shareParams = new Platform.ShareParams();
-        shareParams.setImagePath(imagePath);
-        shareParams.setTitle(title);
-        shareParams.setText(text);
-        shareParams.setUrl(shareUrl);
-        shareParams.setShareType(Platform.SHARE_WEBPAGE);
-        platform.share(shareParams);
+    @NotNull
+    private SendMessageToWX.Req getReq(String shareUrl, String imageUrl, String title, String content, int wechatType, @Nullable String mediaPath) throws IOException {
+        WXWebpageObject webpage = new WXWebpageObject();
+        webpage.webpageUrl = shareUrl;//分享出去的网页地址
+        WXMediaMessage msg = new WXMediaMessage(webpage);
+        if (TextUtils.isEmpty(title) && TextUtils.isEmpty(content)) {
+            msg.title = "微信";//分享的标题
+        } else if (TextUtils.isEmpty(title) && !TextUtils.isEmpty(content)) {
+            msg.title = content;//分享的标题
+        } else {
+            msg.title = title;//分享的标题
+            msg.description = content;//分享的描述信息
+        }
+        //获取网络图片资源
+        Bitmap bmp = null;
+        if (TextUtils.isEmpty(mediaPath)) {
+            bmp = BitmapFactory.decodeStream(new URL(imageUrl).openStream());
+        } else {
+            bmp = BitmapFactory.decodeFile(mediaPath, new BitmapFactory.Options());
+        }
+        //创建缩略图
+        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, 100, 100, true);
+        bmp.recycle();
+        msg.thumbData = bmpToByteArray(thumbBmp, true);
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = msg;
+        req.scene = wechatType;
+        return req;
+    }
+
+    public byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, output);
+        if (needRecycle) {
+            bmp.recycle();
+        }
+        byte[] result = output.toByteArray();
+        try {
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     private void selectImage() {
@@ -156,7 +211,7 @@ public class ShareDialog extends DialogFragment {
         }
         intent.setType("image/*");
         if (intent.resolveActivity(mContext.getPackageManager()) != null) {
-            ((Activity)mContext).startActivityForResult(intent, SELECT_PHOTO_CODE);
+            ((Activity) mContext).startActivityForResult(intent, SELECT_PHOTO_CODE);
         }
     }
 
@@ -180,7 +235,7 @@ public class ShareDialog extends DialogFragment {
                     Intent intent = new Intent("com.android.camera.action.CROP");
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    if (!TextUtils.isEmpty(sourcePath)){
+                    if (!TextUtils.isEmpty(sourcePath)) {
                         intent.setDataAndType(FileUtil.getUriFromFile(mContext, new File(sourcePath)), "image/*");
                     }
                     // 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
@@ -195,13 +250,13 @@ public class ShareDialog extends DialogFragment {
                     intent.putExtra("scaleUpIfNeeded", true);
                     intent.putExtra("return-data", false);
                     //剪切后的图片直接保存到要上传的路径
-                    if (!TextUtils.isEmpty(selectPath)){
+                    if (!TextUtils.isEmpty(selectPath)) {
                         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(selectPath)));
                     }
-                    if (mContext instanceof Activity){
-                        ((Activity)mContext).startActivityForResult(intent, CROP_PHOTO_CODE);
+                    if (mContext instanceof Activity) {
+                        ((Activity) mContext).startActivityForResult(intent, CROP_PHOTO_CODE);
                     }
-                }catch (Exception exception){
+                } catch (Exception exception) {
                     exception.printStackTrace();
                 }
                 break;
@@ -220,6 +275,7 @@ public class ShareDialog extends DialogFragment {
 
     /**
      * 根据Uri获取图片绝对路径，解决Android4.4以上版本Uri转换
+     *
      * @date 2014-10-12
      */
     @TargetApi(19)
@@ -256,7 +312,7 @@ public class ShareDialog extends DialogFragment {
                     contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
                 String selection = MediaStore.Images.Media._ID + "=?";
-                String[] selectionArgs = new String[] { split[1] };
+                String[] selectionArgs = new String[]{split[1]};
                 return getDataColumn(context, contentUri, selection,
                         selectionArgs);
             }

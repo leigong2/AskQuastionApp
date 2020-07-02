@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -36,18 +35,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
-import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
+import com.example.android.askquastionapp.contacts.ContactBean;
 import com.example.android.askquastionapp.expand.ExpandActivity;
 import com.example.android.askquastionapp.expand.PushActivity;
-import com.example.android.askquastionapp.utils.GlideUtils;
-import com.example.android.askquastionapp.views.ClearHolder;
-import com.example.android.askquastionapp.contacts.ContactBean;
 import com.example.android.askquastionapp.fenbei.FenBeiActivity;
 import com.example.android.askquastionapp.location.LocationActivity;
 import com.example.android.askquastionapp.math.MathFunActivity;
@@ -61,10 +57,12 @@ import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.CustomItemTouchHelperCallBack;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.utils.SetIpDialog;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.views.ClearHolder;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
@@ -74,13 +72,13 @@ import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -100,9 +98,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -570,50 +565,127 @@ public class MainActivity extends AppCompatActivity {
                 }
                 languageWords.add(languageWord);
             }
-            appendXml(languageWords);
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    appendXml(languageWords);
+                    BaseApplication.getInstance().getHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            clearHolder.stopLoad(new ArrayList<>(), false);
+                        }
+                    });
+                }
+            }.start();
             if (clearHolder == null) {
                 clearHolder = new ClearHolder(findViewById(R.id.clear_root));
+                clearHolder.startLoad();
             }
-            clearHolder.stopLoad(new ArrayList<>(), false);
         }
     }
 
     private void appendXml(List<LanguageWords> languageWords) {
         try {
-            AssetManager assets = getAssets();
-            InputStream open = assets.open("value/strings.xml");
-            //创建一个SAX解析器工厂对象;
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-            //通过工厂对象创建SAX解析器
-            SAXParser saxParser = saxParserFactory.newSAXParser();
-            //开始解析
-            DefaultHandler dh = new DefaultHandler() {
-                @Override
-                public void startDocument() throws SAXException {
-                    super.startDocument();
+            for (LanguageWords languageWord : languageWords) {
+                for (int i = 2; i < 18; i++) {
+                    switch (i) {
+                        case 2:
+                            startWrite(languageWord.rCN, "values-zh-rCN");
+                            break;
+                        case 3:
+                            startWrite(languageWord.en, "values");
+                            break;
+                        case 4:
+                            startWrite(languageWord.ar, "values-ar");
+                            break;
+                        case 5:
+                            startWrite(languageWord.de, "values-de");
+                            break;
+                        case 6:
+                            startWrite(languageWord.es, "values-es");
+                            break;
+                        case 7:
+                            startWrite(languageWord.fr, "values-fr");
+                            break;
+                        case 8:
+                            startWrite(languageWord.hi, "values-hi");
+                            break;
+                        case 9:
+                            startWrite(languageWord.in, "values-in");
+                            break;
+                        case 10:
+                            startWrite(languageWord.it, "values-it");
+                            break;
+                        case 11:
+                            startWrite(languageWord.ja, "values-ja");
+                            break;
+                        case 12:
+                            startWrite(languageWord.ko, "values-ko");
+                            break;
+                        case 13:
+                            startWrite(languageWord.pt, "values-pt");
+                            break;
+                        case 14:
+                            startWrite(languageWord.ru, "values-ru");
+                            break;
+                        case 15:
+                            startWrite(languageWord.th, "values-th");
+                            break;
+                        case 16:
+                            startWrite(languageWord.vi, "values-vi");
+                            break;
+                        case 17:
+                            startWrite(languageWord.rHK, "values-zh-rHK");
+                            break;
+                    }
                 }
-
-                @Override
-                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                    super.startElement(uri, localName, qName, attributes);
-                    LogUtils.i("zune：", "startElement attributes = " + GsonGetter.getInstance().getGson().toJson(attributes));
-                }
-
-                @Override
-                public void endElement(String uri, String localName, String qName) throws SAXException {
-                    super.endElement(uri, localName, qName);
-                }
-
-                @Override
-                public void endDocument() throws SAXException {
-                    super.endDocument();
-                }
-            };
-            saxParser.parse(open, dh);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void startWrite(LanguageWords.KeyWord keyWord, String country) throws IOException {
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/words/" + country + "/strings.xml");
+        BufferedReader fileReader = new BufferedReader(new FileReader(file));
+        StringBuilder temp = new StringBuilder();
+        while (true) {
+            String s = fileReader.readLine();
+            if (s == null) {
+                break;
+            }
+            temp.append(s).append("\n");
+        }
+        temp = new StringBuilder(temp.toString().trim());
+        int index = temp.toString().lastIndexOf("\n");
+        String normal = temp.toString().substring(0, index);
+        String last = temp.toString().substring(index, temp.length());
+        FileWriter fos = new FileWriter(file, false);
+        String key = keyWord.key;
+        String value = resetWord(keyWord.word);
+        String string = String.format("    <string name=\"%s\">%s</string>", key, value);
+        String[] split = normal.split("\n");
+        for (String s : split) {
+            fos.write(s);
+            fos.write("\n");
+        }
+        fos.write(string);
+        fos.write(last);
+        fileReader.close();
+        fos.close();
+    }
+
+    private String resetWord(String word) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) == '\'') {
+                sb.append("\\");
+            }
+            sb.append(word.charAt(i));
+        }
+        return sb.toString().replaceAll("XXX", "%s");
     }
 
     private void startDownload() {

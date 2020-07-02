@@ -2,6 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="60dp"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:background="#333333"
     android:layout_gravity="center"
     android:orientation="vertical">
 
@@ -17,7 +18,8 @@
         android:gravity="center_horizontal"
         android:padding="5dp" />
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -35,6 +37,8 @@
         <ImageView
             android:id="@+id/on_play"
             android:layout_width="30dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"/>
 
@@ -49,6 +53,17 @@
             android:layout_marginRight="10dp"
             android:rotationY="180"
             android:src="@mipmap/pre_play" />
-    </FrameLayout>
+
+        <ImageView
+            android:id="@+id/on_download"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="60dp"
+            android:layout_marginRight="10dp"
+            android:src="@mipmap/icon_download" />
+    </LinearLayout>
 
 </LinearLayout>

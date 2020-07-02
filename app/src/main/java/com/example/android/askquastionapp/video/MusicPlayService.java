@@ -137,6 +137,13 @@ public class MusicPlayService extends Service implements IPlayListener {
         remoteViews.setOnClickPendingIntent(R.id.on_next, nextClick);
         registerReceiver(nextClickReceiver, nextFilter);
 
+        IntentFilter downloadFilter = new IntentFilter();
+        downloadFilter.addAction("downloadClick");
+        Intent downloadIntent = new Intent("downloadClick");
+        PendingIntent downloadClick = PendingIntent.getBroadcast(this, 2, downloadIntent, 0);
+        remoteViews.setOnClickPendingIntent(R.id.on_download, downloadClick);
+        registerReceiver(downloadClickReceiver, downloadFilter);
+
         remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
     }
 
@@ -177,6 +184,16 @@ public class MusicPlayService extends Service implements IPlayListener {
         }
     };
 
+    private BroadcastReceiver downloadClickReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            RemoteViews remoteView = notification.contentView;
+            if (TextUtils.equals(intent.getAction(), "downloadClick") && remoteView != null) {
+                downloadClick();
+            }
+        }
+    };
+
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
@@ -213,6 +230,10 @@ public class MusicPlayService extends Service implements IPlayListener {
         if (mPlayListener != null) {
             mPlayListener.onPre(this);
         }
+    }
+
+    private void downloadClick() {
+
     }
 
     @Override

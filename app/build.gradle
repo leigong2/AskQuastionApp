@@ -4,23 +4,23 @@ apply plugin: 'kotlin-android'
 //快捷的findviewfindid操作，建议加上
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.mob.sdk'
-MobSDK {
-    appKey "2cee8cab4c1f8"
-    appSecret "647cd721d378a13bcaf1bcc7ef657fb4"
-    ShareSDK {
-        //平台配置信息
-        devInfo {
-            Wechat {
-                appId "wxc7d0db8854fadb5b"
-                appSecret "63c8562f0a36e601bae0dcd0ff029624"
-            }
-            WechatMoments {
-                appId "wxc7d0db8854fadb5b"
-                appSecret "63c8562f0a36e601bae0dcd0ff029624"
-            }
-        }
-    }
-}
+//MobSDK {
+//    appKey "2cee8cab4c1f8"
+//    appSecret "647cd721d378a13bcaf1bcc7ef657fb4"
+//    ShareSDK {
+//        //平台配置信息
+//        devInfo {
+//            Wechat {
+//                appId "wxc7d0db8854fadb5b"
+//                appSecret "63c8562f0a36e601bae0dcd0ff029624"
+//            }
+//            WechatMoments {
+//                appId "wxc7d0db8854fadb5b"
+//                appSecret "63c8562f0a36e601bae0dcd0ff029624"
+//            }
+//        }
+//    }
+//}
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -94,4 +94,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
     implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.6.4'
 }
