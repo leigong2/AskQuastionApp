@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
+import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.MemoryCache;
 
@@ -201,6 +202,8 @@ public class MusicPlayService extends Service implements IPlayListener {
     private String mCurUrl;
     private String mCurName;
 
+    private boolean firstInit = true;
+
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
@@ -216,10 +219,6 @@ public class MusicPlayService extends Service implements IPlayListener {
             remoteViews.setTextViewText(R.id.tv_name, data.name);
             remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
             startForeground(1001, notification);
-            if (mCurUrl != null && !mCurUrl.startsWith("http")) {
-                playLocal(data);
-                return;
-            }
             mPlayer.setOnPreparedListener(mediaPlayer -> {
                 mPlayer.start();
                 RemoteViews remoteView = notification.contentView;
@@ -234,23 +233,32 @@ public class MusicPlayService extends Service implements IPlayListener {
                     onNextClick();
                 }
             });
-            mPlayer.prepareAsync();
+            if (mCurUrl != null && !mCurUrl.startsWith("http")) {
+                try {
+                    mPlayer.prepare();
+                    mPlayer.start();
+                    RemoteViews remoteView = notification.contentView;
+                    remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
+                    startForeground(1001, notification);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    retryPlay(data);
+                }
+            } else {
+                mPlayer.prepareAsync();
+            }
         } catch (IOException e) {
             e.printStackTrace();
-            onNextClick();
         }
     }
 
-    private void playLocal(ListenMusicActivity.MediaData data) {
-        try {
-            mPlayer.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mPlayer.start();
-        RemoteViews remoteView = notification.contentView;
-        remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
-        startForeground(1001, notification);
+    private void retryPlay(ListenMusicActivity.MediaData data) {
+        BaseApplication.getInstance().getHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                playMusic(data);
+            }
+        }, 500);
     }
 
     private void onNextClick() {
