@@ -3,7 +3,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 //快捷的findviewfindid操作，建议加上
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.mob.sdk'
 //MobSDK {
 //    appKey "2cee8cab4c1f8"
 //    appSecret "647cd721d378a13bcaf1bcc7ef657fb4"
