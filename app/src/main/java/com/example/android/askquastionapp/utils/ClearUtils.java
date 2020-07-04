@@ -153,6 +153,7 @@ public class ClearUtils {
                 noDelete.add("Download");
                 noDelete.add("Picture");
                 noDelete.add("Pictures");
+                noDelete.add("Music");
                 noDelete.add("QQBrowser");
                 noDelete.add("tencent");
                 for (int i = 0; i < files.length; i++) {

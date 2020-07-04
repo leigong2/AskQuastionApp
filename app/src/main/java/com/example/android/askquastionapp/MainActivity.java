@@ -60,6 +60,7 @@ import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.utils.SetIpDialog;
+import com.example.android.askquastionapp.video.DownloadObjManager;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.views.ClearHolder;
@@ -105,11 +106,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -715,43 +711,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startDownload(String url, String file, CallBack callBack) {
-        if (new File(file).exists()) {
-            if (callBack != null) {
-                callBack.onCallBack();
-            }
-            return;
-        }
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.body() == null) {
-                    return;
-                }
-                InputStream is = response.body().byteStream();
-                FileOutputStream fos = new FileOutputStream(new File(file));
-                int len = 0;
-                byte[] buffer = new byte[2048];
-                while (-1 != (len = is.read(buffer))) {
-                    fos.write(buffer, 0, len);
-                }
-                fos.flush();
-                fos.close();
-                is.close();
-                if (callBack != null) {
-                    callBack.onCallBack();
-                }
-            }
-        });
+        DownloadObjManager.getInstance().startDownload(url, file, callBack);
     }
 
     public interface CallBack {

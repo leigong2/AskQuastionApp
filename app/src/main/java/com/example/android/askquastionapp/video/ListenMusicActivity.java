@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.DisableDoubleClickUtils;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
 import com.example.jsoup.bean.MusicBean;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -38,6 +40,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -99,9 +102,11 @@ public class ListenMusicActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
+
             @Override
             public void afterTextChanged(Editable s) {
                 startSearch(search.getText().toString());
@@ -126,6 +131,24 @@ public class ListenMusicActivity extends AppCompatActivity {
                     textView.setText(mDatas.get(i).name);
                     TextView videoView = viewHolder.itemView.findViewById(R.id.video_view);
                     videoView.setText(mDatas.get(i).url);
+                    View downloadView = viewHolder.itemView.findViewById(R.id.on_download);
+                    downloadView.setTag(i);
+                    downloadView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!DisableDoubleClickUtils.canClick(v)) {
+                                return;
+                            }
+                            int position = (int) v.getTag();
+                            MediaData mediaData = mDatas.get(position);
+                            File dir = new File(Environment.getExternalStorageDirectory() + File.separator + "Music");
+                            if (!dir.exists()) {
+                                dir.mkdirs();
+                            }
+                            DownloadObjManager.getInstance().startDownWithPosition(mediaData.url
+                                    , Environment.getExternalStorageDirectory() + File.separator + "Music" + File.separator + mediaData.name + ".mp3");
+                        }
+                    });
                     viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
                         @Override
                         public void onClick(View view, int position) {
@@ -263,6 +286,7 @@ public class ListenMusicActivity extends AppCompatActivity {
 
     boolean isSearching;
     String keyWord;
+
     private void startSearch(String keyWord) {
         if (TextUtils.isEmpty(keyWord)) {
             return;

@@ -12,13 +12,15 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
-import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.MemoryCache;
 
+import java.io.File;
 import java.io.IOException;
 
 import static android.app.Notification.PRIORITY_MAX;
@@ -194,10 +196,15 @@ public class MusicPlayService extends Service implements IPlayListener {
         }
     };
 
+    private String mCurUrl;
+    private String mCurName;
+
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
             mPlayer.setDataSource(data.url);
+            mCurUrl = data.url;
+            mCurName = data.name;
             RemoteViews remoteViews = notification.contentView;
             remoteViews.setTextViewText(R.id.tv_name, data.name);
             remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
@@ -233,7 +240,12 @@ public class MusicPlayService extends Service implements IPlayListener {
     }
 
     private void downloadClick() {
-
+        File dir = new File(Environment.getExternalStorageDirectory() + File.separator + "Music");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        DownloadObjManager.getInstance().startDownWithPosition(mCurUrl
+                , Environment.getExternalStorageDirectory() + File.separator + "Music" + File.separator + mCurName + ".mp3");
     }
 
     @Override
