@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
@@ -21,6 +22,7 @@ import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.MemoryCache;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import static android.app.Notification.PRIORITY_MAX;
@@ -202,13 +204,22 @@ public class MusicPlayService extends Service implements IPlayListener {
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
-            mPlayer.setDataSource(data.url);
+            if (mCurUrl != null && !mCurUrl.startsWith("http")) {
+                FileInputStream fis = new FileInputStream(new File(data.url));
+                mPlayer.setDataSource(fis.getFD());
+            } else {
+                mPlayer.setDataSource(this, Uri.parse(data.url));
+            }
             mCurUrl = data.url;
             mCurName = data.name;
             RemoteViews remoteViews = notification.contentView;
             remoteViews.setTextViewText(R.id.tv_name, data.name);
             remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
             startForeground(1001, notification);
+            if (mCurUrl != null && !mCurUrl.startsWith("http")) {
+                playLocal(data);
+                return;
+            }
             mPlayer.setOnPreparedListener(mediaPlayer -> {
                 mPlayer.start();
                 RemoteViews remoteView = notification.contentView;
@@ -228,6 +239,18 @@ public class MusicPlayService extends Service implements IPlayListener {
             e.printStackTrace();
             onNextClick();
         }
+    }
+
+    private void playLocal(ListenMusicActivity.MediaData data) {
+        try {
+            mPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mPlayer.start();
+        RemoteViews remoteView = notification.contentView;
+        remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
+        startForeground(1001, notification);
     }
 
     private void onNextClick() {

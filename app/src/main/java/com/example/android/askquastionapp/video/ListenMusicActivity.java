@@ -314,8 +314,10 @@ public class ListenMusicActivity extends AppCompatActivity {
 
     private boolean contains(MediaData data) {
         for (MediaData mediaData : mDatas) {
-            if (data.name != null && data.name.equals(mediaData.name)) {
-                return true;
+            if (mediaData.name != null) {
+                if (mediaData.name.endsWith(".mp3") && mediaData.name.substring(0, mediaData.name.length() - 4).equals(data.name)) {
+                    return true;
+                }
             }
         }
         return false;
