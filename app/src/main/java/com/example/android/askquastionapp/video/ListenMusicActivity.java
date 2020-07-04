@@ -40,6 +40,8 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -60,7 +62,7 @@ public class ListenMusicActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SmartRefreshLayout refreshLayout;
     private String path;
-    private List<MediaData> mDatas;
+    private List<MediaData> mDatas = new ArrayList<>();
     private int mCurPage;
     private int mCurPlayPosition;
     private EditText search;
@@ -132,6 +134,11 @@ public class ListenMusicActivity extends AppCompatActivity {
                     TextView videoView = viewHolder.itemView.findViewById(R.id.video_view);
                     videoView.setText(mDatas.get(i).url);
                     View downloadView = viewHolder.itemView.findViewById(R.id.on_download);
+                    if (mDatas.get(i).hideDownload) {
+                        downloadView.setVisibility(View.GONE);
+                    } else {
+                        downloadView.setVisibility(View.VISIBLE);
+                    }
                     downloadView.setTag(i);
                     downloadView.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -141,12 +148,12 @@ public class ListenMusicActivity extends AppCompatActivity {
                             }
                             int position = (int) v.getTag();
                             MediaData mediaData = mDatas.get(position);
-                            File dir = new File(Environment.getExternalStorageDirectory() + File.separator + "Music");
+                            File dir = new File(getMusicPathname());
                             if (!dir.exists()) {
                                 dir.mkdirs();
                             }
                             DownloadObjManager.getInstance().startDownWithPosition(mediaData.url
-                                    , Environment.getExternalStorageDirectory() + File.separator + "Music" + File.separator + mediaData.name + ".mp3");
+                                    , getMusicPathname() + File.separator + mediaData.name + ".mp3");
                         }
                     });
                     viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
@@ -187,8 +194,8 @@ public class ListenMusicActivity extends AppCompatActivity {
                 return mDatas.size();
             }
         });
-        mDatas = new ArrayList<>();
         path = getIntent().getStringExtra("path");
+        preLoad();
         loadData(null);
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -202,6 +209,7 @@ public class ListenMusicActivity extends AppCompatActivity {
             public void onRefresh(@NonNull RefreshLayout refreshLayout) {
                 mCurPage = 0;
                 mDatas.clear();
+                preLoad();
                 loadData(null);
                 refreshLayout.setEnableLoadMore(true);
                 search.setText("");
@@ -210,6 +218,24 @@ public class ListenMusicActivity extends AppCompatActivity {
        /* findViewById(R.id.on_pre).setOnClickListener((view -> onPreClick()));
         findViewById(R.id.on_play).setOnClickListener((view -> onPlayClick()));
         findViewById(R.id.on_next).setOnClickListener((view -> onNextClick()));*/
+    }
+
+    @NotNull
+    private String getMusicPathname() {
+        return Environment.getExternalStorageDirectory() + File.separator + "Music";
+    }
+
+    private void preLoad() {
+        File dir = new File(getMusicPathname());
+        if (!dir.exists() || dir.list() == null || dir.list().length == 0) {
+            return;
+        }
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            MediaData media = new MediaData(file.getName(), file.getPath(), "");
+            media.hideDownload = true;
+            mDatas.add(media);
+        }
     }
 
     /*
@@ -231,6 +257,7 @@ public class ListenMusicActivity extends AppCompatActivity {
         public String pic;
         public String name;
         public String url;
+        public boolean hideDownload;
 
         public MediaData(String name, String url, String pic) {
             this.name = name;
@@ -250,6 +277,9 @@ public class ListenMusicActivity extends AppCompatActivity {
                 if (musicBean != null) {
                     for (MusicBean bean : musicBean) {
                         MediaData data = new MediaData(bean.singer + ":" + bean.mname, bean.wma, bean.gspic);
+                        if (contains(data)) {
+                            continue;
+                        }
                         datas.add(data);
                     }
                 }
@@ -282,6 +312,15 @@ public class ListenMusicActivity extends AppCompatActivity {
                 });
     }
 
+    private boolean contains(MediaData data) {
+        for (MediaData mediaData : mDatas) {
+            if (data.name != null && data.name.equals(mediaData.name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private ProgressDialog progressDialog;
 
     boolean isSearching;
@@ -302,6 +341,7 @@ public class ListenMusicActivity extends AppCompatActivity {
         }
         progressDialog.show();
         mDatas.clear();
+        preLoad();
         mCurPage = -1;
         Observable.just(keyWord).map(new Function<String, List<MediaData>>() {
             @Override

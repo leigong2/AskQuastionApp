@@ -217,6 +217,9 @@ public class MusicPlayService extends Service implements IPlayListener {
             });
             mPlayer.setOnCompletionListener(mediaPlayer -> {
                 if (mPlayer != null) {
+                    if (mCurUrl != null && !mCurUrl.startsWith("http")) {
+                        return;
+                    }
                     onNextClick();
                 }
             });
