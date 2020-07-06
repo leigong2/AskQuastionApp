@@ -1,4 +1,4 @@
-package com.example.android.askquastionapp.bean;
+package com.example.jsoup.bean;
 
 public class KeyWords {
     public String keyWord;

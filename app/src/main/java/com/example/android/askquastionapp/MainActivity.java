@@ -38,8 +38,6 @@ import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.bean.Company;
-import com.example.android.askquastionapp.bean.KeyWords;
-import com.example.android.askquastionapp.bean.LanguageWords;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.contacts.ContactBean;
 import com.example.android.askquastionapp.expand.ExpandActivity;
@@ -68,6 +66,8 @@ import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.GsonGetter;
+import com.example.jsoup.bean.KeyWords;
+import com.example.jsoup.bean.LanguageWords;
 import com.example.jsoup.jsoup.JsoupUtils;
 import com.google.gson.reflect.TypeToken;
 
