@@ -14,8 +14,11 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.example.android.askquastionapp.BaseApplication;
@@ -142,13 +145,17 @@ public class MusicPlayService extends Service implements IPlayListener {
         remoteViews.setOnClickPendingIntent(R.id.on_next, nextClick);
         registerReceiver(nextClickReceiver, nextFilter);
 
-        IntentFilter downloadFilter = new IntentFilter();
-        downloadFilter.addAction("downloadClick");
-        Intent downloadIntent = new Intent("downloadClick");
-        PendingIntent downloadClick = PendingIntent.getBroadcast(this, 2, downloadIntent, 0);
-        remoteViews.setOnClickPendingIntent(R.id.on_download, downloadClick);
-        registerReceiver(downloadClickReceiver, downloadFilter);
-
+        if (mCurUrl != null && mCurUrl.startsWith("http")) {
+            IntentFilter downloadFilter = new IntentFilter();
+            downloadFilter.addAction("downloadClick");
+            Intent downloadIntent = new Intent("downloadClick");
+            PendingIntent downloadClick = PendingIntent.getBroadcast(this, 2, downloadIntent, 0);
+            remoteViews.setOnClickPendingIntent(R.id.on_download, downloadClick);
+            registerReceiver(downloadClickReceiver, downloadFilter);
+            remoteViews.setViewVisibility(R.id.on_download, View.VISIBLE);
+        } else {
+            remoteViews.setViewVisibility(R.id.on_download, View.GONE);
+        }
         remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
     }
 
@@ -158,16 +165,84 @@ public class MusicPlayService extends Service implements IPlayListener {
             RemoteViews remoteView = notification.contentView;
             if (TextUtils.equals(intent.getAction(), "playClick") && remoteView != null) {
                 if (mPlayer.isPlaying()) {
-                    mPlayer.pause();
-                    remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
+                    pausePlay();
                 } else {
-                    mPlayer.start();
-                    remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
+                    startPlay();
                 }
             }
             startForeground(1001, notification);
         }
     };
+
+    private int mCurProgress;
+    private boolean isPaused;
+    private boolean isTimingCount;
+    private Handler timer = new Handler();
+    private Runnable timeTask = new Runnable() {
+        @Override
+        public void run() {
+            if (isPaused) {
+                isTimingCount = false;
+                return;
+            }
+            mCurProgress++;
+            if (mCurProgress >= mPlayer.getDuration() / 1000) {
+                onNextClick();
+                isTimingCount = false;
+                return;
+            }
+            isTimingCount = true;
+            timer.postDelayed(timeTask, 1000);
+            Log.i("zune ", "run:  mCurProgress = " + mCurProgress);
+            RemoteViews remoteView = notification.contentView;
+            remoteView.setTextViewText(R.id.tv_name, String.format("%s(%s/%s)", mCurName, getFormatTime(mCurProgress), getFormatTime(mPlayer.getDuration() / 1000)));
+            startForeground(1001, notification);
+        }
+    };
+
+    private String getFormatTime(int progress) {
+        StringBuilder sb = new StringBuilder();
+        if (progress < 10) {
+            sb.append("00:0").append(progress);
+        } else if (progress < 60) {
+            sb.append("00:").append(progress);
+        } else {
+            int minute = (int) (progress / 60f);
+            int second = progress % 60;
+            if (minute < 10) {
+                sb.append("0").append(minute).append(":");
+            } else {
+                sb.append(minute).append(":");
+            }
+            if (second < 10) {
+                sb.append("0").append(second);
+            } else {
+                sb.append(second);
+            }
+        }
+        return sb.toString();
+    }
+
+    private void startPlay() {
+        isPaused = false;
+        RemoteViews remoteView = notification.contentView;
+        mPlayer.start();
+        remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
+        remoteView.setTextViewText(R.id.tv_name, String.format("%s(%s/%s)", mCurName, getFormatTime(mCurProgress), getFormatTime(mPlayer.getDuration() / 1000)));
+        startForeground(1001, notification);
+        if (!isTimingCount) {
+            isTimingCount = true;
+            timer.postDelayed(timeTask, 1000);
+            Log.i("zune ", "run:  mCurProgress = " + mCurProgress);
+        }
+    }
+
+    private void pausePlay() {
+        isPaused = true;
+        RemoteViews remoteView = notification.contentView;
+        remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
+        mPlayer.pause();
+    }
 
     private BroadcastReceiver preClickReceiver = new BroadcastReceiver() {
         @Override
@@ -202,8 +277,6 @@ public class MusicPlayService extends Service implements IPlayListener {
     private String mCurUrl;
     private String mCurName;
 
-    private boolean firstInit = true;
-
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
@@ -215,31 +288,13 @@ public class MusicPlayService extends Service implements IPlayListener {
             }
             mCurUrl = data.url;
             mCurName = data.name;
-            RemoteViews remoteViews = notification.contentView;
-            remoteViews.setTextViewText(R.id.tv_name, data.name);
-            remoteViews.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_play_normal);
-            startForeground(1001, notification);
             mPlayer.setOnPreparedListener(mediaPlayer -> {
-                mPlayer.start();
-                RemoteViews remoteView = notification.contentView;
-                remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
-                startForeground(1001, notification);
-            });
-            mPlayer.setOnCompletionListener(mediaPlayer -> {
-                if (mPlayer != null) {
-                    if (mCurUrl != null && !mCurUrl.startsWith("http")) {
-                        return;
-                    }
-                    onNextClick();
-                }
+                startPlay();
             });
             if (mCurUrl != null && !mCurUrl.startsWith("http")) {
                 try {
                     mPlayer.prepare();
-                    mPlayer.start();
-                    RemoteViews remoteView = notification.contentView;
-                    remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
-                    startForeground(1001, notification);
+                    startPlay();
                 } catch (Exception e) {
                     e.printStackTrace();
                     retryPlay(data);
@@ -262,12 +317,14 @@ public class MusicPlayService extends Service implements IPlayListener {
     }
 
     private void onNextClick() {
+        mCurProgress = 0;
         if (mPlayListener != null) {
             mPlayListener.onNext(this);
         }
     }
 
     private void onPreClick() {
+        mCurProgress = 0;
         if (mPlayListener != null) {
             mPlayListener.onPre(this);
         }
