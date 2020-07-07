@@ -247,7 +247,7 @@ public class TranslateUtils {
                 fos.write("\n");
                 fos.write(string);
             }
-            fos.write("</resources>");
+            fos.write("\n</resources>");
         }
         fileReader.close();
         fos.close();
