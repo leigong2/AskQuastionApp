@@ -100,20 +100,6 @@ public class ListenMusicActivity extends AppCompatActivity {
                 return false;
             }
         });
-        search.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                startSearch(search.getText().toString());
-            }
-        });
         recyclerView = findViewById(R.id.recycler_view);
         refreshLayout = findViewById(R.id.refresh_layout);
         recyclerView.setLayoutManager(new LinearLayoutManager(ListenMusicActivity.this));
@@ -293,8 +279,12 @@ public class ListenMusicActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(List<MediaData> o) {
+                        int first = mDatas.size();
                         mDatas.addAll(o);
-                        recyclerView.getAdapter().notifyDataSetChanged();
+                        int second = mDatas.size();
+                        if (recyclerView.getAdapter() != null) {
+                            recyclerView.getAdapter().notifyItemRangeChanged(first, second - first);
+                        }
                         refreshLayout.finishLoadMore();
                         refreshLayout.finishRefresh();
                         if (listener != null) {
@@ -343,7 +333,6 @@ public class ListenMusicActivity extends AppCompatActivity {
         }
         progressDialog.show();
         mDatas.clear();
-        preLoad();
         mCurPage = -1;
         Observable.just(keyWord).map(new Function<String, List<MediaData>>() {
             @Override

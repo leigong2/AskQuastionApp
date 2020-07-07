@@ -186,7 +186,7 @@ public class MusicPlayService extends Service implements IPlayListener {
                 return;
             }
             mCurProgress++;
-            if (mCurProgress >= mPlayer.getDuration() / 1000) {
+            if (mPlayer.getDuration() / 1000 > 0 && mCurProgress >= mPlayer.getDuration() / 1000) {
                 onNextClick();
                 isTimingCount = false;
                 return;
@@ -203,7 +203,7 @@ public class MusicPlayService extends Service implements IPlayListener {
     private String getFormatTime(int progress) {
         StringBuilder sb = new StringBuilder();
         if (progress < 10) {
-            sb.append("00:0").append(progress);
+            sb.append("00:0").append(Math.max(progress, 0));
         } else if (progress < 60) {
             sb.append("00:").append(progress);
         } else {
@@ -229,6 +229,11 @@ public class MusicPlayService extends Service implements IPlayListener {
         mPlayer.start();
         remoteView.setImageViewResource(R.id.on_play, R.mipmap.ic_vod_pause_normal);
         remoteView.setTextViewText(R.id.tv_name, String.format("%s(%s/%s)", mCurName, getFormatTime(mCurProgress), getFormatTime(mPlayer.getDuration() / 1000)));
+        if (mCurUrl != null && mCurUrl.startsWith("http")) {
+            remoteView.setViewVisibility(R.id.on_download, View.VISIBLE);
+        } else {
+            remoteView.setViewVisibility(R.id.on_download, View.GONE);
+        }
         startForeground(1001, notification);
         if (!isTimingCount) {
             isTimingCount = true;
@@ -280,14 +285,14 @@ public class MusicPlayService extends Service implements IPlayListener {
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
             mPlayer.reset();
+            mCurUrl = data.url;
+            mCurName = data.name;
             if (mCurUrl != null && !mCurUrl.startsWith("http")) {
                 FileInputStream fis = new FileInputStream(new File(data.url));
                 mPlayer.setDataSource(fis.getFD());
             } else {
                 mPlayer.setDataSource(this, Uri.parse(data.url));
             }
-            mCurUrl = data.url;
-            mCurName = data.name;
             mPlayer.setOnPreparedListener(mediaPlayer -> {
                 startPlay();
             });
