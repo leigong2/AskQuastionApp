@@ -3,11 +3,14 @@ package com.example.android.askquastionapp.video;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,9 +35,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.blankj.utilcode.util.KeyboardUtils;
+import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.DisableDoubleClickUtils;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
+import com.example.android.askquastionapp.views.BottomPop;
 import com.example.jsoup.bean.MusicBean;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -50,6 +56,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -57,6 +64,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+
+import static android.os.Build.VERSION_CODES.N;
 
 public class ListenMusicActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -66,6 +75,10 @@ public class ListenMusicActivity extends AppCompatActivity {
     private int mCurPage;
     private int mCurPlayPosition;
     private EditText search;
+    private String[] mIconExa = new String[] {"随机加载", "正常加载", "随机播放", "顺序播放"};
+    private String[] mLongExa = new String[] {"复制", "删除"};
+    private TextView mMode;
+
 
     public static void start(Context context, String path) {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -88,6 +101,25 @@ public class ListenMusicActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listen_music);
+        mMode = findViewById(R.id.mode);
+        mMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BottomPop current = BottomPop.getCurrent(ListenMusicActivity.this);
+                for (String s : mIconExa) {
+                    current.setItemText(s);
+                }
+                current.show(ListenMusicActivity.this);
+                current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(int position) {
+                        dispatchIconClick(position);
+                        current.dismiss();
+                        mMode.setText(mIconExa[position]);
+                    }
+                });
+            }
+        });
         search = findViewById(R.id.search);
         search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -98,6 +130,24 @@ public class ListenMusicActivity extends AppCompatActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (TextUtils.isEmpty(search.getText().toString())) {
+                    mCurPage = 0;
+                    mDatas.clear();
+                    preLoad();
+                    loadData(null);
+                    refreshLayout.setEnableLoadMore(true);
+                }
             }
         });
         recyclerView = findViewById(R.id.recycler_view);
@@ -142,6 +192,7 @@ public class ListenMusicActivity extends AppCompatActivity {
                                     , getMusicPathname() + File.separator + mediaData.name + ".mp3");
                         }
                     });
+                    viewHolder.itemView.setTag(i);
                     viewHolder.itemView.setOnClickListener(new WatchVideoActivity.OnClickListener(i) {
                         @Override
                         public void onClick(View view, int position) {
@@ -149,6 +200,9 @@ public class ListenMusicActivity extends AppCompatActivity {
                             MusicPlayService.start(ListenMusicActivity.this, mDatas.get(mCurPlayPosition), new MusicPlayService.OnPlayListener() {
                                 @Override
                                 public void onNext(IPlayListener listener) {
+                                    if (randomPlay) {
+                                        mCurPlayPosition = new Random().nextInt(mDatas.size());
+                                    }
                                     if (mDatas.size() == mCurPlayPosition + 1) {
                                         if (mCurPage == -1) {
                                             listener.onPlayUrl(null);
@@ -163,6 +217,9 @@ public class ListenMusicActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onPre(IPlayListener listener) {
+                                    if (randomPlay) {
+                                        mCurPlayPosition = new Random().nextInt(mDatas.size());
+                                    }
                                     if (mCurPlayPosition > 0) {
                                         listener.onPlayUrl(mDatas.get(--mCurPlayPosition));
                                     } else {
@@ -170,6 +227,57 @@ public class ListenMusicActivity extends AppCompatActivity {
                                     }
                                 }
                             });
+                        }
+                    });
+                    viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            int i = (int) v.getTag();
+                            BottomPop current = BottomPop.getCurrent(ListenMusicActivity.this);
+                            for (String s : mLongExa) {
+                                current.setItemText(s);
+                            }
+                            current.show(ListenMusicActivity.this);
+                            current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(int position) {
+                                    MediaData mediaData = mDatas.get(i);
+                                    switch (position) {
+                                        case 0:
+                                            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                            Uri copyUri;
+                                            if (mediaData.url != null && !mediaData.url.startsWith("http")) {
+                                                File file = new File(mediaData.url);
+                                                if (Build.VERSION.SDK_INT >= N) {
+                                                    copyUri = FileProvider.getUriForFile(ListenMusicActivity.this, "com.example.android.askquastionapp.FileProvider", file);
+                                                } else {
+                                                    copyUri = Uri.fromFile(file);
+                                                }
+                                            } else {
+                                                copyUri = Uri.parse(mediaData.url);
+                                            }
+                                            ClipData clipData = ClipData.newUri(getContentResolver(), "URL", copyUri);
+                                            clipboardManager.setPrimaryClip(clipData);
+                                            ToastUtils.showShort((mediaData.url != null && mediaData.url.startsWith("http") ? "链接" : "路径") + "复制成功！");
+                                            break;
+                                        case 1:
+                                            if (mediaData.url != null && !mediaData.url.startsWith("http")) {
+                                                File file = new File(mediaData.url);
+                                                if (file.exists()) {
+                                                    file.delete();
+                                                }
+                                            }
+                                            if (recyclerView.getAdapter() != null) {
+                                                mDatas.remove(i);
+                                                recyclerView.getAdapter().notifyItemRemoved(i);
+                                            }
+                                            ToastUtils.showShort("文件删除成功");
+                                            break;
+                                    }
+                                    current.dismiss();
+                                }
+                            });
+                            return false;
                         }
                     });
                 }
@@ -193,17 +301,32 @@ public class ListenMusicActivity extends AppCompatActivity {
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(@NonNull RefreshLayout refreshLayout) {
-                mCurPage = 0;
-                mDatas.clear();
-                preLoad();
-                loadData(null);
-                refreshLayout.setEnableLoadMore(true);
                 search.setText("");
             }
         });
        /* findViewById(R.id.on_pre).setOnClickListener((view -> onPreClick()));
         findViewById(R.id.on_play).setOnClickListener((view -> onPlayClick()));
         findViewById(R.id.on_next).setOnClickListener((view -> onNextClick()));*/
+    }
+
+    private boolean randomLoad;
+    private boolean randomPlay;
+
+    private void dispatchIconClick(int position) {
+        switch (position) {
+            case 0:
+                randomLoad = true;
+                break;
+            case 1:
+                randomLoad = false;
+                break;
+            case 2:
+                randomPlay = true;
+                break;
+            case 3:
+                randomPlay = false;
+                break;
+        }
     }
 
     @NotNull
@@ -258,7 +381,7 @@ public class ListenMusicActivity extends AppCompatActivity {
             public List<MediaData> apply(String path) throws Exception {
                 List<MediaData> datas = new ArrayList<>();
                 Map<String, Object> map = new HashMap<>();
-                map.put("page", mCurPage);
+                map.put("page", randomLoad ? new Random().nextInt(1000) : mCurPage);
                 List<MusicBean> musicBean = SqlliteUtils.getInstance(path).queryData("music_bean", map, MusicBean.class);
                 if (musicBean != null) {
                     for (MusicBean bean : musicBean) {

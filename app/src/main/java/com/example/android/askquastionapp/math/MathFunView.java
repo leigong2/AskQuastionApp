@@ -7,13 +7,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
-import com.blankj.utilcode.util.AppUtils;
-import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.SizeUtils;
-import com.blankj.utilcode.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;

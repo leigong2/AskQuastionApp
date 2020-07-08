@@ -202,6 +202,8 @@ public class MainActivity extends AppCompatActivity {
         ClearUtils.getInstance().getAppProcessName(this);
         resetIp();
         setTitle("ip = " + baseUrl);
+        ToastUtils.setMsgColor(Color.WHITE);
+        ToastUtils.setBgResource(R.drawable.bg_toast);
     }
 
     private void resetIp() {

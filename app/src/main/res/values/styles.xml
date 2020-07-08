@@ -16,4 +16,9 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
+    <style name="popupBottomAnim" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/pop_up_in</item>
+        <item name="android:windowExitAnimation">@anim/pop_up_out</item>
+    </style>
+
 </resources>

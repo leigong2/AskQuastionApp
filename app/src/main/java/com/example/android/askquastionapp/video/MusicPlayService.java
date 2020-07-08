@@ -284,6 +284,7 @@ public class MusicPlayService extends Service implements IPlayListener {
 
     private void playMusic(ListenMusicActivity.MediaData data) {
         try {
+            mCurProgress = 0;
             mPlayer.reset();
             mCurUrl = data.url;
             mCurName = data.name;

@@ -87,6 +87,9 @@ public class DownloadObjManager {
     }
 
     public void startDownWithPosition(String url, String path) {
+        if (url == null || !url.startsWith("http")) {
+            return;
+        }
         final File file = new File(path);
         if (file.exists()) {
             file.delete();
