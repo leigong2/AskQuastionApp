@@ -217,6 +217,27 @@ public class SqliteUtils {
         return false;
     }
 
+    public <T> List<T> queryAllData(String tableName, Class<T> clazz) {
+        List<T> result = new ArrayList<>();
+        String sql = "select * from " + tableName;
+        try {
+            ResultSet rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                T t = clazz.newInstance();
+                for (Field field : t.getClass().getDeclaredFields()) {
+                    field.setAccessible(true);
+                    field.set(t, rs.getObject(field.getName()));
+                }
+                result.add(t);
+            }
+            rs.close();
+            stat.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public <T> List<T> queryData(String tableName, Map<String, Object> param, Class<T> clazz) {
         return queryData(tableName, param, clazz, 1);
     }

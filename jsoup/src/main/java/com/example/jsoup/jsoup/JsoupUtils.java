@@ -55,7 +55,7 @@ public class JsoupUtils {
     private static String enableImagePath = "D:\\user\\zune\\enableImg.txt";
     private static String musicPath = "D:\\user\\zune\\music.txt";
     private static String dbDir = "D:\\user\\zune\\db";
-    private static String musicDBPath = "D:\\user\\zune\\db\\music_db.db";
+    public static String musicDBPath = "D:\\user\\zune\\db\\music_db.db";
     public static String movieDBPath = "D:\\user\\zune\\db\\movie_db.db";
     public static String videoDBPath = "D:\\user\\zune\\db\\video_db.db";
     public static String avDBPath = "D:\\user\\zune\\db\\av_db.db";
@@ -177,45 +177,45 @@ public class JsoupUtils {
                 if (count > 0) {
                     return;
                 }
-//                getMp3Url(href);
+                getMp3Url(href);
                 temp.add(href.href.startsWith("/") ? baseUrl + href.href : href.href);
             }
-            List<ImgData> imgs = getImgs(document);
-            for (int i = 0; i < imgs.size(); i++) {
-                ImgData imgData = imgs.get(i);
-                String[] split = imgData.src.split("\\.");
-                String[] titlesTemp = document.title().split("\\\\");
-                String[] titles;
-                if (titlesTemp.length == 1) {
-                    titles = document.title().split("/");
-                } else {
-                    titles = titlesTemp;
-                }
-                String end = "jpg";
-                if (split.length == 1) {
-                    if (imgData.src.endsWith("png")) {
-                        end = "png";
-                    } else if (imgData.src.endsWith("gif")) {
-                        end = "gif";
-                    }
-                }
-                boolean isTitle = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]).trim().length() == 4;
-                if (isTitle) {
-                    continue;
-                }
-                String imageName = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]) + i
-                        + "." + (split.length == 0 ? end : split[split.length - 1]);
-                if (imageName.contains(getGbk("正在播放"))) {
-                    continue;
-                }
-                if (justGif && ((imageName.endsWith("gif") || imageName.endsWith("GIF")))) {
-                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
-                            , imageName);
-                } else if (!justGif) {
-                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
-                            , imageName);
-                }
-            }
+//            List<ImgData> imgs = getImgs(document);
+//            for (int i = 0; i < imgs.size(); i++) {
+//                ImgData imgData = imgs.get(i);
+//                String[] split = imgData.src.split("\\.");
+//                String[] titlesTemp = document.title().split("\\\\");
+//                String[] titles;
+//                if (titlesTemp.length == 1) {
+//                    titles = document.title().split("/");
+//                } else {
+//                    titles = titlesTemp;
+//                }
+//                String end = "jpg";
+//                if (split.length == 1) {
+//                    if (imgData.src.endsWith("png")) {
+//                        end = "png";
+//                    } else if (imgData.src.endsWith("gif")) {
+//                        end = "gif";
+//                    }
+//                }
+//                boolean isTitle = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]).trim().length() == 4;
+//                if (isTitle) {
+//                    continue;
+//                }
+//                String imageName = (titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0]) + i
+//                        + "." + (split.length == 0 ? end : split[split.length - 1]);
+//                if (imageName.contains(getGbk("正在播放"))) {
+//                    continue;
+//                }
+//                if (justGif && ((imageName.endsWith("gif") || imageName.endsWith("GIF")))) {
+//                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
+//                            , imageName);
+//                } else if (!justGif) {
+//                    downLoadImg(imgData.src.startsWith("http") ? imgData.src : baseUrl + imgData.src
+//                            , imageName);
+//                }
+//            }
 //            List<String> videos = getM3U8Videos(document);
 //            if (!videos.isEmpty()) {
 //                for (String video : videos) {
@@ -227,10 +227,10 @@ public class JsoupUtils {
 //                }
 //            }
         }
-        String s = dispatchNextUrl(url);
-        if (checkUrlEnable(s)) {
-            getContent(infoData, s);
-        }
+//        String s = dispatchNextUrl(url);
+//        if (checkUrlEnable(s)) {
+//            getContent(infoData, s);
+//        }
         /*CustomThreadPoolExecutor threadPool = getThreadExecutor();
         threadPool.execute(new MyRunnable(getInfoData(document), dispatchNextUrl(url)) {
                                @Override
@@ -405,7 +405,7 @@ public class JsoupUtils {
     }
 
     private List<String> voiceUrls = new ArrayList<>();
-    private List<String> voiceEnableUrls = new ArrayList<>();
+    public Set<String> voiceEnableUrls = new HashSet<>();
 
     private void getMp3Url(HrefData href) {
         /*zune: 对应 baseUrl = http://www.9ku.com**/
