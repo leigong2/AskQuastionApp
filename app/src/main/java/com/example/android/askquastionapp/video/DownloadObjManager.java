@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -94,6 +96,11 @@ public class DownloadObjManager {
         if (file.exists()) {
             file.delete();
         }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .get()
@@ -138,23 +145,27 @@ public class DownloadObjManager {
                     float curData = 0;
                     InputStream is = response.body().byteStream();
                     FileOutputStream fos = new FileOutputStream(file);
-                    showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId);
+                    showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId, String.format("(%sM/%sM)", 0, keepTwo((double) (total / 1024 / 1024))));
                     int len = 0;
                     byte[] buffer = new byte[1024];
+                    float temp = 0;
                     while (-1 != (len = is.read(buffer))) {
                         fos.write(buffer, 0, len);
                         curData += len;
+                        temp += len;
                         float position = curData / total;
-                        if (position < curPosition + 0.01f) {
+                        if (position < curPosition + 0.01f && temp < 1024 * 1024f) {
                             continue;
                         }
+                        temp = 0;
                         if (position > curPosition) {
-                            curPosition = (int) (position * 100) / 100f;
+                            curPosition = (int) (position * 10000) / 10000f;
                         }
                         if (position == 1) {
                             curPosition = 1;
                         }
-                        showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId);
+                        showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId, String.format("(%sM/%sM)"
+                                ,  keepTwo((double) (curData / 1024 / 1024)), keepTwo((double) (total / 1024 / 1024))));
                     }
                     fos.flush();
                     fos.close();
@@ -162,18 +173,24 @@ public class DownloadObjManager {
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId);
+                    showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId, "(下载完毕)");
                     curPosition = 0;
                 }
             }
         });
     }
 
+    private String keepTwo(Double d) {
+        DecimalFormat df = (DecimalFormat) DecimalFormat.getNumberInstance(new Locale("en", "US"));
+        df.applyPattern("######0.##");
+        return df.format(d);
+    }
+
     private Notification notification;
     private NotificationManager notificationManager;
     private List<Integer> notifyIds = new ArrayList<>();
 
-    private void showNotify(Context context, String name, float curProgress, int position) {
+    private void showNotify(Context context, String name, float curProgress, int position, String append) {
         if (notification == null || curProgress == 0) {
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             // 获取remoteViews（参数一：包名；参数二：布局资源）
@@ -194,7 +211,7 @@ public class DownloadObjManager {
                 builder = new Notification.Builder(context.getApplicationContext());
             }
             remoteViews.setTextViewText(R.id.tv_name, name);
-            remoteViews.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 100) + "%");
+            remoteViews.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 10000) / 100f + "%" + append);
             Intent intent = new Intent();
             notification = builder.setContentIntent(PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
                     .setContent(remoteViews)
@@ -205,7 +222,7 @@ public class DownloadObjManager {
             notificationManager.notify(position, notification);
         } else {
             notification.contentView.setTextViewText(R.id.tv_name, name);
-            notification.contentView.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 100) + "%");
+            notification.contentView.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 10000) / 100f + "%" + append);
             notificationManager.notify(position, notification);
             if (curProgress == 1) {
                 notificationManager.cancel(position);

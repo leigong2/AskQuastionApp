@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -39,6 +40,9 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,46 +118,65 @@ public class WatchVideoActivity extends AppCompatActivity {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                return new ViewHolder(LayoutInflater.from(WatchVideoActivity.this).inflate(R.layout.item_video, viewGroup, false));
+                ViewHolder viewHolder = new ViewHolder(LayoutInflater.from(WatchVideoActivity.this).inflate(R.layout.item_video, viewGroup, false));
+                viewHolder.itemView.findViewById(R.id.on_download).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int position = (int) view.getTag();
+                        MediaData mediaData = mDatas.get(position);
+                        DownloadObjManager.getInstance().startDownWithPosition(mediaData.url
+                                , getVideoPathname() + File.separator + mediaData.name.trim() + ".mp4");
+                    }
+                });
+                return viewHolder;
+            }
+
+            @NotNull
+            private String getVideoPathname() {
+                String s = Environment.getExternalStorageDirectory() + File.separator + "Video";
+                File file = new File(s);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                return s;
             }
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-                if (viewHolder instanceof ViewHolder) {
-                    TextView textView = viewHolder.itemView.findViewById(R.id.text_view);
-                    if (!TextUtils.isEmpty(mDatas.get(i).addTime) && !TextUtils.isEmpty(mDatas.get(i).type)) {
-                        textView.setText(String.format("%s : %s : %s", mDatas.get(i).type, mDatas.get(i).name, mDatas.get(i).addTime));
-                    } else if (!TextUtils.isEmpty(mDatas.get(i).type)) {
-                        textView.setText(String.format("%s : %s", mDatas.get(i).type, mDatas.get(i).name));
-                    } else if (!TextUtils.isEmpty(mDatas.get(i).addTime)) {
-                        textView.setText(String.format("%s : %s", mDatas.get(i).name, mDatas.get(i).addTime));
-                    } else {
-                        textView.setText(String.format("%s", mDatas.get(i).name));
-                    }
-                    TextView videoView = viewHolder.itemView.findViewById(R.id.video_view);
-                    videoView.setText(mDatas.get(i).url);
-                    viewHolder.itemView.setOnClickListener(new OnClickListener(i) {
-                        @Override
-                        public void onClick(View view, int position) {
-                            VideoPlayerActivity.start(WatchVideoActivity.this, mDatas.get(position).url);
-                        }
-                    });
-                    viewHolder.itemView.setTag(i);
-                    viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View view) {
-                            int position = (int) view.getTag();
-                            String url = mDatas.get(position).url;
-                            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                            if (cm != null) {
-                                ClipData mClipData = ClipData.newPlainText("Label", url);
-                                cm.setPrimaryClip(mClipData);
-                                ToastUtils.showShort("链接已复制");
-                            }
-                            return false;
-                        }
-                    });
+                viewHolder.itemView.findViewById(R.id.on_download).setTag(i);
+                TextView textView = viewHolder.itemView.findViewById(R.id.text_view);
+                if (!TextUtils.isEmpty(mDatas.get(i).addTime) && !TextUtils.isEmpty(mDatas.get(i).type)) {
+                    textView.setText(String.format("%s : %s : %s", mDatas.get(i).type, mDatas.get(i).name, mDatas.get(i).addTime));
+                } else if (!TextUtils.isEmpty(mDatas.get(i).type)) {
+                    textView.setText(String.format("%s : %s", mDatas.get(i).type, mDatas.get(i).name));
+                } else if (!TextUtils.isEmpty(mDatas.get(i).addTime)) {
+                    textView.setText(String.format("%s : %s", mDatas.get(i).name, mDatas.get(i).addTime));
+                } else {
+                    textView.setText(String.format("%s", mDatas.get(i).name));
                 }
+                TextView videoView = viewHolder.itemView.findViewById(R.id.video_view);
+                videoView.setText(mDatas.get(i).url);
+                viewHolder.itemView.setOnClickListener(new OnClickListener(i) {
+                    @Override
+                    public void onClick(View view, int position) {
+                        VideoPlayerActivity.start(WatchVideoActivity.this, mDatas.get(position).url);
+                    }
+                });
+                viewHolder.itemView.setTag(i);
+                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        int position = (int) view.getTag();
+                        String url = mDatas.get(position).url;
+                        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (cm != null) {
+                            ClipData mClipData = ClipData.newPlainText("Label", url);
+                            cm.setPrimaryClip(mClipData);
+                            ToastUtils.showShort("链接已复制");
+                        }
+                        return false;
+                    }
+                });
             }
 
             @Override
