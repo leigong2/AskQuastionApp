@@ -155,6 +155,7 @@ public class ClearUtils {
                 noDelete.add("Pictures");
                 noDelete.add("Music");
                 noDelete.add("QQBrowser");
+                noDelete.add("Telegram");
                 noDelete.add("tencent");
                 for (int i = 0; i < files.length; i++) {
                     File tempFile = files[i];

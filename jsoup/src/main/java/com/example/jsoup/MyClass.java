@@ -12,10 +12,10 @@ public class MyClass {
         //http://www.mgy5.com/  http://www.rerere888.com/arttype/2.html
 //        HlsDownloader.getInstance().download("https://www.2344ww.com/vod/html16/24564_down_0.html", "D:\\user\\zune\\img", "test");
 //        SimpleThread simpleThread = new SimpleThread("https://jobs.zhaopin.com/");
-        SimpleThread simpleThread = new SimpleThread("http://www.9ku.com/music/t_new.htm");
+//        SimpleThread simpleThread = new SimpleThread("http://www.9ku.com/music/t_new.htm");
 //        SimpleThread simpleThread = new SimpleThread("http://www.nuu22.com");
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
-        simpleThread.start();
+//        simpleThread.start();
 //        GetGifDownloader.getGif();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
