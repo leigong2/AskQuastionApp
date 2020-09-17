@@ -15,7 +15,8 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.9ku.com/music/t_new.htm");
 //        SimpleThread simpleThread = new SimpleThread("http://www.nuu22.com");
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
-//        simpleThread.start();
+        SimpleThread simpleThread = new SimpleThread("https://www.zybang.com/question/96d3380ee3dd6a9a761e00d72c03f30d.html");
+        simpleThread.start();
 //        GetGifDownloader.getGif();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
