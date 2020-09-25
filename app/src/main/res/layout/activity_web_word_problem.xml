@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:scrollbars="none"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,13 +31,13 @@
 
             <TextView
                 android:id="@+id/first_text"
-                android:layout_margin="10dp"
-                android:textColor="#000"
-                android:textSize="14sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:gravity="center_vertical"
+                android:textColor="#000"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -52,13 +52,13 @@
 
             <TextView
                 android:id="@+id/second_text"
-                android:layout_margin="10dp"
-                android:textColor="#000"
-                android:textSize="14sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:gravity="center_vertical"
+                android:textColor="#000"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -73,22 +73,22 @@
 
             <TextView
                 android:id="@+id/third_text"
-                android:layout_margin="10dp"
-                android:textColor="#000"
-                android:textSize="14sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:gravity="center_vertical"
+                android:textColor="#000"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
             android:textColor="#000"
-            android:textSize="12sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/title2"
@@ -110,13 +110,13 @@
 
             <TextView
                 android:id="@+id/first_text2"
-                android:layout_margin="10dp"
-                android:textColor="#000"
-                android:textSize="14sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:gravity="center_vertical"
+                android:textColor="#000"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -131,16 +131,36 @@
 
             <TextView
                 android:id="@+id/second_text2"
-                android:layout_margin="10dp"
-                android:textColor="#000"
-                android:textSize="14sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:gravity="center_vertical"
+                android:textColor="#000"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="- - - - - - - - - - - - - - - 对比web实现- - - - - - - - - - - - - - - - - "
+            android:textColor="#000"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:orientation="vertical">
+
+            <WebView
+                android:id="@+id/webview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

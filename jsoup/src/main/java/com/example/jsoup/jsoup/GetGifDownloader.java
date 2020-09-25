@@ -32,6 +32,7 @@ public class GetGifDownloader {
     private static CustomThreadPoolExecutor sPool;
     private int secondaryIndex;
     public static String imageDir = "D:\\img";
+    public static String temp = "D:\\temp";
 
     public static CustomThreadPoolExecutor getsPool() {
         return sPool;
@@ -80,6 +81,32 @@ public class GetGifDownloader {
             }
         }
         return isRight;
+    }
+
+    public static void getImg() {
+//        http://www.rerere10.com/index.php/arttype/26-1667.html
+        File fileDir = new File(imageDir);
+        if (!fileDir.exists()) {
+            fileDir.mkdirs();
+        }
+        if (fileDir.list() != null && fileDir.list().length > 0) {
+            Collections.addAll(imageName, fileDir.list());
+        }
+        if (sPool == null) {
+            sPool = new CustomThreadPoolExecutor(100);
+        }
+//        http://822jjj.com/html/article/index26321.html
+        for (int i = 2; i <= 64; i++) {
+            String url = String.format("http://822jjj.com/html/part/index17_%s.html", i);
+            Document document = getDocument(url);
+            List<HrefData> hrefs = getHrefs(document);
+            for (HrefData href : hrefs) {
+                if (href.href.startsWith("/html/article/index")) {
+                    String rightUrl = "http://822jjj.com" + href.href;
+                    parseUrl(rightUrl);
+                }
+            }
+        }
     }
 
     private static Document getDocument(String url) {
@@ -150,7 +177,7 @@ public class GetGifDownloader {
                         && !imgs.get(i).alt.contains("豚")  ) {
 //                    break;
                 }
-                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0].split("】")[0] + "】";
+                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0].split("】")[0] .split("]")[0]+ "]";
                 if (imageName.contains(s.replaceAll(" ", ""))) {
                     break;
                 }
@@ -185,7 +212,7 @@ public class GetGifDownloader {
             sPool.execute(new MyRunnable(img) {
                 @Override
                 void run(ImgData img) {
-                    downloadPicture(img.src, imageDir + "\\" + img.alt.split("】")[0] + "】", img.alt);
+                    downloadPicture(img.src, imageDir + "\\" + img.alt.split("】")[0].split("]")[0] + "]", img.alt);
                 }
             });
         }
@@ -202,14 +229,6 @@ public class GetGifDownloader {
         long time = System.currentTimeMillis();
         URL url;
         int responseCode = 0;
-        File fileDir = new File(dir);
-        if (!fileDir.exists()) {
-            fileDir.mkdirs();
-        }
-        File file = new File(fileDir, imageName.replaceAll("\\\\", "").replaceAll("/", "")
-                .replaceAll(":", "").replaceAll("\\*", "").replaceAll("\\?", "")
-                .replaceAll("\\\"", "").replaceAll("<", "").replaceAll(">", "")
-                .replaceAll("|", "").replaceAll("\\|", "").replaceAll(" ", ""));
         try {
             url = new URL(imageUrl);
             if (imageUrl.startsWith("https")) {
@@ -226,11 +245,16 @@ public class GetGifDownloader {
             if (responseCode != 200) {
                 return;
             }
-            if (!file.exists()) {
-                file.createNewFile();
+            File tempDir = new File(temp);
+            if (!tempDir.exists()) {
+                tempDir.mkdirs();
+            }
+            File tempFile = new File(tempDir, String.valueOf(System.currentTimeMillis()));
+            if (!tempFile.exists()) {
+                tempFile.createNewFile();
             }
             InputStream is = http.getInputStream();
-            OutputStream os = new FileOutputStream(file);
+            OutputStream os = new FileOutputStream(tempFile);
             byte by[] = new byte[1024];
             int len = 0;
             while ((len = is.read(by, 0, by.length)) != -1) {
@@ -238,6 +262,19 @@ public class GetGifDownloader {
             }
             os.close();
             is.close();
+            if (tempFile.length() < 100 * 1024) {
+                tempFile.delete();
+                return;
+            }
+            File fileDir = new File(dir);
+            if (!fileDir.exists()) {
+                fileDir.mkdirs();
+            }
+            File file = new File(fileDir, imageName.replaceAll("\\\\", "").replaceAll("/", "")
+                    .replaceAll(":", "").replaceAll("\\*", "").replaceAll("\\?", "")
+                    .replaceAll("\\\"", "").replaceAll("<", "").replaceAll(">", "")
+                    .replaceAll("|", "").replaceAll("\\|", "").replaceAll(" ", ""));
+            tempFile.renameTo(file);
             if (file.length() < 100 * 1024) {
                 file.delete();
             }
@@ -260,9 +297,6 @@ public class GetGifDownloader {
             } else {
                 System.out.println("zune: downloadImg: " + imageUrl
                         + ", e = " + e.getMessage() + ", 共耗时：" + (System.currentTimeMillis() - time) + "毫秒" + "responseCode = " + responseCode);
-            }
-            if (file.exists()) {
-                file.delete();
             }
         }
     }

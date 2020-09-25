@@ -1,5 +1,6 @@
 package com.example.android.askquastionapp.math;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -11,6 +12,9 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.example.android.askquastionapp.R;
@@ -57,6 +61,48 @@ public class WebWordProblemActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web_word_problem);
         startFirstQuestion();
         startSecondQuestion();
+        WebView webView = findViewById(R.id.webview);
+        StringBuilder stringBuilder = initWebViewSetting(webView, mainText);
+        webView.loadDataWithBaseURL(null, stringBuilder.toString(), "text/html", "utf-8", null);
+    }
+
+    /**
+     * zune:html适配
+     **/
+    private StringBuilder initWebViewSetting(WebView web, String data) {
+        WebSettings settings = web.getSettings();
+        settings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+        web.getSettings().setUseWideViewPort(true);
+        web.getSettings().setBlockNetworkImage(false);
+        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        web.setSaveEnabled(false);
+        web.setWebChromeClient(new WebChromeClient());
+        StringBuilder html = new StringBuilder();
+        html.append("<html>");
+        html.append("<head>");
+        html.append("<meta charset=\"utf-8\"/>");
+        html.append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0," +
+                "maximum-scale=1.0,user-scalable=no\"/>");
+        html.append("<style> img { padding: 0px;max-width:100%;}.box3{overflow-x:hidden}" +
+                "p{color: #333333;}</style>");
+        html.append("</head>");
+        html.append("<body>");
+        html.append("<div class='box3' style=\"width: 100%;padding:0px 6px 10px 6px;" +
+                "box-sizing: border-box;\">");
+        html.append(data);
+        html.append("</div>");
+        html.append("</body>");
+        html.append("<script type=\"text/javascript\"> window.onload = function imgcenter() " +
+                "{ var box = document.getElementsByClassName(\"box3\"); " +
+                "var img = box[0].getElementsByTagName(\"img\"); " +
+                "for(i = 0; i < img.length; i++) { " +
+                "var imgParentNodes = img[i].parentNode;console.log(imgParentNodes) " +
+                "imgParentNodes.style.textIndent = 'inherit';}}</script>");
+        html.append("</html>");
+        return html;
     }
 
     private void startSecondQuestion() {
@@ -72,16 +118,16 @@ public class WebWordProblemActivity extends AppCompatActivity {
         try {
             JSONObject jsonObject = new JSONObject(src.toString());
             String testTitle = (String) jsonObject.get("testTitle");
-            ((TextView)findViewById(R.id.title2)).setText(getSpanFromString(testTitle));
+            ((TextView) findViewById(R.id.title2)).setText(getSpanFromString(testTitle));
             JSONArray jsonArray = (JSONArray) jsonObject.get("options");
             for (int i = 0; i < jsonArray.length(); i++) {
                 String o = (String) jsonArray.get(i);
                 switch (i) {
                     case 0:
-                        ((TextView)findViewById(R.id.first_text2)).setText(getSpanFromString(o));
+                        ((TextView) findViewById(R.id.first_text2)).setText(getSpanFromString(o));
                         break;
                     case 1:
-                        ((TextView)findViewById(R.id.second_text2)).setText(getSpanFromString(o));
+                        ((TextView) findViewById(R.id.second_text2)).setText(getSpanFromString(o));
                         break;
                 }
             }
