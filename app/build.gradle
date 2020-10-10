@@ -67,6 +67,9 @@ android {
             jniLibs.srcDir 'libs'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+    }
 }
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

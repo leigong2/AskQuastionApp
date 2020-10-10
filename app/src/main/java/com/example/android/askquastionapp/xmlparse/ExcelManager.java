@@ -53,6 +53,7 @@ public class ExcelManager {
     }
 
     public Map<String, List<List<String>>> analyzeXlsx(File fileName) {
+        long start = System.currentTimeMillis();
         Map<String, List<List<String>>> data = new HashMap<>();
         try {
             InputStream stream = new FileInputStream(fileName);
@@ -77,6 +78,7 @@ public class ExcelManager {
         } catch (Exception e) {
             /* proper exception handling to be here */
         }
+        Log.i("zune: ", "analyzeXlsx耗时: " + (System.currentTimeMillis() - start));
         return data;
     }
 
@@ -131,6 +133,7 @@ public class ExcelManager {
     }
 
     public Map<String, List<List<String>>> analyzeXls(String fileName) {
+        long start = System.currentTimeMillis();
         Map<String, List<List<String>>> map = new HashMap<>();
         List<List<String>> rows;
         List<String> columns = null;
@@ -165,6 +168,7 @@ public class ExcelManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.i("zune: ", "analyzeXls耗时: " + (System.currentTimeMillis() - start));
         return map;
     }
 }
