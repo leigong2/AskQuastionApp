@@ -170,6 +170,7 @@
         <activity android:name=".expand.ExpandActivity" />
         <activity android:name=".expand.PushActivity" />
         <activity android:name=".math.WebWordProblemActivity" />
+        <activity android:name="ToHelloWorld" />
     </application>
 
 </manifest>
