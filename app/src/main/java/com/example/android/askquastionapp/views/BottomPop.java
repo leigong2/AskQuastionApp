@@ -4,14 +4,15 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.android.askquastionapp.BasePopup;
 import com.example.android.askquastionapp.R;
@@ -19,7 +20,6 @@ import com.example.android.askquastionapp.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.v7.widget.RecyclerView.VERTICAL;
 
 public class BottomPop extends BasePopup {
 
@@ -40,7 +40,7 @@ public class BottomPop extends BasePopup {
         recyclerView = getContentView().findViewById(R.id.recycler_view);
         animLay = getContentView().findViewById(R.id.anim_lay);
         bgView = getContentView().findViewById(R.id.bg_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context, VERTICAL, false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
         recyclerView.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             @NonNull
             @Override

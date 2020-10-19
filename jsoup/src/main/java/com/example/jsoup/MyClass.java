@@ -17,8 +17,9 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.rensheng5.com/gushihui/mjgs/id-179122_2.html");
 //        SimpleThread simpleThread = new SimpleThread("https://www.zybang.com/question/96d3380ee3dd6a9a761e00d72c03f30d.html");
 //        SimpleThread simpleThread = new SimpleThread("http://www.rerere10.com/index.php/arttype/26-2.html");
+//        SimpleThread simpleThread = new SimpleThread("https://100fj.xyz/search.php?key=%E5%B1%81%E7%9C%BC");
 //        simpleThread.start();
-        GetGifDownloader.getImg();
+        GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
             public void onChooseFileDir(String path) {

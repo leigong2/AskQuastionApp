@@ -13,14 +13,15 @@ import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.annotation.StringDef;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.provider.DocumentFile;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.StringDef;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.example.android.askquastionapp.BaseApplication;
 
@@ -31,10 +32,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -244,6 +251,13 @@ public class DocumentsFileUtils {
         if (rootPath == null) {
             return null;
         }
+        try {
+            String decode = URLDecoder.decode(file.getUri().toString().replace(mUriPath, ""), "utf-8");
+            String[] split = decode.split(":");
+            return new File(rootPath[rootPath.length - 1] + File.separator + split[split.length - 1]);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         return new File(rootPath[rootPath.length - 1] + File.separator + file.getUri().toString().replace(mUriPath, ""));
     }
 
@@ -260,7 +274,6 @@ public class DocumentsFileUtils {
 
     public boolean delete(Context context, File file) {
         boolean ret = file.delete();
-
         if (!ret && DocumentsFileUtils.getInstance().isOnExtSdCard(file, context)) {
             DocumentFile f = DocumentsFileUtils.getInstance().fileToDocument(file, false, context);
             if (f != null) {
@@ -476,6 +489,7 @@ public class DocumentsFileUtils {
         return DocumentFile.fromTreeUri(BaseApplication.getInstance(), treeUri);
     }
 
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public boolean showOpenDocumentTree(Activity activity) {
         if (!hasPermissions(activity)) {
@@ -489,6 +503,23 @@ public class DocumentsFileUtils {
             mUriPath = uriDocumentFile.getUri().toString();
             return false;
         }
+        Intent intent = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            StorageManager sm = activity.getSystemService(StorageManager.class);
+            StorageVolume volume = sm.getStorageVolume(new File(rootPath[rootPath.length - 1]));
+            if (volume != null) {
+                intent = volume.createAccessIntent(null);
+            }
+        }
+        if (intent == null) {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        }
+        activity.startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+        return true;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public boolean showOpenDocumentTreeIgnore(Activity activity) {
         Intent intent = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             StorageManager sm = activity.getSystemService(StorageManager.class);

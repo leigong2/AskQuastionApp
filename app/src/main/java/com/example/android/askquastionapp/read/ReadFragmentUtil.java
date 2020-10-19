@@ -3,11 +3,12 @@ package com.example.android.askquastionapp.read;
 
 import android.content.Context;
 import android.graphics.Paint;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.EditText;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.example.android.askquastionapp.R;

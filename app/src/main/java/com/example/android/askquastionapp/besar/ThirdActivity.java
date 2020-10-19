@@ -2,10 +2,11 @@ package com.example.android.askquastionapp.besar;
 
 import android.content.Context;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioGroup;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.databinding.ActivityThirdBinding;

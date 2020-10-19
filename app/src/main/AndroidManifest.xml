@@ -125,7 +125,7 @@
                     </intent-filter>
                 </service>-->
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.android.askquastionapp.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -149,7 +149,6 @@
         <activity android:name=".video.WatchVideoActivity" />
         <activity
             android:name=".VideoPlayerActivity"
-            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".video.ListenMusicActivity" />
 
@@ -171,6 +170,7 @@
         <activity android:name=".expand.PushActivity" />
         <activity android:name=".math.WebWordProblemActivity" />
         <activity android:name="ToHelloWorld" />
+        <activity android:name=".picture.BigPictureActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

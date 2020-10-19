@@ -2,9 +2,10 @@ package com.example.android.askquastionapp.besar;
 
 import android.content.Context;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.databinding.ActivityWaveBinding;

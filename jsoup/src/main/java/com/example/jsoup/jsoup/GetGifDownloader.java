@@ -4,6 +4,7 @@ import com.example.jsoup.MyClass;
 import com.example.jsoup.UiUtil;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.bean.ImgData;
+import com.example.jsoup.bean.VideoBean;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
 
 import org.jsoup.Jsoup;
@@ -11,15 +12,22 @@ import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import it.sauronsoftware.jave.Encoder;
 
 import static com.example.jsoup.jsoup.Content.ip;
 import static com.example.jsoup.jsoup.Content.userAgents;
@@ -32,6 +40,7 @@ public class GetGifDownloader {
     private static CustomThreadPoolExecutor sPool;
     private int secondaryIndex;
     public static String imageDir = "D:\\img";
+    public static String videoDir = "D:\\video";
     public static String temp = "D:\\temp";
 
     public static CustomThreadPoolExecutor getsPool() {
@@ -174,10 +183,10 @@ public class GetGifDownloader {
                         && !imgs.get(i).alt.contains("屁眼")
                         && !imgs.get(i).alt.contains("人彘")
                         && !imgs.get(i).alt.contains("男同")
-                        && !imgs.get(i).alt.contains("豚")  ) {
+                        && !imgs.get(i).alt.contains("豚")) {
 //                    break;
                 }
-                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0].split("】")[0] .split("]")[0]+ "]";
+                String s = titles.length == 0 ? String.valueOf(System.currentTimeMillis()) : titles[0].split("】")[0].split("]")[0] + "]";
                 if (imageName.contains(s.replaceAll(" ", ""))) {
                     break;
                 }
@@ -191,7 +200,7 @@ public class GetGifDownloader {
                         end = "gif";
                     }
                 }
-                img.alt  = s.replaceAll(" ", "") + i + "." + (splitImg.length == 0 ? end : splitImg[splitImg.length - 1].split("&")[0]);
+                img.alt = s.replaceAll(" ", "") + i + "." + (splitImg.length == 0 ? end : splitImg[splitImg.length - 1].split("&")[0]);
                 if (img.alt.contains("搞笑")) {
                     continue;
                 }
@@ -211,7 +220,7 @@ public class GetGifDownloader {
             imageUrls.add(img.src);
             sPool.execute(new MyRunnable(img) {
                 @Override
-                void run(ImgData img) {
+                void run(ImgData img, VideoBean videoBean) {
                     downloadPicture(img.src, imageDir + "\\" + img.alt.split("】")[0].split("]")[0] + "]", img.alt);
                 }
             });
@@ -301,19 +310,106 @@ public class GetGifDownloader {
         }
     }
 
+    public static void getVideos() {
+        if (sPool == null) {
+            sPool = new CustomThreadPoolExecutor(1000);
+        }
+        List<VideoBean> video_bean = SqliteUtils.getInstance("D:\\user\\zune\\db\\video_db.db").queryAllData("video_bean", VideoBean.class);
+        for (VideoBean videoBean : video_bean) {
+            sPool.execute(new MyRunnable(videoBean) {
+                @Override
+                void run(ImgData imgData, VideoBean videoBean) {
+                    startDownload(videoBean);
+                }
+            });
+        }
+    }
+
+    public static HttpURLConnection createConnection(URI uri) throws IOException {
+        URL url = uri.toURL();
+        URLConnection connection = url.openConnection();
+        HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
+        httpsURLConnection.setSSLSocketFactory(new TLSSocketConnectionFactory());
+        return httpsURLConnection;
+    }
+
+    public static void startDownload(VideoBean videoBean) {
+        File fileDir = new File(videoDir);
+        File file = new File(fileDir, videoBean.getVideo_name().replaceAll("\\\\", "").replaceAll("/", "")
+                .replaceAll(":", "").replaceAll("\\*", "").replaceAll("\\?", "")
+                .replaceAll("\\\"", "").replaceAll("<", "").replaceAll(">", "")
+                .replaceAll("|", "").replaceAll("\\|", "").replaceAll(" ", "") + ".mp4");
+        if (!fileDir.exists()) {
+            fileDir.mkdirs();
+        }
+        // 1.下载网络文件
+        try {
+            int byteRead;
+            URL url = new URL(videoBean.video_url);
+            if (videoBean.video_url.startsWith("https")) {
+                trustAllHttpsCertificates();
+            }
+            //2.获取链接
+            URLConnection conn = url.openConnection();
+            //3.输入流
+            InputStream inStream = conn.getInputStream();
+            //3.写入文件
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(file);
+            byte[] buffer = new byte[1024];
+            while ((byteRead = inStream.read(buffer)) != -1) {
+                fs.write(buffer, 0, byteRead);
+            }
+            inStream.close();
+            fs.close();
+        } catch (Exception e) {
+            System.out.println("下载错误：e = " + e + ", url = " + videoBean.getVideo_url() + ", name = " + videoBean.getVideo_name());
+        }
+    }
+
 
     public static abstract class MyRunnable implements Runnable {
         ImgData url;
+        VideoBean videoBean;
 
         public MyRunnable(ImgData url) {
             this.url = url;
         }
 
-        @Override
-        public void run() {
-            run(url);
+        public MyRunnable(VideoBean videoBean) {
+            this.videoBean = videoBean;
         }
 
-        abstract void run(ImgData position);
+        @Override
+        public void run() {
+            run(url, videoBean);
+        }
+
+        abstract void run(ImgData position, VideoBean videoBean);
+    }
+
+    public static Encoder encoder = new Encoder();
+
+    public static void getFileDetail() {
+        File file = new File(videoDir);
+        File[] files = file.listFiles();
+        for (File video : files) {
+            try {
+                long duration = encoder.getInfo(video).getDuration();
+                long length = video.length();
+                float v = duration * 1f / length;
+                if (v > 0.05f) {
+//                    System.gc();
+//                    boolean delete = video.delete();
+                    System.out.println("name = " + video.getName() + ", v = " + v );
+                }
+            } catch (Exception e) {
+                System.gc();
+                boolean delete = video.delete();
+                System.out.println("name = " + video.getName() + ", delete = " + delete);
+            }
+        }
     }
 }

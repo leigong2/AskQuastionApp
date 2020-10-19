@@ -1,6 +1,7 @@
 package com.example.android.askquastionapp.location;
 
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * @author wangzhilong

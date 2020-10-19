@@ -154,6 +154,7 @@ public class ClearUtils {
                 noDelete.add("Picture");
                 noDelete.add("Pictures");
                 noDelete.add("Music");
+                noDelete.add("Video");
                 noDelete.add("QQBrowser");
                 noDelete.add("Telegram");
                 noDelete.add("tencent");

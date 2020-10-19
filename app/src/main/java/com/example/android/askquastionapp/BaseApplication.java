@@ -1,7 +1,8 @@
 package com.example.android.askquastionapp;
 
 import android.os.Handler;
-import android.support.multidex.MultiDexApplication;
+
+import androidx.multidex.MultiDexApplication;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;

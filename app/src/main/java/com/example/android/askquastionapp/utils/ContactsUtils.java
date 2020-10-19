@@ -18,10 +18,11 @@ import android.os.Build;
 import android.os.RemoteException;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.contacts.ContactBean;

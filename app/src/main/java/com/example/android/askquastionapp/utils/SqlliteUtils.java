@@ -204,6 +204,23 @@ public class SqlliteUtils {
         return result;
     }
 
+    public <T> List<T> queryAllData(String tableName, Class<T> clazz) {
+        List<T> result = new ArrayList<>();
+        String sql = "select * from " + tableName;
+        try {
+            Cursor rs = db.rawQuery(sql, null);
+            while (rs.moveToNext()) {
+                T t = cursor2Model(rs, clazz);
+                if (t != null) {
+                    result.add(t);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public <T> T cursor2Model(Cursor cursor, Class<T> clazz) {
         T t = null;
         try {

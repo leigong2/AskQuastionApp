@@ -7,13 +7,26 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
 import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.utils.MemoryCache;
+import com.example.android.askquastionapp.video.SurfaceVideoPlayer;
+import com.example.android.askquastionapp.video.VideoPlayFragment;
+import com.example.android.askquastionapp.video.WatchVideoActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class VideoPlayerActivity extends AppCompatActivity {
 
@@ -24,10 +37,18 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private static final String DIALOG_TITILE = "加载中，请稍后…";
     private ProgressDialog progressDialog;
     private String url;
+    private ViewPager2 recyclerView;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
         intent.putExtra("url", url);
+        context.startActivity(intent);
+    }
+
+    public static void start(Context context, List<WatchVideoActivity.MediaData> mediaData, int position) {
+        Intent intent = new Intent(context, VideoPlayerActivity.class);
+        MemoryCache.getInstance().put("mediaData", mediaData);
+        MemoryCache.getInstance().put("position", position);
         context.startActivity(intent);
     }
 
@@ -40,14 +61,16 @@ public class VideoPlayerActivity extends AppCompatActivity {
             //透明导航栏
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
+        if (savedInstanceState != null) {
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_video_view);
         videoView = findViewById(R.id.video_view);
         url = getIntent().getStringExtra("url");
-        if (url == null && savedInstanceState != null) {
-            url = savedInstanceState.getString("url");
-        }
         if (url == null) {
-            finish();
+            videoView.setVisibility(View.GONE);
+            resetVideosPlayer();
             return;
         }
         videoView.setVideoURI(Uri.parse(url));
@@ -76,6 +99,45 @@ public class VideoPlayerActivity extends AppCompatActivity {
         initDialog();
     }
 
+    private List<WatchVideoActivity.MediaData> mediaData;
+    private int position;
+    private VideoPlayFragment mCurrentFragment;
+
+    private void resetVideosPlayer() {
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+        mediaData = MemoryCache.getInstance().remove("mediaData");
+        position = MemoryCache.getInstance().remove("position");
+        if (mediaData == null) {
+            mediaData = new ArrayList<>();
+        }
+        if (position >= mediaData.size()) {
+            position = 0;
+        }
+        recyclerView.setAdapter(new FragmentStateAdapter(this) {
+
+            @NonNull
+            @Override
+            public VideoPlayFragment createFragment(int position) {
+                mCurrentFragment = VideoPlayFragment.getInstance(mediaData.get(position));
+                return mCurrentFragment;
+            }
+
+            @Override
+            public int getItemCount() {
+                return mediaData.size();
+            }
+        });
+        recyclerView.setCurrentItem(position, false);
+        recyclerView.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                mCurrentFragment.play(mediaData.get(position));
+            }
+        });
+    }
+
     private void initDialog() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -86,7 +148,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (progressDialog.isShowing()) {
+        if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
         super.onBackPressed();

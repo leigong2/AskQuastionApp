@@ -165,7 +165,7 @@ public class DownloadObjManager {
                             curPosition = 1;
                         }
                         showNotify(BaseApplication.getInstance(), file.getName(), curPosition, positionId, String.format("(%sM/%sM)"
-                                ,  keepTwo((double) (curData / 1024 / 1024)), keepTwo((double) (total / 1024 / 1024))));
+                                , keepTwo((double) (curData / 1024 / 1024)), keepTwo((double) (total / 1024 / 1024))));
                     }
                     fos.flush();
                     fos.close();
@@ -211,7 +211,7 @@ public class DownloadObjManager {
                 builder = new Notification.Builder(context.getApplicationContext());
             }
             remoteViews.setTextViewText(R.id.tv_name, name);
-            remoteViews.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 10000) / 100f + "%" + append);
+            remoteViews.setTextViewText(R.id.tv_content, "正在下载...     " + ("下载完毕".equals(append) ? 100 : (int) (curProgress * 10000) / 100f) + "%" + append);
             Intent intent = new Intent();
             notification = builder.setContentIntent(PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
                     .setContent(remoteViews)
@@ -219,11 +219,14 @@ public class DownloadObjManager {
                     .setPriority(PRIORITY_MAX)
                     .build();
             notification.defaults = Notification.DEFAULT_SOUND;//设置为默认的声音
-            notificationManager.notify(position, notification);
+            if ("下载完毕".equals(append)) {
+                notificationManager.cancel(position);
+            } else {
+                notificationManager.notify(position, notification);
+            }
         } else {
             notification.contentView.setTextViewText(R.id.tv_name, name);
-            notification.contentView.setTextViewText(R.id.tv_content, "正在下载...     " + (int) (curProgress * 10000) / 100f + "%" + append);
-            notificationManager.notify(position, notification);
+            notification.contentView.setTextViewText(R.id.tv_content, "正在下载...     " + ("下载完毕".equals(append) ? 100 : (int) (curProgress * 10000) / 100f) + "%" + append);
             if (curProgress == 1) {
                 notificationManager.cancel(position);
                 for (int i = 0; i < notifyIds.size(); i++) {
@@ -232,6 +235,8 @@ public class DownloadObjManager {
                         break;
                     }
                 }
+            } else {
+                notificationManager.notify(position, notification);
             }
         }
     }

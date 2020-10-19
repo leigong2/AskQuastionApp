@@ -10,12 +10,9 @@ import com.example.jsoup.bean.MusicBean;
 import com.example.jsoup.bean.VideoBean;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
 import com.mysql.cj.util.StringUtils;
-import com.mysql.cj.util.TestUtils;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -30,19 +27,20 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.example.jsoup.jsoup.Content.ip;
 import static com.example.jsoup.jsoup.Content.userAgents;
 import static com.example.jsoup.jsoup.HttpsUrlValidator.trustAllHttpsCertificates;
 import static com.example.jsoup.jsoup.SqliteUtils.checkUrlEnable;
+import static java.util.Locale.US;
 
 public class JsoupUtils {
     private static JsoupUtils jsoupUtils;
@@ -167,7 +165,7 @@ public class JsoupUtils {
 //            System.out.println(artBody);
             List<HrefData> hrefs = getHrefs(document);
             for (HrefData href : hrefs) {
-                if (href.href == null || baseUrl.equals(href.href) || (!href.href.startsWith("/") && !href.href.startsWith("http"))) {
+                 if (href.href == null || baseUrl.equals(href.href) || (!href.href.startsWith("/") && !href.href.startsWith("http"))) {
                     continue;
                 }
                 if (urls.contains(baseUrl + href.href)) {
@@ -180,7 +178,10 @@ public class JsoupUtils {
 //                getMp3Url(href);
                 temp.add(href.href.startsWith("/") ? baseUrl + href.href : href.href);
             }
-            List<ImgData> imgs = getImgs(document);
+            if (url.startsWith(baseUrl + "/video-") || url.startsWith(baseUrl + "/v.php?v=")) {
+                getCurrentVideos(document);
+            }
+//            List<ImgData> imgs = getImgs(document);
 //            for (int i = 0; i < imgs.size(); i++) {
 //                ImgData imgData = imgs.get(i);
 //                String[] split = imgData.src.split("\\.");
@@ -246,6 +247,39 @@ public class JsoupUtils {
                     getContent(infoData, url);
                 }
             });
+        }
+    }
+
+    private void getCurrentVideos(Document document) {
+        Elements elements = document.getElementsByTag("div");
+        String title = document.title();
+        for (Element element : elements) {
+            Attributes attributes = element.attributes();
+            String s = attributes.get("class");
+            if ("videoUiWrapper thumbnail".equals(s)) {
+                Elements divs = element.getElementsByTag("div");
+                for (Element div : divs) {
+                    List<Node> dataNodes = div.childNodes();
+                    for (Node d : dataNodes) {
+                        List<Node> nodes = d.childNodes();
+                        for (Node node : nodes) {
+                            if (node instanceof Element) {
+                                Attributes attr = node.attributes();
+                                String src = attr.get("src");
+                                if (!StringUtils.isNullOrEmpty(src)) {
+                                    System.out.println(src);
+                                    HrefData href = new HrefData(src, title, title);
+                                    insertToDb(null, href);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<HrefData> hrefs = getHrefs(document);
+        for (HrefData href : hrefs) {
+            getContent(null, baseUrl + "/" + href.href);
         }
     }
 
@@ -474,41 +508,47 @@ public class JsoupUtils {
         * **/
         if (getGbk("<-- HTTP下载 -->").equals(href.text) || getGbk("本地下载").equals(href.text)
                 || "<-- HTTP下载 -->".equals(href.text) || "本地下载".equals(href.text)) {
-            try {
-                if (href.title == null || href.title.isEmpty()) {
-                    String[] title = href.href.split(".mp4")[0].split("/");
-                    href.title = title[title.length - 1];
-                } else {
-                    href.title = href.title.split(getGbk("高清mp4"))[0];
-                }
-                if (checkUrlEnable(href.href)) {
-                    synchronized (this) {
-                        if (!videoUrl.contains(href.href)) {
-                            videoUrl.add(href.href);
-                            videoTitles.add(href.title);
-                            VideoBean video = new VideoBean();
-                            int size = videoUrl.size();
-                            video.setPage(size - 1);
-                            video.setVideo_name(href.title);
-                            video.setVideo_url(href.href);
-                            if (infoData != null) {
-                                video.setVideo_type(infoData.getVideo_type());
-                                if (infoData.getVideo_add_time() == null) {
-                                    String[] split = href.title.split("[()]");
-                                    if (split.length > 1) {
-                                        infoData.setVideo_add_time(split[1]);
-                                    }
+            insertToDb(infoData, href);
+        }
+    }
+
+    private void insertToDb(InfoData infoData, HrefData href) {
+        try {
+            if (href.title == null || href.title.isEmpty()) {
+                String[] title = href.href.split(".mp4")[0].split("/");
+                href.title = title[title.length - 1];
+            } else {
+                href.title = href.title.split(getGbk("高清mp4"))[0];
+            }
+            if (checkUrlEnable(href.href)) {
+                synchronized (this) {
+                    if (!videoUrl.contains(href.href)) {
+                        videoUrl.add(href.href);
+                        videoTitles.add(href.title);
+                        VideoBean video = new VideoBean();
+                        int size = videoUrl.size();
+                        video.setPage(size - 1);
+                        video.setVideo_name(href.title);
+                        video.setVideo_url(href.href);
+                        if (infoData != null) {
+                            video.setVideo_type(infoData.getVideo_type());
+                            if (infoData.getVideo_add_time() == null) {
+                                String[] split = href.title.split("[()]");
+                                if (split.length > 1) {
+                                    infoData.setVideo_add_time(split[1]);
                                 }
-                                video.setVideo_add_time(infoData.getVideo_add_time());
                             }
-                            System.out.println(video.toString());
-                            SqliteUtils.getInstance(videoDBPath).insertData("video_bean", video);
+                            video.setVideo_add_time(infoData.getVideo_add_time());
+                        } else {
+                            video.setVideo_add_time(new SimpleDateFormat("yyyy-MM-dd", US).format(new Date(System.currentTimeMillis())));
                         }
+                        System.out.println(video.toString());
+                        SqliteUtils.getInstance(videoDBPath).insertData("video_bean", video);
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -575,6 +615,9 @@ public class JsoupUtils {
             if (elementsByTag.size() > 0 && elementsByTag.get(0).childNodeSize() > 0) {
                 Node title = elementsByTag.get(0).childNode(0);
                 hrefData.title = title.toString();
+            }
+            if (!hrefData.href.startsWith("/video-") && !hrefData.href.startsWith("v.php?v=")) {
+                continue;
             }
             hrefDataList.add(hrefData);
         }
