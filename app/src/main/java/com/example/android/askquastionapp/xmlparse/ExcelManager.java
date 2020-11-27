@@ -31,11 +31,6 @@ import jxl.Workbook;
 
 public class ExcelManager {
     private static ExcelManager instance;
-    private static final String SHAREDSTRINGS = "xl/sharedStrings.xml";
-    private static final String DIRSHEET = "xl/worksheets/";
-    private static final String ENDXML = ".xml";
-
-    private List<String> listCells;
 
     private ExcelManager() {
 

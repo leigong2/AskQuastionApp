@@ -1,8 +1,8 @@
 package com.example.android.askquastionapp;
 
+import android.app.Application;
 import android.os.Handler;
 
-import androidx.multidex.MultiDexApplication;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -16,7 +16,7 @@ import javax.net.ssl.X509TrustManager;
 
 import maximsblog.blogspot.com.jlatexmath.core.AjLatexMath;
 
-public class BaseApplication extends MultiDexApplication {
+public class BaseApplication extends Application {
     private static BaseApplication application;
     private static Handler sHandler;
 

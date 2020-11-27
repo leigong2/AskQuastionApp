@@ -7,8 +7,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 import android.widget.VideoView;
@@ -16,14 +16,17 @@ import android.widget.VideoView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.utils.MemoryCache;
-import com.example.android.askquastionapp.video.SurfaceVideoPlayer;
-import com.example.android.askquastionapp.video.VideoPlayFragment;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.video.exo.ExoVideoHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +40,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private static final String DIALOG_TITILE = "加载中，请稍后…";
     private ProgressDialog progressDialog;
     private String url;
-    private ViewPager2 recyclerView;
+    private RecyclerView recyclerView;
+    private PagerSnapHelper mSnapHelper;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
@@ -101,11 +105,12 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
     private List<WatchVideoActivity.MediaData> mediaData;
     private int position;
-    private VideoPlayFragment mCurrentFragment;
 
     private void resetVideosPlayer() {
         recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mSnapHelper = new PagerSnapHelper();
+        mSnapHelper.attachToRecyclerView(recyclerView);
         mediaData = MemoryCache.getInstance().remove("mediaData");
         position = MemoryCache.getInstance().remove("position");
         if (mediaData == null) {
@@ -114,13 +119,18 @@ public class VideoPlayerActivity extends AppCompatActivity {
         if (position >= mediaData.size()) {
             position = 0;
         }
-        recyclerView.setAdapter(new FragmentStateAdapter(this) {
-
+        recyclerView.setAdapter(new RecyclerView.Adapter() {
             @NonNull
             @Override
-            public VideoPlayFragment createFragment(int position) {
-                mCurrentFragment = VideoPlayFragment.getInstance(mediaData.get(position));
-                return mCurrentFragment;
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                return new ExoVideoHolder(parent);
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                if (holder instanceof ExoVideoHolder) {
+                    ((ExoVideoHolder) holder).onSetValue(mediaData.get(position));
+                }
             }
 
             @Override
@@ -128,14 +138,13 @@ public class VideoPlayerActivity extends AppCompatActivity {
                 return mediaData.size();
             }
         });
-        recyclerView.setCurrentItem(position, false);
-        recyclerView.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                mCurrentFragment.play(mediaData.get(position));
-            }
-        });
+//        mSnapHelper.
+//        recyclerView.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+//            @Override
+//            public void onPageSelected(int position) {
+//                super.onPageSelected(position);
+//            }
+//        });
     }
 
     private void initDialog() {
