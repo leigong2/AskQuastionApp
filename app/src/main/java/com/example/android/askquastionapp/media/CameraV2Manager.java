@@ -19,6 +19,7 @@ import android.os.Looper;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -84,9 +85,11 @@ public class CameraV2Manager {
 
         //Must be called after setVideoSource(). Call this after setOutFormat() but before prepare()., 默认相机是横屏打开，所以视频宽度是屏幕高度，视频高度是屏幕宽度
         Size matchingSize = getMatchingSize();
-        mMediaRecorder.setVideoSize(matchingSize.getWidth(), matchingSize.getHeight());
+        if (matchingSize != null) {
+            mMediaRecorder.setVideoSize(matchingSize.getWidth(), matchingSize.getHeight());
+        }
 
-        mMediaRecorder.setOrientationHint(90); // 输出旋转90度，保持竖屏录制
+        mMediaRecorder.setOrientationHint(isFont ? 270 : 90); // 输出旋转90度，保持竖屏录制
 
         //Call this after setOutputFormat() but before prepare().
         mMediaRecorder.setPreviewDisplay(new Surface(mTextureView.getSurfaceTexture()));
@@ -116,8 +119,6 @@ public class CameraV2Manager {
      * @return
      */
     private Size getMatchingSize() {
-        int deviceWidth = ScreenUtils.getScreenWidth();
-        int deviceHeight = ScreenUtils.getScreenHeight();
         try {
             CameraManager cameraManager = (CameraManager) mTextureView.getContext().getSystemService(CAMERA_SERVICE);
             String cameraId = getCameraId(cameraManager);
@@ -129,15 +130,19 @@ public class CameraV2Manager {
             if (streamConfigurationMap == null) {
                 return null;
             }
+
+            if (onLogListener != null) {
+                onLogListener.writeLog("currentSize = " + ScreenUtils.getScreenWidth() + ", " + ScreenUtils.getScreenHeight());
+            }
             Size[] sizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG);
-            int offSize = deviceWidth + deviceHeight;
+            int offSize = ScreenUtils.getScreenWidth() + ScreenUtils.getScreenHeight();
             Size resultSize = null;
             /*zune：找出与给定的相机分辨率最接近的那一个**/
             for (Size size : sizes) {
                 int width = size.getWidth();
                 int height = size.getHeight();
-                int offBig = Math.max(deviceWidth, deviceHeight) - Math.max(width, height);
-                int offSmall = Math.min(deviceWidth, deviceHeight) - Math.min(width, height);
+                int offBig = Math.max(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight()) - Math.max(width, height);
+                int offSmall = Math.min(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight()) - Math.min(width, height);
                 if (offBig < 0 || offSmall < 0) {
                     /*zune：比手机分辨率大的直接舍弃**/
                     continue;
@@ -148,11 +153,14 @@ public class CameraV2Manager {
                     offSize = offBig + offSmall;
                 }
             }
+            if (onLogListener != null) {
+                onLogListener.writeLog("resultSize = " + (resultSize == null ? null : resultSize.getWidth() + ", " + resultSize.getHeight()));
+            }
             return resultSize;
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        return new Size(deviceWidth, deviceHeight);
+        return null;
     }
 
     private String getCameraId(CameraManager cameraManager) {
@@ -183,7 +191,16 @@ public class CameraV2Manager {
             return;
         }
         SurfaceTexture texture = mTextureView.getSurfaceTexture();
-        texture.setDefaultBufferSize(mTextureView.getWidth(), mTextureView.getHeight());
+        Size matchingSize = getMatchingSize();
+        if (matchingSize == null) {
+            return;
+        }
+        int width = matchingSize.getWidth();
+        int height = matchingSize.getHeight();
+        texture.setDefaultBufferSize(width, height);
+        ViewGroup.LayoutParams layoutParams = mTextureView.getLayoutParams();
+        layoutParams.width = ScreenUtils.getScreenWidth();
+        layoutParams.height = (int) (1f * Math.max(width, height) / Math.min(width, height) * ScreenUtils.getScreenWidth());
         Surface surface = new Surface(texture);
         try {
             //CameraRequest表示一次捕获请求，用来对z照片的各种参数设置，比如对焦模式、曝光模式等。CameraRequest.Builder用来生成CameraRequest对象
@@ -252,41 +269,72 @@ public class CameraV2Manager {
     }
 
     public void release() {
-        if (mCamera != null) {
-            mCamera.close();
-        }
-        if (mHandler != null) {
-            mHandler.removeMessages(0);
-        }
-        if (mTextureView != null) {
-            mTextureView.setSurfaceTextureListener(null);
-            SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
-            if (surfaceTexture != null) {
-                surfaceTexture.release();
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                if (mHandler != null) {
+                    mHandler.removeCallbacksAndMessages(null);
+                }
+                mPreviewBuilder = null;
+                if (mSession != null) {
+                    try {
+                        mSession.stopRepeating();
+                        mSession.abortCaptures();
+                        mSession.close();
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                    mSession = null;
+                }
+                if (mCamera != null) {
+                    mCamera.close();
+                }
+                if (mMediaRecorder != null) {
+                    Surface surface = mMediaRecorder.getSurface();
+                    if (surface != null) {
+                        surface.release();
+                        surface = null;
+                    }
+                    mMediaRecorder.stop();
+                    mMediaRecorder.release();
+                }
+                if (mTextureView != null) {
+                    SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
+                    if (surfaceTexture != null) {
+                        surfaceTexture.release();
+                    }
+                    mTextureView.setSurfaceTextureListener(null);
+                    mTextureView = null;
+                }
             }
-            mTextureView = null;
-        }
-        if (mMediaRecorder != null) {
-            mMediaRecorder.stop();
-            mMediaRecorder.release();
-        }
+        }.start();
     }
 
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
             LogUtils.i("zune: ", "onSurfaceTextureAvailable = " + surfaceTexture);
+            if (onLogListener != null) {
+                onLogListener.writeLog("onSurfaceTextureAvailable = " + surfaceTexture);
+            }
             openCamera();
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
             LogUtils.i("zune: ", "改变大小 width = " + width + ", height = " + height);
+            if (onLogListener != null) {
+                onLogListener.writeLog("改变大小 width = " + width + ", height = " + height);
+            }
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
             LogUtils.i("zune: ", "onSurfaceTextureDestroyed");
+            if (onLogListener != null) {
+                onLogListener.writeLog("onSurfaceTextureDestroyed");
+            }
             return false;
         }
 
@@ -345,12 +393,18 @@ public class CameraV2Manager {
         public void onConfigured(CameraCaptureSession session) {
             mSession = session;
             LogUtils.i("zune: ", "相机创建成功");
+            if (onLogListener != null) {
+                onLogListener.writeLog("相机创建成功");
+            }
             try {
                 mSession.capture(mPreviewBuilder.build(), mSessionCaptureCallback, mHandler);//拍照
                 mSession.setRepeatingRequest(mPreviewBuilder.build(), mSessionCaptureCallback, mHandler);//返回结果
             } catch (CameraAccessException e) {
                 e.printStackTrace();
                 LogUtils.i("zune: ", "CameraAccessException = " + GsonGetter.getInstance().getGson().toJson(e));
+                if (onLogListener != null) {
+                    onLogListener.writeLog("CameraAccessException = " + GsonGetter.getInstance().getGson().toJson(e));
+                }
             }
         }
 
@@ -373,4 +427,14 @@ public class CameraV2Manager {
             LogUtils.i("zune: ", "onCaptureProgressed, CaptureRequest = " + GsonGetter.getInstance().getGson().toJson(request));
         }
     };
+
+    public interface OnLogListener {
+        void writeLog(String log);
+    }
+
+    private OnLogListener onLogListener;
+
+    public void setOnLogListener(OnLogListener onLogListener) {
+        this.onLogListener = onLogListener;
+    }
 }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import com.example.android.askquastionapp.R;
 public class VideoRecordActivity extends AppCompatActivity {
 
     private boolean showButton;
+    private TextView logText;
 
     public static void start(Context context, boolean showButton) {
         Intent intent = new Intent(context, VideoRecordActivity.class);
@@ -37,6 +39,18 @@ public class VideoRecordActivity extends AppCompatActivity {
         findViewById(R.id.stop_record).setOnClickListener(v -> CameraV2Manager.getInstance().stopRecord());
         findViewById(R.id.restart_record).setOnClickListener(v -> CameraV2Manager.getInstance().restartRecord());
         findViewById(R.id.switch_camera).setOnClickListener(view -> CameraV2Manager.getInstance().switchCamera());
+        logText = findViewById(R.id.log_text);
+        CameraV2Manager.getInstance().setOnLogListener(new CameraV2Manager.OnLogListener() {
+            @Override
+            public void writeLog(String log) {
+                appendLog(log);
+            }
+        });
+    }
+
+    private void appendLog(String log) {
+        logText.append(log);
+        logText.append("\n");
     }
 
     @Override

@@ -27,7 +27,6 @@
 
         <ImageView
             android:visibility="gone"
-            android:id="@+id/iv_expandable"
             android:src="@mipmap/enfold_icon"
             android:layout_gravity="end|bottom"
             android:paddingBottom="8dp"
