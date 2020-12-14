@@ -193,6 +193,7 @@
             android:name=".keeplive.ScreenBroadcastReceiver"
             android:enabled="true"
             android:exported="true" />
+
         <activity
             android:name=".keeplive.ScreenOnTestActivity"
             android:excludeFromRecents="true"

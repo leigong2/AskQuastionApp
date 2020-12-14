@@ -9,6 +9,14 @@
         android:layout_height="match_parent" />
 
     <Button
+        android:id="@+id/switch_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="100dp"
+        android:text="切换摄像头" />
+
+    <Button
         android:id="@+id/start_record"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

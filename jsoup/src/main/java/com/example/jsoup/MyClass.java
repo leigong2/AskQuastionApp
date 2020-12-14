@@ -2,8 +2,6 @@ package com.example.jsoup;
 
 import com.example.jsoup.jsoup.GetGifDownloader;
 import com.example.jsoup.thread.CustomThreadPoolExecutor;
-import com.example.jsoup.thread.SimpleThread;
-import com.mysql.cj.util.StringUtils;
 
 public class MyClass {
     public static boolean sStop;
@@ -18,6 +16,7 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("https://www.zybang.com/question/96d3380ee3dd6a9a761e00d72c03f30d.html");
 //        SimpleThread simpleThread = new SimpleThread("http://www.rerere10.com/index.php/arttype/26-2.html");
 //        SimpleThread simpleThread = new SimpleThread("https://100fj.xyz/search.php?key=%E5%B1%81%E7%9C%BC");
+//        SimpleThread simpleThread = new SimpleThread("http://www.kandegang.cn/video/kengwang/1140.html");
 //        simpleThread.start();
         GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {

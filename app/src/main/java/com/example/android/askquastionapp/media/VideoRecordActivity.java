@@ -26,32 +26,17 @@ public class VideoRecordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_record);
         TextureView textureView = findViewById(R.id.texture_view);
-        CameraV2Manager.getInstance().init(textureView);
         showButton = getIntent().getBooleanExtra("showButton", false);
+        CameraV2Manager.getInstance().init(textureView);
         findViewById(R.id.start_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
         findViewById(R.id.pause_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
         findViewById(R.id.stop_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
         findViewById(R.id.restart_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
-        findViewById(R.id.start_record).setOnClickListener(v -> startRecord());
-        findViewById(R.id.pause_record).setOnClickListener(v -> pauseRecord());
-        findViewById(R.id.stop_record).setOnClickListener(v -> stopRecord());
-        findViewById(R.id.restart_record).setOnClickListener(v -> restartRecord());
-    }
-
-    private void startRecord() {
-        CameraV2Manager.getInstance().startRecord();
-    }
-
-    private void pauseRecord() {
-        CameraV2Manager.getInstance().pauseRecord();
-    }
-
-    private void stopRecord() {
-        CameraV2Manager.getInstance().stopRecord();
-    }
-
-    private void restartRecord() {
-        CameraV2Manager.getInstance().restartRecord();
+        findViewById(R.id.start_record).setOnClickListener(v -> CameraV2Manager.getInstance().startRecord());
+        findViewById(R.id.pause_record).setOnClickListener(v -> CameraV2Manager.getInstance().pauseRecord());
+        findViewById(R.id.stop_record).setOnClickListener(v -> CameraV2Manager.getInstance().stopRecord());
+        findViewById(R.id.restart_record).setOnClickListener(v -> CameraV2Manager.getInstance().restartRecord());
+        findViewById(R.id.switch_camera).setOnClickListener(view -> CameraV2Manager.getInstance().switchCamera());
     }
 
     @Override
