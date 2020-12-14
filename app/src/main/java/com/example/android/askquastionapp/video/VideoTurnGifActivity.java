@@ -19,10 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.FileUtil;
-import com.example.android.askquastionapp.video.camera2.Camera2DelegateImp;
 import com.example.android.askquastionapp.video.exo.gifencoder.BitmapExtractor;
 import com.example.android.askquastionapp.video.exo.gifencoder.GIFEncoder;
 
@@ -43,7 +41,6 @@ public class VideoTurnGifActivity extends AppCompatActivity {
 
     private Uri uri;
     private TextView recordVideo;
-//    private Camera2DelegateImp mCamera2Delegate = new Camera2DelegateImp();
     private SurfaceView mSurfaceView;
     private Camera camera1;
 
@@ -97,18 +94,6 @@ public class VideoTurnGifActivity extends AppCompatActivity {
                 camera1.release();
             }
         });
-//        mCamera2Delegate.setSurfaceView(mSurfaceView);
-//        mCamera2Delegate.setCallBack(new Camera2DelegateImp.CallBack() {
-//            @Override
-//            public void onCallBack() {
-//                BaseApplication.getInstance().getHandler().post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mCamera2Delegate.startRecord(VideoTurnGifActivity.this);
-//                    }
-//                });
-//            }
-//        });
         // 打开摄像头并将展示方向旋转90度
         camera1 = Camera.open();
         camera1.setDisplayOrientation(90);
