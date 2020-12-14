@@ -12,11 +12,11 @@ import java.util.Random;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class ExampleUnitTest {
-    private int sMoney = 20528;
+    private int sMoney = 2185714;
 
     @Test
     public void addition_isCorrect() {
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < 10000; j++) {
             StringBuilder sb = new StringBuilder();
             int now = 0;
             for (int i = 0; i < 10; i++) {
@@ -45,17 +45,13 @@ public class ExampleUnitTest {
     **/
     private int test() {
         Random random = new Random();
-        if (true) {
-            boolean i = random.nextBoolean();
-            return i ? 1000 : -1000;
-        }
-        int a = 100000;
+        int a = 1000;
         int n = 2;
         int time = 0;
         int max = a;
         int maxTime = 0;
         List<Integer> win = new ArrayList<>();
-        while ((sMoney > n || a > n) && time < 1000 && n <= 32) {
+        while ((sMoney > n) && time < 1000 && a > -1000) {
             time++;
             boolean i = random.nextBoolean();
             if (i) {
@@ -72,7 +68,7 @@ public class ExampleUnitTest {
                 maxTime = time;
             }
         }
-        return a - 100000;
+        return a - 1000;
     }
 
     private String getNormalNo(String mobileNo) {
