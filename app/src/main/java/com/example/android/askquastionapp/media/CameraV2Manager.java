@@ -14,6 +14,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Size;
@@ -254,7 +255,9 @@ public class CameraV2Manager {
     }
 
     public void pauseRecord() {
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mMediaRecorder.pause();
+        }
     }
 
     public void stopRecord() {
@@ -265,7 +268,9 @@ public class CameraV2Manager {
     }
 
     public void restartRecord() {
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mMediaRecorder.resume();
+        }
     }
 
     public void release() {
