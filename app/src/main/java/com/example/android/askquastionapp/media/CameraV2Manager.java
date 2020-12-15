@@ -84,7 +84,7 @@ public class CameraV2Manager {
             mMediaRecorder = new MediaRecorder();
         }
         //创建视频保存的文件地址
-        File file = new File(BaseApplication.getInstance().getExternalCacheDir(), System.currentTimeMillis() + ".mp4");
+        File file = new File(Environment.getExternalStorageDirectory() + String.format("/DCIM/Camera/%s.mp4", getNameByTime()));
 
         //Call this only before setOutputFormat().
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -310,6 +310,7 @@ public class CameraV2Manager {
             mMediaRecorder.stop();
             mMediaRecorder.reset();
         }
+        ToastUtils.showShort("录制成功，去相册查看");
     }
 
     public void restartRecord() {

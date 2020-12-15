@@ -40,7 +40,6 @@ public class MediaActivity extends AppCompatActivity {
 
     private void recordVideo() {
         VideoRecordActivity.start(this, true);
-//        startActivity(new Intent(this, DemoActivity.class));
     }
 
     private void playVideo() {
