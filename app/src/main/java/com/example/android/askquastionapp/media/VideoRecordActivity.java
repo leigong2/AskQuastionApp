@@ -14,7 +14,6 @@ import com.example.android.askquastionapp.R;
 
 public class VideoRecordActivity extends AppCompatActivity {
 
-    private boolean showButton;
     private TextView logText;
 
     public static void start(Context context, boolean showButton) {
@@ -28,7 +27,7 @@ public class VideoRecordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_record);
         TextureView textureView = findViewById(R.id.texture_view);
-        showButton = getIntent().getBooleanExtra("showButton", false);
+        boolean showButton = getIntent().getBooleanExtra("showButton", false);
         CameraV2Manager.getInstance().init(textureView);
         findViewById(R.id.start_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
         findViewById(R.id.pause_record).setVisibility(showButton ? View.VISIBLE : View.GONE);
@@ -39,6 +38,7 @@ public class VideoRecordActivity extends AppCompatActivity {
         findViewById(R.id.stop_record).setOnClickListener(v -> CameraV2Manager.getInstance().stopRecord());
         findViewById(R.id.restart_record).setOnClickListener(v -> CameraV2Manager.getInstance().restartRecord());
         findViewById(R.id.switch_camera).setOnClickListener(view -> CameraV2Manager.getInstance().switchCamera());
+        findViewById(R.id.take_picture).setOnClickListener(view -> CameraV2Manager.getInstance().takePicture());
         logText = findViewById(R.id.log_text);
         CameraV2Manager.getInstance().setOnLogListener(new CameraV2Manager.OnLogListener() {
             @Override
