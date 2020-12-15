@@ -71,7 +71,7 @@ public class FenBeiActivity extends AppCompatActivity {
         //录音获取麦克风声音
         mARecorder = new MediaRecorder();                                //声音录制
         mARecorder.setAudioSource(MediaRecorder.AudioSource.MIC);       //录制的音源为麦克风
-        mARecorder.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR); //设置音频文件的编码
+        mARecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB); //设置音频文件的编码
         mARecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB); //设置audio格式
 
         mSampleDir = getCacheDir();

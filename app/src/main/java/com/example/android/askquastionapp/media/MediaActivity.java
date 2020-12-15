@@ -3,6 +3,8 @@ package com.example.android.askquastionapp.media;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,15 +21,22 @@ public class MediaActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media);
-        findViewById(R.id.record_music).setOnClickListener(v -> recordMusic());
+        findViewById(R.id.record_music).setOnClickListener(v -> recordMusic(v));
         findViewById(R.id.play_music).setOnClickListener(v -> playMusic());
         findViewById(R.id.pre_video).setOnClickListener(v -> preVideo());
         findViewById(R.id.record_video).setOnClickListener(v -> recordVideo());
         findViewById(R.id.play_video).setOnClickListener(v -> playVideo());
     }
 
-    private void recordMusic() {
-
+    private void recordMusic(View v) {
+        v.setTag(v.getTag() == null || (int) v.getTag() == 0 ? 1 : 0);
+        if ((int) v.getTag() == 1) {
+            AudioRecordManager.getInstance().startRecord();
+            ((TextView) v).setText("录制中...");
+        } else {
+            AudioRecordManager.getInstance().stopRecord();
+            ((TextView) v).setText("音频录制");
+        }
     }
 
     private void playMusic() {
@@ -46,4 +55,9 @@ public class MediaActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void finish() {
+        super.finish();
+        AudioRecordManager.getInstance().release();
+    }
 }
