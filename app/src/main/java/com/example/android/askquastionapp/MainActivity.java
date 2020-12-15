@@ -54,6 +54,7 @@ import com.example.android.askquastionapp.location.LocationActivity;
 import com.example.android.askquastionapp.math.MathFunActivity;
 import com.example.android.askquastionapp.math.WebWordProblemActivity;
 import com.example.android.askquastionapp.media.MediaActivity;
+import com.example.android.askquastionapp.media.PhotoSheetDialog;
 import com.example.android.askquastionapp.picture.BigPictureActivity;
 import com.example.android.askquastionapp.picture.ImageViewActivity;
 import com.example.android.askquastionapp.picture.PictureActivity;
@@ -305,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("视频转gif");
         added.add("铃声获取");
         added.add("音视频");
+        added.add("相册");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -471,6 +473,9 @@ public class MainActivity extends AppCompatActivity {
                     mediaPlayer.setDataSource(this, sound);
                     mediaPlayer.prepare();
                     mediaPlayer.start();
+                    if (sound.getPath() != null) {
+                        ToastUtils.showShort(sound.getPath());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -497,6 +502,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 MediaActivity.start(this);
+                break;
+            case "相册":
+                PhotoSheetDialog dialog = new PhotoSheetDialog();
+                dialog.show(getSupportFragmentManager(), PhotoSheetDialog.class.getSimpleName());
                 break;
         }
     }

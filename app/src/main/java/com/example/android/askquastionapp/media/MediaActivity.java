@@ -21,7 +21,7 @@ public class MediaActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media);
-        findViewById(R.id.record_music).setOnClickListener(v -> recordMusic(v));
+        findViewById(R.id.record_music).setOnClickListener(this::recordMusic);
         findViewById(R.id.play_music).setOnClickListener(v -> playMusic());
         findViewById(R.id.pre_video).setOnClickListener(v -> preVideo());
         findViewById(R.id.record_video).setOnClickListener(v -> recordVideo());
