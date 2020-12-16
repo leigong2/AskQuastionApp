@@ -16,6 +16,9 @@ public class ExampleUnitTest {
 
     @Test
     public void addition_isCorrect() {
+    }
+
+    private void du() {
         for (int j = 0; j < 10000; j++) {
             StringBuilder sb = new StringBuilder();
             int now = 0;

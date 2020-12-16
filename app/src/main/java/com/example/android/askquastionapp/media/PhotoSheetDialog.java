@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,6 +24,7 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -46,6 +46,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
     private RecyclerView mRecyclerView;
     private BottomSheetBehavior<View> mBehavior;
+    private ImageView mBitImageView;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -53,6 +54,8 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         View view = View.inflate(getContext(), getLayoutId(), null);
         dialog.setContentView(view);
         mRecyclerView = view.findViewById(R.id.photo_data);
+        mBitImageView = view.findViewById(R.id.big_image_view);
+        mBitImageView.setOnClickListener(v -> v.setVisibility(View.GONE));
         mRecyclerView.setMinimumHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
         initView();
         mBehavior = BottomSheetBehavior.from((View) view.getParent());
@@ -130,8 +133,16 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 PictureCheckManager.MediaData mediaData = mDataList.get(position);
                 Glide.with(imageView.getContext())
                         .load(mediaData.path)
-                        .apply(new RequestOptions().override(100, 100).fitCenter().placeholder(R.mipmap.place_loading))
+                        .apply(new RequestOptions().override(200, 200).fitCenter().placeholder(R.mipmap.place_loading))
                         .into(imageView);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mBitImageView.setVisibility(View.VISIBLE);
+                        mBitImageView.setImageResource(R.mipmap.place_loading);
+                        GlideUtils.getInstance().loadUrl(mediaData.path, mBitImageView, false, true);
+                    }
+                });
             }
 
             @Override
@@ -142,7 +153,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         Observable.just(1).map(new Function<Integer, Map<String, List<PictureCheckManager.MediaData>>>() {
             @Override
             public Map<String, List<PictureCheckManager.MediaData>> apply(Integer integer) throws Exception {
-                return PictureCheckManager.getInstance().getAllPictures(Environment.getExternalStorageDirectory());
+                return PictureCheckManager.getInstance().getNormalPictures();
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SimpleObserver<Map<String, List<PictureCheckManager.MediaData>>, Integer>(1, false) {
@@ -181,7 +192,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
         public CurrentItemDecoration() {
             paint = new Paint();
-            paint.setColor(Color.parseColor("#99000000"));
+            paint.setColor(Color.parseColor("#999999"));
 
             textPaint = new TextPaint();
             textPaint.setTypeface(Typeface.DEFAULT);

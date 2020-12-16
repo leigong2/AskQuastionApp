@@ -47,14 +47,55 @@ public class PictureCheckManager {
         cursor.close();
         LogUtils.i("zune: ", "cursor count = " + result.size() + ", time = " + (System.currentTimeMillis() - startTime));
 
-        startTime = System.currentTimeMillis();
-        Map<String, List<MediaData>> allPictures = getAllPictures(Environment.getExternalStorageDirectory());
-        LogUtils.i("zune: ", "allPictures count = " + allPictures.size() + ", time = " + (System.currentTimeMillis() - startTime));
+        getAllPictures();
         return result;
     }
 
-    public Map<String, List<MediaData>> getAllPictures(File dir) {
+    public Map<String, List<MediaData>> getAllPictures() {
         long startTime = System.currentTimeMillis();
+        Map<String, List<MediaData>> allPictures = getAllPictures(Environment.getExternalStorageDirectory());
+        LogUtils.i("zune: ", "allPictures count = " + allPictures.size() + ", time = " + (System.currentTimeMillis() - startTime));
+        ToastUtils.showLong("allPictures count = " + allPictures.size() + ", time = " + (System.currentTimeMillis() - startTime));
+        return allPictures;
+    }
+
+    public Map<String, List<MediaData>> getNormalPictures() {
+        File dir = Environment.getExternalStorageDirectory();
+        Map<String, List<MediaData>> resultMap = new HashMap<>();
+        if (dir.listFiles() == null) {
+            return resultMap;
+        }
+        for (File file : dir.listFiles()) {
+            String pathName = file.getPath().replaceAll(dir.getPath(), "");
+            if (pathName.startsWith("/Android")) {
+                continue;
+            }
+            if (pathName.startsWith("/tencent")) {
+                continue;
+            }
+            if (pathName.startsWith("/.")) {
+                continue;
+            }
+            if (file.isDirectory()) {
+                if (file.listFiles().length > 0) {
+                    resultMap.putAll(getAllPictures(file));
+                }
+            } else if (file.length() > 1024 * 100 && isImageFile(file)) {
+                MediaData mediaData = new MediaData();
+                mediaData.path = file.getPath();
+                String parent = file.getParent();
+                List<MediaData> group = resultMap.get(parent);
+                if (group == null) {
+                    group = new ArrayList<>();
+                }
+                group.add(mediaData);
+                resultMap.put(parent, group);
+            }
+        }
+        return resultMap;
+    }
+
+    private Map<String, List<MediaData>> getAllPictures(File dir) {
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
@@ -73,8 +114,6 @@ public class PictureCheckManager {
                 resultMap.put(parent, group);
             }
         }
-        LogUtils.i("zune: ", "allPictures count = " + resultMap.size() + ", time = " + (System.currentTimeMillis() - startTime));
-        ToastUtils.showLong("allPictures count = " + resultMap.size() + ", time = " + (System.currentTimeMillis() - startTime));
         return resultMap;
     }
 
