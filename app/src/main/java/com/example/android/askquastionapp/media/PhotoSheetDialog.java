@@ -24,15 +24,16 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.utils.GlideUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.phoenix.xphotoview.XPhotoView;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,8 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
     private RecyclerView mRecyclerView;
     private BottomSheetBehavior<View> mBehavior;
-    private ImageView mBitImageView;
+    private XPhotoView mBitImageView;
+    private View close;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -55,7 +57,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         dialog.setContentView(view);
         mRecyclerView = view.findViewById(R.id.photo_data);
         mBitImageView = view.findViewById(R.id.big_image_view);
-        mBitImageView.setOnClickListener(v -> v.setVisibility(View.GONE));
+        close = view.findViewById(R.id.close);
+        close.setOnClickListener(v -> {
+            v.setVisibility(View.GONE);
+            mBitImageView.setVisibility(View.GONE);
+        });
         mRecyclerView.setMinimumHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
         initView();
         mBehavior = BottomSheetBehavior.from((View) view.getParent());
@@ -139,8 +145,9 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     @Override
                     public void onClick(View view) {
                         mBitImageView.setVisibility(View.VISIBLE);
-                        mBitImageView.setImageResource(R.mipmap.place_loading);
-                        GlideUtils.getInstance().loadUrl(mediaData.path, mBitImageView, false, true);
+                        close.setVisibility(View.VISIBLE);
+                        File file = new File(mediaData.path);
+                        mBitImageView.setImage(file);
                     }
                 });
             }

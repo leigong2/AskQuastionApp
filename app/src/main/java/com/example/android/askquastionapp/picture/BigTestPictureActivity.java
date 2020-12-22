@@ -8,25 +8,24 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.android.askquastionapp.R;
-import com.phoenix.xphotoview.XPhotoView;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public class BigPictureActivity extends AppCompatActivity {
+public class BigTestPictureActivity extends AppCompatActivity {
     public static void start(Context context) {
-        Intent intent = new Intent(context, BigPictureActivity.class);
+        Intent intent = new Intent(context, BigTestPictureActivity.class);
         context.startActivity(intent);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_big_picture);
-        XPhotoView bigImageView = findViewById(R.id.big_image_view);
+        setContentView(R.layout.activity_big_test_picture);
+        PhotoImageView bigImageView = findViewById(R.id.big_image_view);
         try {
             InputStream inputStream = getResources().getAssets().open("world.jpg");
-            bigImageView.setImage(inputStream);
+            bigImageView.setImageResource(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }

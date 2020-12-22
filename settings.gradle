@@ -1,2 +1,3 @@
 include ':mathJaxLib'
 include ':app', ':jsoup'
+include ':xphotoview'

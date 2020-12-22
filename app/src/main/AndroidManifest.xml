@@ -185,6 +185,9 @@
         <activity
             android:name=".picture.BigPictureActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".picture.BigTestPictureActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".video.VideoTurnGifActivity" />
         <activity android:name=".media.MediaActivity" />
         <activity android:name=".media.VideoRecordActivity" />
