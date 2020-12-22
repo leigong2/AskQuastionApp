@@ -24,7 +24,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -63,9 +66,18 @@ public class PhotoImageView extends View {
     private ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            /*zune：这个坐标是相对屏幕的坐标，缩放的时候，注意要转换为相对画布的坐标**/
+            float cx = detector.getFocusX();
+            float cy = detector.getFocusY();
             scaleFactor *= detector.getScaleFactor();
-            scaleFactor = scaleFactor < 1f ? (float) 1f : scaleFactor > 5 ? 5 : scaleFactor;
-            LogUtils.i("zune: ", "scale = " + scaleFactor);
+            scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
+            if (scaleFactor >= 20) {
+                return false;
+            }
+            LogUtils.i("zune: ", "scale = " + scaleFactor + ", cx = " + cx + ", cy = " + cy);
+            updateViewRect(cx, cy, scaleFactor);
+            splitCanvasRect();
+            invalidate();
             return true;
         }
 
@@ -189,64 +201,92 @@ public class PhotoImageView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        /*zune：测量view宽高，目的，拿到view的最大显示位置：初始化图片网格，画布网格**/
         measuredWidth = getMeasuredWidth();
         measuredHeight = getMeasuredHeight();
-        mViewRect.set(0, 0, measuredWidth, (int) (1f * measuredWidth * mImageHeight / mImageWidth));
-        mImageRect.set(0, 0, mImageWidth, mImageHeight);
+        mViewRect.set(0, 0, measuredWidth, measuredHeight);
         splitImageRect();
         splitCanvasRect();
     }
 
+    private void updateViewRect(float cx, float cy, float scaleFactor) {
+        /*zune Todo 缩放后，重新设置可见的区域 **/
+        float absX = (cx - mViewRect.left) / scaleFactor;
+        float absY = (cy - mViewRect.top) / scaleFactor;
+        float leftScale = absX * (1 - scaleFactor);
+        float topScale = absY * (1 - scaleFactor);
+        mViewRect.set((int) leftScale, (int) topScale, (int) (leftScale + (measuredWidth * scaleFactor)), (int) (topScale + scaleFactor * measuredWidth * mImageHeight / mImageWidth));
+    }
+
     private void splitImageRect() {
+        /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
         mImageRectList.clear();
-        int imageHeight = this.mImageHeight;
-        int imageWidth = this.mImageWidth;
+        float imageHeight = this.mImageHeight;
+        float imageWidth = this.mImageWidth;
         if (imageHeight == 0 || imageWidth == 0) {
             return;
         }
-        int measuredHeight = (int) (1f * measuredWidth * imageHeight / imageWidth);
-        int width = (int) (measuredWidth);
-        int height = (int) (measuredHeight);
-        int hCount = imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1);
-        int vCount = imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1);
+        float width = measuredWidth;
+        float height = measuredHeight;
+        int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
+        int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
         for (int i = 0; i < hCount; i++) {
             for (int j = 0; j < vCount; j++) {
                 Rect rect = new Rect();
                 rect.left = (int) (1f * i * width);
-                rect.right = Math.min(rect.left + width, imageWidth);
+                rect.right = (int) Math.min(rect.left + width, imageWidth);
                 rect.top = (int) (1f * j * height);
-                rect.bottom = Math.min(rect.top + height, imageHeight);
+                rect.bottom = (int) Math.min(rect.top + height, imageHeight);
                 mImageRectList.add(rect);
             }
         }
     }
 
     private void splitCanvasRect() {
+        /*zune：绘制画布的网格，将画布分成与网格对应数量的碎片，画布是可以缩放的，因此，网格的大小也是变化的**/
         mCanvasRectList.clear();
-        int imageHeight = this.mImageHeight;
-        int imageWidth = this.mImageWidth;
+        float imageHeight = this.mImageHeight;
+        float imageWidth = this.mImageWidth;
         if (imageHeight == 0 || imageWidth == 0) {
             return;
         }
-        float measuredHeight = 1f * measuredWidth * imageHeight / imageWidth;
         float width = measuredWidth * getRadio();
         float height = measuredHeight * getRadio();
-        int hCount = imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1);
+        int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
         int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
         for (int i = 0; i < hCount; i++) {
             for (int j = 0; j < vCount; j++) {
                 RectF rect = new RectF();
-                rect.left = 1f * i * width;
+                rect.left = 1f * i * width + mViewRect.left;
                 rect.right = Math.min(rect.left + width, imageWidth * getRadio());
-                rect.top = 1f * j * height;
-                rect.bottom = Math.min(rect.top + height, imageHeight * getRadio());
+                rect.top = 1f * j * height + mViewRect.top + getMarginTop();
+                rect.bottom = Math.min(rect.top + height, imageHeight * getRadio() + getMarginTop());
                 mCanvasRectList.add(rect);
             }
         }
     }
 
+    private float getMarginTop() {
+        /*zune：整体视图view，在不缩放的情况下相对屏幕上方的距离(计算网格从哪里开始绘制)**/
+        return (measuredHeight - 1f * measuredWidth * mImageHeight / mImageWidth) / 2;
+    }
+
+    @Override
+    public void invalidate() {
+        /*zune：刷新布局，刷新的时候，记得先清理一下图片缓存**/
+        Iterator<Bitmap> iterator = memory.iterator();
+        while (iterator.hasNext()) {
+            Bitmap bitmap = iterator.next();
+            bitmap.recycle();
+            bitmap = null;
+            iterator.remove();
+        }
+        super.invalidate();
+    }
+
     private float getRadio() {
-        return 1f * measuredWidth / mImageWidth;
+        /*zune：图片缩小比例，和缩放比例不同，这个是指view可视矩形宽度与图片宽度的比率**/
+        return 1f * mViewRect.width() / mImageWidth;
     }
 
     @Override
@@ -255,19 +295,35 @@ public class PhotoImageView extends View {
         if (mDecoder == null) {
             return;
         }
-        resizeImageBitmap(canvas);
+        drawImageBitmap(canvas);
     }
 
-    private void resizeImageBitmap(Canvas canvas) {
-        options.inSampleSize = 8;
+    private Set<Bitmap> memory = new HashSet<>();
+
+    /*zune：核心的绘制业务逻辑，绘制之前先计算采样率，然后过滤掉不可视的矩形画布，最后将bitmap存入容器中，并根据矩形绘制出对应的图片**/
+    private void drawImageBitmap(Canvas canvas) {
+        options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
         for (int i = 0; i < mImageRectList.size(); i++) {
-            Bitmap bitmap = mDecoder.decodeRegion(mImageRectList.get(i), options);
             RectF rectF = mCanvasRectList.get(i);
+            if (!checkIsVisible(rectF)) {
+                continue;
+            }
+            Bitmap bitmap = mDecoder.decodeRegion(mImageRectList.get(i), options);
+            memory.add(bitmap);
             Rect rect = fromRectF(rectF);
             canvas.drawBitmap(bitmap, null, rect, null);
         }
     }
 
+    /*zune：检查画布是否超过了可视区域**/
+    private boolean checkIsVisible(RectF rectF) {
+        if (rectF.right < 0 || rectF.bottom < 0 || rectF.left > measuredWidth || rectF.top > measuredHeight) {
+            return false;
+        }
+        return true;
+    }
+
+    /*zune：将画布矩形区域转换为可绘制的矩形**/
     private Rect fromRectF(@NotNull RectF rectF) {
         int left = (int) rectF.left;
         int top = (int) rectF.top;
@@ -281,6 +337,4 @@ public class PhotoImageView extends View {
     private List<RectF> mCanvasRectList = new ArrayList<>();
 
     private Rect mViewRect = new Rect();
-
-    private Rect mImageRect = new Rect();
 }
