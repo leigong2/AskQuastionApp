@@ -5,9 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -17,6 +20,7 @@ import androidx.annotation.Nullable;
 
 import com.blankj.utilcode.util.LogUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.example.jsoup.GsonGetter;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,10 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -43,25 +44,33 @@ public class PhotoImageView extends View {
     private BitmapRegionDecoder mDecoder;
     private static final BitmapFactory.Options options = new BitmapFactory.Options();
     private float scaleFactor = 1f;
+    private Paint colorPaint;
 
     public PhotoImageView(Context context) {
         super(context);
-        setSampleSize();
+        init();
     }
 
     public PhotoImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        setSampleSize();
+        init();
     }
 
     public PhotoImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setSampleSize();
+        init();
     }
 
-    private void setSampleSize() {
-        options.inSampleSize = 8;
+    private void init() {
+        colorPaint = new Paint();
+        colorPaint.setAntiAlias(true);
+        colorPaint.setColor(Color.RED);
+        colorPaint.setStrokeWidth(3f);
+        colorPaint.setStyle(Paint.Style.STROKE);
     }
+
+    private float mCurX;
+    private float mCurY;
 
     private ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
@@ -72,12 +81,14 @@ public class PhotoImageView extends View {
             scaleFactor *= detector.getScaleFactor();
             scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
             if (scaleFactor >= 20) {
-                return false;
+                return true;
             }
+            mCurX = cx;
+            mCurY = cy;
             LogUtils.i("zune: ", "scale = " + scaleFactor + ", cx = " + cx + ", cy = " + cy);
             updateViewRect(cx, cy, scaleFactor);
             splitCanvasRect();
-            invalidate();
+            postInvalidate();
             return true;
         }
 
@@ -186,7 +197,7 @@ public class PhotoImageView extends View {
             @Override
             public void onNext(BitmapRegionDecoder bitmapRegionDecoder, Integer integer) {
                 mDecoder = bitmapRegionDecoder;
-                invalidate();
+                splitImageRect();
             }
         });
     }
@@ -216,30 +227,55 @@ public class PhotoImageView extends View {
         float leftScale = absX * (1 - scaleFactor);
         float topScale = absY * (1 - scaleFactor);
         mViewRect.set((int) leftScale, (int) topScale, (int) (leftScale + (measuredWidth * scaleFactor)), (int) (topScale + scaleFactor * measuredWidth * mImageHeight / mImageWidth));
+        LogUtils.i("zune: ", "cx = " + cx + ", cy = " + cy + ", scale = " + scaleFactor + ", viewRect = " + GsonGetter.getInstance().getGson().toJson(mViewRect));
     }
 
     private void splitImageRect() {
-        /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
-        mImageRectList.clear();
-        float imageHeight = this.mImageHeight;
-        float imageWidth = this.mImageWidth;
-        if (imageHeight == 0 || imageWidth == 0) {
+        if (mDecoder == null || measuredWidth == 0) {
             return;
         }
-        float width = measuredWidth;
-        float height = measuredHeight;
-        int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
-        int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
-        for (int i = 0; i < hCount; i++) {
-            for (int j = 0; j < vCount; j++) {
-                Rect rect = new Rect();
-                rect.left = (int) (1f * i * width);
-                rect.right = (int) Math.min(rect.left + width, imageWidth);
-                rect.top = (int) (1f * j * height);
-                rect.bottom = (int) Math.min(rect.top + height, imageHeight);
-                mImageRectList.add(rect);
+        Observable.just(1).map(new Function<Integer, Integer>() {
+            @Override
+            public Integer apply(Integer integer) throws Exception {
+                /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
+                options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
+                mImageRectList.clear();
+                girdBitmaps.clear();
+                float imageHeight = mImageHeight;
+                float imageWidth = mImageWidth;
+                if (imageHeight == 0 || imageWidth == 0) {
+                    return 1;
+                }
+                float width = measuredWidth;
+                float height = measuredHeight;
+                int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
+                int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
+                for (int i = 0; i < hCount; i++) {
+                    for (int j = 0; j < vCount; j++) {
+                        Rect rect = new Rect();
+                        rect.left = (int) (1f * i * width);
+                        rect.right = (int) Math.min(rect.left + width, imageWidth);
+                        rect.top = (int) (1f * j * height);
+                        rect.bottom = (int) Math.min(rect.top + height, imageHeight);
+                        mImageRectList.add(rect);
+                        Bitmap bitmap = mDecoder.decodeRegion(rect, options);
+                        girdBitmaps.add(bitmap);
+                    }
+                }
+                return 1;
             }
-        }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                    @Override
+                    public void onNext(Integer integer, Integer integer2) {
+                        invalidate();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        super.onError(e);
+                    }
+                });
     }
 
     private void splitCanvasRect() {
@@ -271,19 +307,6 @@ public class PhotoImageView extends View {
         return (measuredHeight - 1f * measuredWidth * mImageHeight / mImageWidth) / 2;
     }
 
-    @Override
-    public void invalidate() {
-        /*zune：刷新布局，刷新的时候，记得先清理一下图片缓存**/
-        Iterator<Bitmap> iterator = memory.iterator();
-        while (iterator.hasNext()) {
-            Bitmap bitmap = iterator.next();
-            bitmap.recycle();
-            bitmap = null;
-            iterator.remove();
-        }
-        super.invalidate();
-    }
-
     private float getRadio() {
         /*zune：图片缩小比例，和缩放比例不同，这个是指view可视矩形宽度与图片宽度的比率**/
         return 1f * mViewRect.width() / mImageWidth;
@@ -298,20 +321,17 @@ public class PhotoImageView extends View {
         drawImageBitmap(canvas);
     }
 
-    private Set<Bitmap> memory = new HashSet<>();
-
     /*zune：核心的绘制业务逻辑，绘制之前先计算采样率，然后过滤掉不可视的矩形画布，最后将bitmap存入容器中，并根据矩形绘制出对应的图片**/
     private void drawImageBitmap(Canvas canvas) {
-        options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
-        for (int i = 0; i < mImageRectList.size(); i++) {
+        colorPaint.setStyle(Paint.Style.STROKE);
+        colorPaint.setColor(Color.RED);
+        for (int i = 0; i < girdBitmaps.size(); i++) {
             RectF rectF = mCanvasRectList.get(i);
             if (!checkIsVisible(rectF)) {
                 continue;
             }
-            Bitmap bitmap = mDecoder.decodeRegion(mImageRectList.get(i), options);
-            memory.add(bitmap);
             Rect rect = fromRectF(rectF);
-            canvas.drawBitmap(bitmap, null, rect, null);
+            canvas.drawBitmap(girdBitmaps.get(i), null, rect, null);
         }
     }
 
@@ -337,4 +357,6 @@ public class PhotoImageView extends View {
     private List<RectF> mCanvasRectList = new ArrayList<>();
 
     private Rect mViewRect = new Rect();
+
+    private List<Bitmap> girdBitmaps = new ArrayList<>();
 }
