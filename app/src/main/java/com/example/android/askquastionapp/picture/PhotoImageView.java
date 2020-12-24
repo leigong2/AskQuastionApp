@@ -166,7 +166,13 @@ public class PhotoImageView extends View {
 
         @Override
         public boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY) {
-            LogUtils.i("zune: ", "scrollX = " + scrollX + ", scrollY = " + scrollY);
+            float left = mViewRect.left - scrollX;
+            float top = mViewRect.top - scrollY;
+            float right = mViewRect.right - scrollX;
+            float bottom = mViewRect.bottom - scrollY;
+            updateViewRect(left, top, right, bottom);
+            splitCanvasRect();
+            postInvalidate();
             return false;
         }
 
