@@ -141,7 +141,7 @@ public class PhotoImageView extends View {
             }
             if (bottom > maxY) {
                 bottom = maxY;
-                top = -getMarginTop();
+                top = - getMarginTop();
             }
         }
         mViewRect.set(left, top, right, bottom);
