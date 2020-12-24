@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -18,9 +17,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.blankj.utilcode.util.LogUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
-import com.example.jsoup.GsonGetter;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -69,24 +66,19 @@ public class PhotoImageView extends View {
         colorPaint.setStyle(Paint.Style.STROKE);
     }
 
-    private float mCurX;
-    private float mCurY;
-
     private ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             /*zune：这个坐标是相对屏幕的坐标，缩放的时候，注意要转换为相对画布的坐标**/
             float cx = detector.getFocusX();
             float cy = detector.getFocusY();
+            float oldScale = scaleFactor;
             scaleFactor *= detector.getScaleFactor();
             scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
             if (scaleFactor >= 20) {
                 return true;
             }
-            mCurX = cx;
-            mCurY = cy;
-            LogUtils.i("zune: ", "scale = " + scaleFactor + ", cx = " + cx + ", cy = " + cy);
-            updateViewRect(cx, cy, scaleFactor);
+            updateScaleViewRect(cx, cy, oldScale, scaleFactor);
             splitCanvasRect();
             postInvalidate();
             return true;
@@ -103,35 +95,28 @@ public class PhotoImageView extends View {
         }
     });
 
+    /*zune：* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     *                                                                                      l------------a-----o-l------------------
+     *
+     * L                                                                  --------------------------A-------------O----x------------------------------------
+     *
+     * L------------------------------------------------------------------j-------------O------------------X---------------------------------------------------------------
+     *
+     * left = -(x * scale  - x)
+     *
+     * left = -(x - mView.left) / oldScale * scale - x
+     *
+     *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  ***/
+    private void updateScaleViewRect(float cx, float cy, float oldScale, float scaleFactor) {
+        /*zune：-(x - mView.left) / oldScale * scale - x  **/
+        float left = -((cx - mViewRect.left) / oldScale * scaleFactor - cx);
+        float top = -((cy - mViewRect.top) / oldScale * scaleFactor - cy);
+        float right = left + measuredWidth * scaleFactor;
+        float bottom = top + measuredHeight * scaleFactor;
+        updateViewRect(left, top, right, bottom);
+    }
+
     private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
-        public boolean onMove(GestureDetector detector) {
-//            int moveX = (int) detector.getMoveX();
-//            int moveY = (int) detector.getMoveY();
-//            if (mImageWidth * scaleFactor > getMeasuredWidth()) {
-//                mRect.left -= moveX / scaleFactor;
-//                if (mRect.left < 0) {
-//                    mRect.left = 0;
-//                }
-//                mRect.right = (int) (mRect.left + getMeasuredWidth());
-//                if (mRect.right > mImageWidth * scaleFactor) {
-//                    mRect.right = (int) (mImageWidth * scaleFactor);
-//                    mRect.left = (int) (mImageWidth * scaleFactor - getMeasuredWidth());
-//                }
-//            }
-//            if (mImageHeight * scaleFactor > getMeasuredHeight()) {
-//                mRect.top -= moveY / scaleFactor;
-//                if (mRect.top < 0) {
-//                    mRect.top = 0;
-//                }
-//                mRect.bottom = (int) (mRect.top + getMeasuredHeight());
-//                if (mRect.bottom > mImageHeight * scaleFactor) {
-//                    mRect.bottom = (int) (mImageHeight * scaleFactor);
-//                    mRect.top = (int) (mImageHeight * scaleFactor - getMeasuredHeight());
-//                }
-//            }
-//            postInvalidate();
-            return true;
-        }
 
         @Override
         public boolean onDown(MotionEvent motionEvent) {
@@ -165,6 +150,10 @@ public class PhotoImageView extends View {
         }
     });
 
+    private void updateViewRect(float left, float top, float right, float bottom) {
+        mViewRect.set(left, top, right, bottom);
+    }
+
     public void setImageResource(int resource) {
         BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
         tmpOptions.inJustDecodeBounds = true;
@@ -183,23 +172,19 @@ public class PhotoImageView extends View {
     }
 
     public void setImageResource(InputStream inputStream) {
-        Observable.just(inputStream).map(new Function<InputStream, BitmapRegionDecoder>() {
+        Observable.just(inputStream).map(new Function<InputStream, Integer>() {
             @Override
-            public BitmapRegionDecoder apply(InputStream inputStream) throws Exception {
+            public Integer apply(InputStream inputStream) throws Exception {
                 BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
                 tmpOptions.inJustDecodeBounds = true;
                 BitmapFactory.decodeStream(inputStream, new Rect(), tmpOptions);
                 mImageWidth = tmpOptions.outWidth;
                 mImageHeight = tmpOptions.outHeight;
-                return BitmapRegionDecoder.newInstance(inputStream, false);
-            }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<BitmapRegionDecoder, Integer>(1, false) {
-            @Override
-            public void onNext(BitmapRegionDecoder bitmapRegionDecoder, Integer integer) {
-                mDecoder = bitmapRegionDecoder;
+                mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
                 splitImageRect();
+                return 1;
             }
-        });
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe();
     }
 
     @Override
@@ -215,19 +200,8 @@ public class PhotoImageView extends View {
         /*zune：测量view宽高，目的，拿到view的最大显示位置：初始化图片网格，画布网格**/
         measuredWidth = getMeasuredWidth();
         measuredHeight = getMeasuredHeight();
-        mViewRect.set(0, 0, measuredWidth, measuredHeight);
+        updateViewRect(0, 0, measuredWidth, measuredHeight);
         splitImageRect();
-        splitCanvasRect();
-    }
-
-    private void updateViewRect(float cx, float cy, float scaleFactor) {
-        /*zune Todo 缩放后，重新设置可见的区域 **/
-        float absX = (cx - mViewRect.left) / scaleFactor;
-        float absY = (cy - mViewRect.top) / scaleFactor;
-        float leftScale = absX * (1 - scaleFactor);
-        float topScale = absY * (1 - scaleFactor);
-        mViewRect.set((int) leftScale, (int) topScale, (int) (leftScale + (measuredWidth * scaleFactor)), (int) (topScale + scaleFactor * measuredWidth * mImageHeight / mImageWidth));
-        LogUtils.i("zune: ", "cx = " + cx + ", cy = " + cy + ", scale = " + scaleFactor + ", viewRect = " + GsonGetter.getInstance().getGson().toJson(mViewRect));
     }
 
     private void splitImageRect() {
@@ -239,7 +213,6 @@ public class PhotoImageView extends View {
             public Integer apply(Integer integer) throws Exception {
                 /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
                 options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
-                mImageRectList.clear();
                 girdBitmaps.clear();
                 float imageHeight = mImageHeight;
                 float imageWidth = mImageWidth;
@@ -257,7 +230,6 @@ public class PhotoImageView extends View {
                         rect.right = (int) Math.min(rect.left + width, imageWidth);
                         rect.top = (int) (1f * j * height);
                         rect.bottom = (int) Math.min(rect.top + height, imageHeight);
-                        mImageRectList.add(rect);
                         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
                         girdBitmaps.add(bitmap);
                     }
@@ -268,6 +240,7 @@ public class PhotoImageView extends View {
                 .subscribe(new SimpleObserver<Integer, Integer>(1, false) {
                     @Override
                     public void onNext(Integer integer, Integer integer2) {
+                        splitCanvasRect();
                         invalidate();
                     }
 
@@ -293,10 +266,27 @@ public class PhotoImageView extends View {
         for (int i = 0; i < hCount; i++) {
             for (int j = 0; j < vCount; j++) {
                 RectF rect = new RectF();
-                rect.left = 1f * i * width + mViewRect.left;
-                rect.right = Math.min(rect.left + width, imageWidth * getRadio());
-                rect.top = 1f * j * height + mViewRect.top + getMarginTop();
-                rect.bottom = Math.min(rect.top + height, imageHeight * getRadio() + getMarginTop());
+                rect.left = i * width + mViewRect.left;
+                rect.right = rect.left + width;
+                rect.top = j * height + getMarginTop() + mViewRect.top;
+                rect.bottom = rect.top + height;
+                if (girdBitmaps.size() <= mCanvasRectList.size()) {
+                    continue;
+                }
+                Bitmap bitmap = girdBitmaps.get(mCanvasRectList.size());
+                if (bitmap == null) {
+                    continue;
+                }
+                int bitmapWidth = bitmap.getWidth();
+                int normalBitmapWidth = girdBitmaps.get(0).getWidth();
+                if (bitmapWidth < normalBitmapWidth) {
+                    rect.right = rect.left + width * bitmapWidth / normalBitmapWidth;
+                }
+                int bitmapHeight = bitmap.getHeight();
+                int normalBitmapHeight = girdBitmaps.get(0).getHeight();
+                if (bitmapHeight < normalBitmapHeight) {
+                    rect.bottom = rect.top + height * bitmapHeight / normalBitmapHeight;
+                }
                 mCanvasRectList.add(rect);
             }
         }
@@ -304,12 +294,12 @@ public class PhotoImageView extends View {
 
     private float getMarginTop() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕上方的距离(计算网格从哪里开始绘制)**/
-        return (measuredHeight - 1f * measuredWidth * mImageHeight / mImageWidth) / 2;
+        return (measuredHeight * scaleFactor - 1f * measuredWidth * scaleFactor * mImageHeight / mImageWidth) / 2;
     }
 
     private float getRadio() {
         /*zune：图片缩小比例，和缩放比例不同，这个是指view可视矩形宽度与图片宽度的比率**/
-        return 1f * mViewRect.width() / mImageWidth;
+        return mViewRect.width() / mImageWidth;
     }
 
     @Override
@@ -352,11 +342,12 @@ public class PhotoImageView extends View {
         return new Rect(left, top, right, bottom);
     }
 
-    private List<Rect> mImageRectList = new ArrayList<>();
-
+    /*zune：画布的矩形区域**/
     private List<RectF> mCanvasRectList = new ArrayList<>();
 
-    private Rect mViewRect = new Rect();
+    /*zune：视图的矩形(也就是说，初始是整个可视区域，随着缩放进行，整个图片扩展到可视区域之外的矩形，这个矩形是相对屏幕的坐标)**/
+    private RectF mViewRect = new RectF();
 
+    /*zune：网格碎片的bitmap列表，其实可以把不可见的也加上，这样计算起来更加方便**/
     private List<Bitmap> girdBitmaps = new ArrayList<>();
 }
