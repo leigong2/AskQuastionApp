@@ -1,5 +1,6 @@
 package com.example.android.askquastionapp.picture;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,6 +15,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
@@ -116,6 +118,35 @@ public class PhotoImageView extends View {
         updateViewRect(left, top, right, bottom);
     }
 
+    private void updateViewRect(float left, float top, float right, float bottom) {
+        float minX = -scaleFactor * measuredWidth + measuredWidth;
+        float maxX = scaleFactor * measuredWidth;
+        float minY = (1 - scaleFactor) * measuredHeight + getMarginTop();
+        float maxY = scaleFactor * measuredHeight - getMarginTop();
+        if (left < minX) {
+            left = minX;
+            right = measuredWidth;
+        }
+        if (right > maxX) {
+            right = maxX;
+            left = 0;
+        }
+        if (scaleFactor < measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth)) {
+            top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
+            bottom = measuredHeight * scaleFactor - top;
+        } else {
+            if (top < minY) {
+                top = minY;
+                bottom = measuredHeight + getMarginTop();
+            }
+            if (bottom > maxY) {
+                bottom = maxY;
+                top = -getMarginTop();
+            }
+        }
+        mViewRect.set(left, top, right, bottom);
+    }
+
     private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
 
         @Override
@@ -146,13 +177,34 @@ public class PhotoImageView extends View {
 
         @Override
         public boolean onFling(MotionEvent currentEvent, MotionEvent motionEvent, float velocityX, float velocityY) {
+            /*zune：随便写的，具体函数待优化**/
+            velocityX /= 30;
+            velocityY /= 30;
+            /*zune：velocityX  x轴平滑移的距离，velocityY  y轴平滑移的距离**/
+            long duration = (long) ((0.5f + 0.0003f * (Math.sqrt(Math.pow(Math.abs(velocityX), 2) + Math.pow(Math.abs(velocityY), 2)))) * 1000);
+            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1f);
+            valueAnimator.setDuration(duration);
+            valueAnimator.setInterpolator(new LinearInterpolator());
+            float finalVelocityX = velocityX;
+            float finalVelocityY = velocityY;
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                float lastX = 0;
+                float lastY = 0;
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    float dx = finalVelocityX * value - lastX;
+                    float dy = finalVelocityY * value - lastY;
+                    lastX = dx;
+                    lastY = dy;
+                    onScroll(currentEvent, motionEvent, -dx, -dy);
+                }
+            });
+            valueAnimator.start();
             return false;
         }
     });
-
-    private void updateViewRect(float left, float top, float right, float bottom) {
-        mViewRect.set(left, top, right, bottom);
-    }
 
     public void setImageResource(int resource) {
         BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
@@ -204,6 +256,7 @@ public class PhotoImageView extends View {
         splitImageRect();
     }
 
+    /*zune：将图片分解为碎片**/
     private void splitImageRect() {
         if (mDecoder == null || measuredWidth == 0) {
             return;
