@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -27,7 +28,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -44,6 +49,7 @@ public class PhotoImageView extends View {
     private static final BitmapFactory.Options options = new BitmapFactory.Options();
     private float scaleFactor = 1f;
     private Paint colorPaint;
+    private ValueAnimator valueAnimator;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -141,7 +147,7 @@ public class PhotoImageView extends View {
             }
             if (bottom > maxY) {
                 bottom = maxY;
-                top = - getMarginTop();
+                top = -getMarginTop();
             }
         }
         mViewRect.set(left, top, right, bottom);
@@ -188,7 +194,11 @@ public class PhotoImageView extends View {
             velocityY /= 30;
             /*zune：velocityX  x轴平滑移的距离，velocityY  y轴平滑移的距离**/
             long duration = (long) ((0.5f + 0.0003f * (Math.sqrt(Math.pow(Math.abs(velocityX), 2) + Math.pow(Math.abs(velocityY), 2)))) * 1000);
-            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1f);
+            if (valueAnimator == null) {
+                valueAnimator = ValueAnimator.ofFloat(0, 1f);
+            } else {
+                valueAnimator.cancel();
+            }
             valueAnimator.setDuration(duration);
             valueAnimator.setInterpolator(new LinearInterpolator());
             float finalVelocityX = velocityX;
@@ -204,13 +214,14 @@ public class PhotoImageView extends View {
                     float dy = finalVelocityY * value - lastY;
                     lastX = dx;
                     lastY = dy;
-                    onScroll(currentEvent, motionEvent, -dx, -dy);
+                    //onScroll(currentEvent, motionEvent, -dx, -dy);
                 }
             });
             valueAnimator.start();
             return false;
         }
     });
+
 
     public void setImageResource(int resource) {
         BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
@@ -289,6 +300,7 @@ public class PhotoImageView extends View {
                         rect.right = (int) Math.min(rect.left + width, imageWidth);
                         rect.top = (int) (1f * j * height);
                         rect.bottom = (int) Math.min(rect.top + height, imageHeight);
+                        mBitmapRectList.add(rect);
                         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
                         girdBitmaps.add(bitmap);
                     }
@@ -349,7 +361,26 @@ public class PhotoImageView extends View {
                 mCanvasRectList.add(rect);
             }
         }
+        /*zune：将可视化的区域填充上bitmap，延迟200ms是为了不让卡顿感强烈**/
+        List<Rect> visibleRect = new ArrayList<>();
+        List<Integer> visibleCanvasRectF = new ArrayList<>();
+        for (int i = 0; i < mCanvasRectList.size(); i++) {
+            if (checkIsVisible(mCanvasRectList.get(i))) {
+                Rect rect = mBitmapRectList.get(i);
+                visibleRect.add(rect);
+                visibleCanvasRectF.add(i);
+            }
+        }
+        loadingHandler.removeCallbacksAndMessages(null);
+        loadingHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                decodeRealBitmap(visibleRect, visibleCanvasRectF);
+            }
+        }, 200);
     }
+
+    private Handler loadingHandler = new Handler();
 
     private float getMarginTop() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕上方的距离(计算网格从哪里开始绘制)**/
@@ -372,16 +403,73 @@ public class PhotoImageView extends View {
 
     /*zune：核心的绘制业务逻辑，绘制之前先计算采样率，然后过滤掉不可视的矩形画布，最后将bitmap存入容器中，并根据矩形绘制出对应的图片**/
     private void drawImageBitmap(Canvas canvas) {
-        colorPaint.setStyle(Paint.Style.STROKE);
-        colorPaint.setColor(Color.RED);
         for (int i = 0; i < girdBitmaps.size(); i++) {
             RectF rectF = mCanvasRectList.get(i);
             if (!checkIsVisible(rectF)) {
                 continue;
             }
-            Rect rect = fromRectF(rectF);
-            canvas.drawBitmap(girdBitmaps.get(i), null, rect, null);
+            canvas.drawBitmap(girdBitmaps.get(i), null, rectF, null);
+            canvas.drawRect(rectF, colorPaint);
+            for (Integer position : realBitmap.keySet()) {
+                if (i == position) {
+                    Bitmap bitmap = realBitmap.get(position);
+                    if (bitmap != null) {
+                        canvas.drawBitmap(bitmap, null, mCanvasRectList.get(i), null);
+                    }
+                    break;
+                }
+            }
         }
+        recycleBitmap();
+    }
+
+    /*zune：回收不可见的图片资源**/
+    private void recycleBitmap() {
+        for (int i = 0; i < mCanvasRectList.size(); i++) {
+            for (Integer position : realBitmap.keySet()) {
+                if (i == position) {
+                    Bitmap bitmap = realBitmap.get(position);
+                    if (bitmap != null && !checkIsVisible(mCanvasRectList.get(i))) {
+                        bitmap.recycle();
+                        bitmap = null;
+                        realBitmap.remove(position);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /*zune：回收所有图片资源**/
+    private void clearBitmaps() {
+        for (Integer position : realBitmap.keySet()) {
+            Bitmap bitmap = realBitmap.get(position);
+            if (bitmap != null) {
+                bitmap = null;
+            }
+        }
+        realBitmap.clear();
+    }
+
+    /*zune：加载真正的大图碎片**/
+    private void decodeRealBitmap(List<Rect> visibleRect, List<Integer> visiblePosition) {
+        Observable.just(visibleRect).map(new Function<List<Rect>, Integer>() {
+            @Override
+            public Integer apply(List<Rect> rects) throws Exception {
+                clearBitmaps();
+                for (int i = 0; i < rects.size(); i++) {
+                    options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
+                    Bitmap bitmap = mDecoder.decodeRegion(rects.get(i), options);
+                    realBitmap.put(visiblePosition.get(i), bitmap);
+                }
+                return 1;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+            @Override
+            public void onNext(Integer i, Integer j) {
+                postInvalidate();
+            }
+        });
     }
 
     /*zune：检查画布是否超过了可视区域**/
@@ -392,21 +480,18 @@ public class PhotoImageView extends View {
         return true;
     }
 
-    /*zune：将画布矩形区域转换为可绘制的矩形**/
-    private Rect fromRectF(@NotNull RectF rectF) {
-        int left = (int) rectF.left;
-        int top = (int) rectF.top;
-        int right = (int) rectF.right;
-        int bottom = (int) rectF.bottom;
-        return new Rect(left, top, right, bottom);
-    }
-
     /*zune：画布的矩形区域**/
     private List<RectF> mCanvasRectList = new ArrayList<>();
+
+    /*zune：对应画布的图片碎片的矩形区域**/
+    private List<Rect> mBitmapRectList = new ArrayList<>();
 
     /*zune：视图的矩形(也就是说，初始是整个可视区域，随着缩放进行，整个图片扩展到可视区域之外的矩形，这个矩形是相对屏幕的坐标)**/
     private RectF mViewRect = new RectF();
 
     /*zune：网格碎片的bitmap列表，其实可以把不可见的也加上，这样计算起来更加方便**/
     private List<Bitmap> girdBitmaps = new ArrayList<>();
+
+    /*zune：真正的大图碎片，保存起来，每个碎片，对应一个矩形区域**/
+    private Map<Integer, Bitmap> realBitmap = new HashMap<>();
 }
