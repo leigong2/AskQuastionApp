@@ -10,29 +10,27 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
+import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -49,7 +47,7 @@ public class PhotoImageView extends View {
     private static final BitmapFactory.Options options = new BitmapFactory.Options();
     private float scaleFactor = 1f;
     private Paint colorPaint;
-    private ValueAnimator valueAnimator;
+    private ValueAnimator filingAnimator;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -70,7 +68,7 @@ public class PhotoImageView extends View {
         colorPaint = new Paint();
         colorPaint.setAntiAlias(true);
         colorPaint.setColor(Color.RED);
-        colorPaint.setStrokeWidth(3f);
+        colorPaint.setStrokeWidth(1f);
         colorPaint.setStyle(Paint.Style.STROKE);
     }
 
@@ -80,15 +78,8 @@ public class PhotoImageView extends View {
             /*zune：这个坐标是相对屏幕的坐标，缩放的时候，注意要转换为相对画布的坐标**/
             float cx = detector.getFocusX();
             float cy = detector.getFocusY();
-            float oldScale = scaleFactor;
-            scaleFactor *= detector.getScaleFactor();
-            scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
-            if (scaleFactor >= 20) {
-                return true;
-            }
-            updateScaleViewRect(cx, cy, oldScale, scaleFactor);
-            splitCanvasRect();
-            postInvalidate();
+            float scale = detector.getScaleFactor();
+            PhotoImageView.this.onScale(cx, cy, scale);
             return true;
         }
 
@@ -102,6 +93,18 @@ public class PhotoImageView extends View {
 
         }
     });
+
+    private void onScale(float cx, float cy, float scale) {
+        float oldScale = scaleFactor;
+        scaleFactor *= scale;
+        scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
+        if (scaleFactor >= 20) {
+            return;
+        }
+        updateScaleViewRect(cx, cy, oldScale, scaleFactor);
+        splitCanvasRect();
+        postInvalidate();
+    }
 
     /*zune：* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      *                                                                                      l------------a-----o-l------------------
@@ -153,22 +156,7 @@ public class PhotoImageView extends View {
         mViewRect.set(left, top, right, bottom);
     }
 
-    private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
-
-        @Override
-        public boolean onDown(MotionEvent motionEvent) {
-            return false;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent motionEvent) {
-
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent motionEvent) {
-            return false;
-        }
+    private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
 
         @Override
         public boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY) {
@@ -182,63 +170,79 @@ public class PhotoImageView extends View {
             return false;
         }
 
-        @Override
-        public void onLongPress(MotionEvent motionEvent) {
+        private boolean isScaling;
 
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            if (isScaling) {
+                return super.onDoubleTap(e);
+            }
+            isScaling = true;
+            float x = e.getX();
+            float y = e.getY();
+            /*zune：超过8倍,再缩小**/
+            ValueAnimator scaleAnimator = ValueAnimator.ofFloat(scaleFactor, scaleFactor >= 8 ? 1 / scaleFactor : scaleFactor * (float) Math.sqrt(8));
+            scaleAnimator.setDuration(400);
+            scaleAnimator.setInterpolator(new LinearInterpolator());
+            scaleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    onScale(x, y, value / scaleFactor);
+                }
+            });
+            scaleAnimator.start();
+            BaseApplication.getInstance().getHandler().postDelayed(() -> isScaling = false, scaleAnimator.getDuration());
+            return super.onDoubleTap(e);
         }
 
         @Override
         public boolean onFling(MotionEvent currentEvent, MotionEvent motionEvent, float velocityX, float velocityY) {
-            /*zune：随便写的，具体函数待优化**/
-            velocityX /= 30;
-            velocityY /= 30;
-            /*zune：velocityX  x轴平滑移的距离，velocityY  y轴平滑移的距离**/
-            long duration = (long) ((0.5f + 0.0003f * (Math.sqrt(Math.pow(Math.abs(velocityX), 2) + Math.pow(Math.abs(velocityY), 2)))) * 1000);
-            if (valueAnimator == null) {
-                valueAnimator = ValueAnimator.ofFloat(0, 1f);
+            final long duration = getSplineFlingDuration((float) Math.hypot(velocityX, velocityY));
+            if (filingAnimator == null) {
+                filingAnimator = ValueAnimator.ofFloat(1f, 0);
             } else {
-                valueAnimator.cancel();
+                filingAnimator.cancel();
             }
-            valueAnimator.setDuration(duration);
-            valueAnimator.setInterpolator(new LinearInterpolator());
-            float finalVelocityX = velocityX;
-            float finalVelocityY = velocityY;
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            filingAnimator.setDuration(duration);
+            filingAnimator.setInterpolator(new LinearInterpolator());
+            filingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 float lastX = 0;
                 float lastY = 0;
 
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
                     float value = (float) valueAnimator.getAnimatedValue();
-                    float dx = finalVelocityX * value - lastX;
-                    float dy = finalVelocityY * value - lastY;
-                    lastX = dx;
-                    lastY = dy;
-                    //onScroll(currentEvent, motionEvent, -dx, -dy);
+                    float curDisX = (float) (getSplineFlingDistance(value * velocityX) * (velocityX < 0 ? 1 : -1));
+                    float curDisY = (float) (getSplineFlingDistance(value * velocityY) * (velocityY < 0 ? 1 : -1));
+                    if (lastX == 0 && lastY == 0) {
+                        lastX = curDisX;
+                        lastY = curDisY;
+                        return;
+                    }
+                    onScroll(currentEvent, motionEvent, lastX - curDisX, lastY - curDisY);
+                    lastX = curDisX;
+                    lastY = curDisY;
                 }
             });
-            valueAnimator.start();
+            filingAnimator.start();
             return false;
         }
-    });
 
-
-    public void setImageResource(int resource) {
-        BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
-        tmpOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(getResources(), resource);
-        mImageWidth = tmpOptions.outWidth;
-        mImageHeight = tmpOptions.outHeight;
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resource);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        try {
-            InputStream inputStream = getResources().openRawResource(resource);
-            mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
-        } catch (IOException e) {
-            e.printStackTrace();
+        /*zune：获取惯性滑动的时长的一个公式**/
+        private int getSplineFlingDuration(float velocity) {
+            final double l = Math.log(0.35f * Math.abs(velocity) / (ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f));
+            final double decelMinusOne = (float) (Math.log(0.78) / Math.log(0.9)) - 1.0;
+            return (int) (1000.0 * Math.exp(l / decelMinusOne));
         }
-    }
+
+        /*zune：获取惯性滑动的距离的一个公式**/
+        private double getSplineFlingDistance(float velocity) {
+            final double l = Math.log(0.35f * Math.abs(velocity) / (ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f));
+            final double decelMinusOne = (float) (Math.log(0.78) / Math.log(0.9)) - 1.0;
+            return ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f * Math.exp((float) (Math.log(0.78) / Math.log(0.9)) / decelMinusOne * l);
+        }
+    });
 
     public void setImageResource(InputStream inputStream) {
         Observable.just(inputStream).map(new Function<InputStream, Integer>() {
@@ -273,17 +277,21 @@ public class PhotoImageView extends View {
         splitImageRect();
     }
 
+    private boolean imageRequest;
+
     /*zune：将图片分解为碎片**/
     private void splitImageRect() {
-        if (mDecoder == null || measuredWidth == 0) {
+        if (mDecoder == null || measuredWidth == 0 || imageRequest) {
             return;
         }
+        imageRequest = true;
         Observable.just(1).map(new Function<Integer, Integer>() {
             @Override
             public Integer apply(Integer integer) throws Exception {
                 /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
                 options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
                 girdBitmaps.clear();
+                mBitmapRectList.clear();
                 float imageHeight = mImageHeight;
                 float imageWidth = mImageWidth;
                 if (imageHeight == 0 || imageWidth == 0) {
@@ -300,9 +308,9 @@ public class PhotoImageView extends View {
                         rect.right = (int) Math.min(rect.left + width, imageWidth);
                         rect.top = (int) (1f * j * height);
                         rect.bottom = (int) Math.min(rect.top + height, imageHeight);
-                        mBitmapRectList.add(rect);
                         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
                         girdBitmaps.add(bitmap);
+                        mBitmapRectList.add(rect);
                     }
                 }
                 return 1;
@@ -331,7 +339,10 @@ public class PhotoImageView extends View {
             return;
         }
         float width = measuredWidth * getRadio();
-        float height = measuredHeight * getRadio();
+        Bitmap tempBitmap = girdBitmaps.get(0);
+        int normalBitmapWidth = tempBitmap.getWidth();
+        int normalBitmapHeight = tempBitmap.getHeight();
+        float height = Math.min(measuredHeight * getRadio(), 1f * width * normalBitmapHeight / normalBitmapWidth);
         int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
         int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
         for (int i = 0; i < hCount; i++) {
@@ -349,12 +360,10 @@ public class PhotoImageView extends View {
                     continue;
                 }
                 int bitmapWidth = bitmap.getWidth();
-                int normalBitmapWidth = girdBitmaps.get(0).getWidth();
                 if (bitmapWidth < normalBitmapWidth) {
                     rect.right = rect.left + width * bitmapWidth / normalBitmapWidth;
                 }
                 int bitmapHeight = bitmap.getHeight();
-                int normalBitmapHeight = girdBitmaps.get(0).getHeight();
                 if (bitmapHeight < normalBitmapHeight) {
                     rect.bottom = rect.top + height * bitmapHeight / normalBitmapHeight;
                 }
@@ -426,13 +435,16 @@ public class PhotoImageView extends View {
     /*zune：回收不可见的图片资源**/
     private void recycleBitmap() {
         for (int i = 0; i < mCanvasRectList.size(); i++) {
-            for (Integer position : realBitmap.keySet()) {
+//            ConcurrentModificationException
+            Iterator<Integer> iterator = realBitmap.keySet().iterator();
+            while (iterator.hasNext()) {
+                Integer position = iterator.next();
                 if (i == position) {
                     Bitmap bitmap = realBitmap.get(position);
                     if (bitmap != null && !checkIsVisible(mCanvasRectList.get(i))) {
                         bitmap.recycle();
                         bitmap = null;
-                        realBitmap.remove(position);
+                        iterator.remove();
                     }
                     break;
                 }
@@ -442,7 +454,9 @@ public class PhotoImageView extends View {
 
     /*zune：回收所有图片资源**/
     private void clearBitmaps() {
-        for (Integer position : realBitmap.keySet()) {
+        Iterator<Integer> iterator = realBitmap.keySet().iterator();
+        while (iterator.hasNext()) {
+            Integer position = iterator.next();
             Bitmap bitmap = realBitmap.get(position);
             if (bitmap != null) {
                 bitmap = null;
