@@ -97,8 +97,8 @@ public class PhotoImageView extends View {
     private void onScale(float cx, float cy, float scale) {
         float oldScale = scaleFactor;
         scaleFactor *= scale;
-        scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 20 ? 20 : scaleFactor;
-        if (scaleFactor >= 20) {
+        scaleFactor = scaleFactor < 1f ? 1f : scaleFactor > 40 ? 40 : scaleFactor;
+        if (scaleFactor > 40) {
             return;
         }
         updateScaleViewRect(cx, cy, oldScale, scaleFactor);
@@ -420,7 +420,9 @@ public class PhotoImageView extends View {
             }
             canvas.drawBitmap(girdBitmaps.get(i), null, rectF, null);
             canvas.drawRect(rectF, colorPaint);
-            for (Integer position : realBitmap.keySet()) {
+            Iterator<Integer> iterator = realBitmap.keySet().iterator();
+            while (iterator.hasNext()) {
+                Integer position = iterator.next();
                 if (i == position) {
                     Bitmap bitmap = realBitmap.get(position);
                     if (bitmap != null) {
