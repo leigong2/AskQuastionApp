@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
     private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
 
-    public static String baseUrl = TextUtils.isEmpty(SPUtils.getInstance().getString("baseUrl")) ? "http://192.168.200.51" : SPUtils.getInstance().getString("baseUrl");
+    public static String baseUrl = TextUtils.isEmpty(SPUtils.getInstance().getString("baseUrl")) ? "http://192.168.200.62" : SPUtils.getInstance().getString("baseUrl");
 
     private String devolop, preProducation, production_blue, production, release, self, imgs;
     private List<String> mMainTags = new ArrayList<>();

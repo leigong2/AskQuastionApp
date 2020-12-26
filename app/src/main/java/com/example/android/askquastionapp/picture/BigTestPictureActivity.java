@@ -65,7 +65,7 @@ public class BigTestPictureActivity extends AppCompatActivity {
             }
         });
         try {
-            InputStream inputStream = getResources().getAssets().open("big_world.jpg");
+            InputStream inputStream = getResources().getAssets().open("world.jpg");
             bigImageView.setImageResource(inputStream);
         } catch (IOException e) {
             e.printStackTrace();

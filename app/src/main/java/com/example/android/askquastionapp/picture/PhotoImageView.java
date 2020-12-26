@@ -19,6 +19,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.LinearInterpolator;
+import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
@@ -48,6 +49,7 @@ public class PhotoImageView extends View {
     private float scaleFactor = 1f;
     private Paint colorPaint;
     private FillingValueAnimator filingAnimator;
+    private int orientation = LinearLayout.HORIZONTAL;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -127,30 +129,62 @@ public class PhotoImageView extends View {
         updateViewRect(left, top, right, bottom);
     }
 
+    /*zune：设置画布的边界**/
     private void updateViewRect(float left, float top, float right, float bottom) {
-        float minX = -scaleFactor * measuredWidth + measuredWidth;
-        float maxX = scaleFactor * measuredWidth;
+        float minX = (1 - scaleFactor) * measuredWidth + getMarginLeft();
+        float maxX = scaleFactor * measuredWidth - getMarginLeft();
         float minY = (1 - scaleFactor) * measuredHeight + getMarginTop();
         float maxY = scaleFactor * measuredHeight - getMarginTop();
-        if (left < minX) {
-            left = minX;
-            right = measuredWidth;
-        }
-        if (right > maxX) {
-            right = maxX;
-            left = 0;
-        }
-        if (scaleFactor < measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth)) {
-            top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
-            bottom = measuredHeight * scaleFactor - top;
+        float screenScale;
+        /*zune：对于宽图，各边界的处理**/
+        if (orientation == LinearLayout.HORIZONTAL) {
+            if (left < minX) {
+                left = minX;
+                right = measuredWidth;
+            }
+            if (right > maxX) {
+                right = maxX;
+                left = 0;
+            }
+            screenScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
+            if (scaleFactor < screenScale) {
+                /*zune：当高度还没有手机屏幕高，就固定死上下距离**/
+                top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
+                bottom = measuredHeight * scaleFactor - top;
+            } else {
+                if (top < minY) {
+                    top = minY;
+                    bottom = measuredHeight + getMarginTop();
+                }
+                if (bottom > maxY) {
+                    bottom = maxY;
+                    top = -getMarginTop();
+                }
+            }
         } else {
+            /*zune：对于长图，各边界的处理**/
             if (top < minY) {
                 top = minY;
-                bottom = measuredHeight + getMarginTop();
+                bottom = measuredHeight;
             }
             if (bottom > maxY) {
                 bottom = maxY;
-                top = -getMarginTop();
+                top = 0;
+            }
+            screenScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
+            if (scaleFactor < screenScale) {
+                /*zune：当宽度还没有手机屏幕宽，就固定死左右距离**/
+                left = (-measuredWidth * scaleFactor + measuredWidth) / 2;
+                right = measuredWidth * scaleFactor - left;
+            } else {
+                if (left < minX) {
+                    left = minX;
+                    right = measuredWidth + getMarginLeft();
+                }
+                if (right > maxX) {
+                    right = maxX;
+                    left = -getMarginLeft();
+                }
             }
         }
         mViewRect.set(left, top, right, bottom);
@@ -254,6 +288,11 @@ public class PhotoImageView extends View {
                 BitmapFactory.decodeStream(inputStream, new Rect(), tmpOptions);
                 mImageWidth = tmpOptions.outWidth;
                 mImageHeight = tmpOptions.outHeight;
+                if (mImageWidth >= mImageHeight) {
+                    orientation = LinearLayout.HORIZONTAL;
+                } else {
+                    orientation = LinearLayout.VERTICAL;
+                }
                 mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
                 splitImageRect();
                 return 1;
@@ -290,7 +329,11 @@ public class PhotoImageView extends View {
             @Override
             public Integer apply(Integer integer) throws Exception {
                 /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
-                options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
+                if (orientation == LinearLayout.HORIZONTAL) {
+                    options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
+                } else {
+                    options.inSampleSize = (int) (1 / scaleFactor * mImageHeight / measuredHeight);
+                }
                 girdBitmaps.clear();
                 mBitmapRectList.clear();
                 float imageHeight = mImageHeight;
@@ -323,8 +366,20 @@ public class PhotoImageView extends View {
                 .subscribe(new SimpleObserver<Integer, Integer>(1, false) {
                     @Override
                     public void onNext(Integer integer, Integer integer2) {
+                        if (orientation == LinearLayout.HORIZONTAL) {
+                            if (mImageHeight < measuredHeight) {
+                                /*zune：如果是超宽图，初始化的时候，默认将高度放大到屏幕高度**/
+                                onScale(0, measuredHeight / 2f, 1f * measuredHeight / mImageHeight * mImageWidth / measuredWidth);
+                                return;
+                            }
+                        } else {
+                            if (mImageWidth < measuredWidth) {
+                                /*zune：如果是超长图，初始化的时候，默认将宽度放大到屏幕宽度**/
+                                onScale(measuredWidth / 2f, 0, 1f * measuredWidth / mImageWidth * mImageHeight / measuredHeight);
+                                return;
+                            }
+                        }
                         splitCanvasRect();
-                        invalidate();
                     }
 
                     @Override
@@ -343,16 +398,22 @@ public class PhotoImageView extends View {
             return;
         }
         float width = measuredWidth * getRadio();
+        float height = measuredHeight * getRadio();
         Bitmap tempBitmap = girdBitmaps.get(0);
         int normalBitmapWidth = tempBitmap.getWidth();
         int normalBitmapHeight = tempBitmap.getHeight();
-        float height = Math.min(measuredHeight * getRadio(), 1f * width * normalBitmapHeight / normalBitmapWidth);
+        if (orientation == LinearLayout.VERTICAL) {
+            width = Math.min(measuredWidth * getRadio(), 1f * height * normalBitmapWidth / normalBitmapHeight);
+        }
+        if (orientation == LinearLayout.HORIZONTAL) {
+            height = Math.min(measuredHeight * getRadio(), 1f * width * normalBitmapHeight / normalBitmapWidth);
+        }
         int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
         int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
         for (int i = 0; i < hCount; i++) {
             for (int j = 0; j < vCount; j++) {
                 RectF rect = new RectF();
-                rect.left = i * width + mViewRect.left;
+                rect.left = i * width + getMarginLeft() + mViewRect.left;
                 rect.right = rect.left + width;
                 rect.top = j * height + getMarginTop() + mViewRect.top;
                 rect.bottom = rect.top + height;
@@ -395,14 +456,32 @@ public class PhotoImageView extends View {
 
     private Handler loadingHandler = new Handler();
 
+
+    private float getMarginLeft() {
+        /*zune：整体视图view，在不缩放的情况下相对屏幕左边的距离(计算网格从哪里开始绘制)**/
+        if (orientation == LinearLayout.VERTICAL) {
+            return (measuredWidth * scaleFactor - 1f * measuredHeight * scaleFactor * mImageWidth / mImageHeight) / 2;
+        } else {
+            return 0;
+        }
+    }
+
     private float getMarginTop() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕上方的距离(计算网格从哪里开始绘制)**/
-        return (measuredHeight * scaleFactor - 1f * measuredWidth * scaleFactor * mImageHeight / mImageWidth) / 2;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            return (measuredHeight * scaleFactor - 1f * measuredWidth * scaleFactor * mImageHeight / mImageWidth) / 2;
+        } else {
+            return 0;
+        }
     }
 
     private float getRadio() {
         /*zune：图片缩小比例，和缩放比例不同，这个是指view可视矩形宽度与图片宽度的比率**/
-        return mViewRect.width() / mImageWidth;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            return mViewRect.width() / mImageWidth;
+        } else {
+            return mViewRect.height() / mImageHeight;
+        }
     }
 
     @Override
@@ -416,6 +495,9 @@ public class PhotoImageView extends View {
 
     /*zune：核心的绘制业务逻辑，绘制之前先计算采样率，然后过滤掉不可视的矩形画布，最后将bitmap存入容器中，并根据矩形绘制出对应的图片**/
     private void drawImageBitmap(Canvas canvas) {
+        if (girdBitmaps.isEmpty() || mCanvasRectList.isEmpty()) {
+            return;
+        }
         for (int i = 0; i < girdBitmaps.size(); i++) {
             RectF rectF = mCanvasRectList.get(i);
             if (!checkIsVisible(rectF)) {
@@ -457,25 +539,11 @@ public class PhotoImageView extends View {
         }
     }
 
-    /*zune：回收所有图片资源**/
-    private void clearBitmaps() {
-        Iterator<Integer> iterator = realBitmap.keySet().iterator();
-        while (iterator.hasNext()) {
-            Integer position = iterator.next();
-            Bitmap bitmap = realBitmap.get(position);
-            if (bitmap != null) {
-                bitmap = null;
-            }
-        }
-        realBitmap.clear();
-    }
-
     /*zune：加载真正的大图碎片**/
     private void decodeRealBitmap(List<Rect> visibleRect, List<Integer> visiblePosition) {
         Observable.just(visibleRect).map(new Function<List<Rect>, Integer>() {
             @Override
             public Integer apply(List<Rect> rects) throws Exception {
-                clearBitmaps();
                 for (int i = 0; i < rects.size(); i++) {
                     options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
                     Bitmap bitmap = mDecoder.decodeRegion(rects.get(i), options);
