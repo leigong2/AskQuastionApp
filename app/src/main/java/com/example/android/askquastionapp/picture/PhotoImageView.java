@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.SensorManager;
+import android.media.ExifInterface;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -26,6 +27,9 @@ import androidx.annotation.Nullable;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -279,21 +283,44 @@ public class PhotoImageView extends View {
         }
     });
 
+    public void setFile(File file) {
+        try {
+            setImageResource(new FileInputStream(file), file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setImageResource(InputStream inputStream) {
+        setImageResource(inputStream, null);
+    }
+
+    public void setImageResource(InputStream inputStream, File file) {
         Observable.just(inputStream).map(new Function<InputStream, Integer>() {
             @Override
             public Integer apply(InputStream inputStream) throws Exception {
+                mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
                 BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
                 tmpOptions.inJustDecodeBounds = true;
-                BitmapFactory.decodeStream(inputStream, new Rect(), tmpOptions);
-                mImageWidth = tmpOptions.outWidth;
-                mImageHeight = tmpOptions.outHeight;
+                BitmapFactory.decodeStream(inputStream, null, tmpOptions);
+                if (tmpOptions.outHeight == -1 || tmpOptions.outWidth == -1) {
+                    if (file == null) {
+                        return 1;
+                    }
+                    ExifInterface exifInterface = new ExifInterface(file.getPath());
+                    mImageHeight = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH
+                            , ExifInterface.ORIENTATION_NORMAL);
+                    mImageWidth = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH
+                            , ExifInterface.ORIENTATION_NORMAL);
+                } else {
+                    mImageWidth = tmpOptions.outWidth;
+                    mImageHeight = tmpOptions.outHeight;
+                }
                 if (mImageWidth >= mImageHeight) {
                     orientation = LinearLayout.HORIZONTAL;
                 } else {
                     orientation = LinearLayout.VERTICAL;
                 }
-                mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
                 splitImageRect();
                 return 1;
             }
@@ -302,6 +329,9 @@ public class PhotoImageView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (imageRequest) {
+            return true;
+        }
         moveGestureDetector.onTouchEvent(event);   //平移
         scaleGestureDetector.onTouchEvent(event);    //双指缩放
         return true;
@@ -329,6 +359,7 @@ public class PhotoImageView extends View {
             @Override
             public Integer apply(Integer integer) throws Exception {
                 /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
                 if (orientation == LinearLayout.HORIZONTAL) {
                     options.inSampleSize = (int) (1 / scaleFactor * mImageWidth / measuredWidth);
                 } else {
@@ -360,6 +391,7 @@ public class PhotoImageView extends View {
                         }
                     }
                 }
+                imageRequest = false;
                 return 1;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())

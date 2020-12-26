@@ -3,6 +3,7 @@ package com.example.android.askquastionapp.picture;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -15,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.android.askquastionapp.R;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -65,9 +68,11 @@ public class BigTestPictureActivity extends AppCompatActivity {
             }
         });
         try {
-            InputStream inputStream = getResources().getAssets().open("world.jpg");
-            bigImageView.setImageResource(inputStream);
-        } catch (IOException e) {
+//            InputStream inputStream = getResources().getAssets().open("long_pic.jpg");
+//            bigImageView.setImageResource(inputStream);
+            File file  = new File(Environment.getExternalStorageDirectory(), "test.jpg");
+            bigImageView.setFile(file);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
