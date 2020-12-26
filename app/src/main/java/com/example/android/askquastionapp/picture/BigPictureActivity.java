@@ -25,7 +25,7 @@ public class BigPictureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_big_picture);
         XPhotoView bigImageView = findViewById(R.id.big_image_view);
         try {
-            InputStream inputStream = getResources().getAssets().open("world.jpg");
+            InputStream inputStream = getResources().getAssets().open("big_world.jpg");
             bigImageView.setImage(inputStream);
         } catch (IOException e) {
             e.printStackTrace();

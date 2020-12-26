@@ -312,6 +312,9 @@ public class PhotoImageView extends View {
                         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
                         girdBitmaps.add(bitmap);
                         mBitmapRectList.add(rect);
+                        if (onProgressCallBack != null) {
+                            onProgressCallBack.onPosition(1f * girdBitmaps.size() / (hCount * vCount));
+                        }
                     }
                 }
                 return 1;
@@ -438,7 +441,6 @@ public class PhotoImageView extends View {
     /*zune：回收不可见的图片资源**/
     private void recycleBitmap() {
         for (int i = 0; i < mCanvasRectList.size(); i++) {
-//            ConcurrentModificationException
             Iterator<Integer> iterator = realBitmap.keySet().iterator();
             while (iterator.hasNext()) {
                 Integer position = iterator.next();
@@ -512,9 +514,19 @@ public class PhotoImageView extends View {
     /*zune：真正的大图碎片，保存起来，每个碎片，对应一个矩形区域**/
     private Map<Integer, Bitmap> realBitmap = new HashMap<>();
 
-    public class FillingValueAnimator extends ValueAnimator {
+    public static class FillingValueAnimator extends ValueAnimator {
         float velocityX, velocityY;
         MotionEvent currentEvent, motionEvent;
         float lastX = 0, lastY = 0;
+    }
+
+    public interface OnProgressCallBack {
+        void onPosition(float progress);
+    }
+
+    private OnProgressCallBack onProgressCallBack;
+
+    public void setOnProgressCallBack(OnProgressCallBack onProgressCallBack) {
+        this.onProgressCallBack = onProgressCallBack;
     }
 }
