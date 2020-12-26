@@ -47,7 +47,7 @@ public class PhotoImageView extends View {
     private static final BitmapFactory.Options options = new BitmapFactory.Options();
     private float scaleFactor = 1f;
     private Paint colorPaint;
-    private ValueAnimator filingAnimator;
+    private FillingValueAnimator filingAnimator;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -198,33 +198,41 @@ public class PhotoImageView extends View {
 
         @Override
         public boolean onFling(MotionEvent currentEvent, MotionEvent motionEvent, float velocityX, float velocityY) {
+            //velocityX, 每秒向x轴移动的像素；velocityY, 每秒向y轴移动的速度
             final long duration = getSplineFlingDuration((float) Math.hypot(velocityX, velocityY));
             if (filingAnimator == null) {
-                filingAnimator = ValueAnimator.ofFloat(1f, 0);
-            } else {
-                filingAnimator.cancel();
+                filingAnimator = new FillingValueAnimator();
+                filingAnimator.setFloatValues(0, 1f);
+                filingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                        float value = (float) valueAnimator.getAnimatedValue();
+                        /*zune：时间 * 速度 / 4大概是移动距离**/
+                        float curDisX = -filingAnimator.getDuration() * value * filingAnimator.velocityX / 1000 / 4;
+                        float curDisY = -filingAnimator.getDuration() * value * filingAnimator.velocityY / 1000 / 4;
+                        if (filingAnimator.lastX == 0 && filingAnimator.lastY == 0) {
+                            filingAnimator.lastX = curDisX;
+                            filingAnimator.lastY = curDisY;
+                            return;
+                        }
+                        float dx = curDisX - filingAnimator.lastX;
+                        float dy = curDisY - filingAnimator.lastY;
+                        filingAnimator.lastX = curDisX;
+                        filingAnimator.lastY = curDisY;
+                        onScroll(filingAnimator.currentEvent, filingAnimator.motionEvent, dx, dy);
+                    }
+                });
+            } else if (filingAnimator.isRunning()) {
+                return false;
             }
+            filingAnimator.lastX = 0;
+            filingAnimator.lastY = 0;
+            filingAnimator.velocityX = velocityX;
+            filingAnimator.velocityY = velocityY;
+            filingAnimator.currentEvent = currentEvent;
+            filingAnimator.motionEvent = motionEvent;
             filingAnimator.setDuration(duration);
             filingAnimator.setInterpolator(new LinearInterpolator());
-            filingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                float lastX = 0;
-                float lastY = 0;
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    float value = (float) valueAnimator.getAnimatedValue();
-                    float curDisX = (float) (getSplineFlingDistance(value * velocityX) * (velocityX < 0 ? 1 : -1));
-                    float curDisY = (float) (getSplineFlingDistance(value * velocityY) * (velocityY < 0 ? 1 : -1));
-                    if (lastX == 0 && lastY == 0) {
-                        lastX = curDisX;
-                        lastY = curDisY;
-                        return;
-                    }
-                    onScroll(currentEvent, motionEvent, lastX - curDisX, lastY - curDisY);
-                    lastX = curDisX;
-                    lastY = curDisY;
-                }
-            });
             filingAnimator.start();
             return false;
         }
@@ -234,13 +242,6 @@ public class PhotoImageView extends View {
             final double l = Math.log(0.35f * Math.abs(velocity) / (ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f));
             final double decelMinusOne = (float) (Math.log(0.78) / Math.log(0.9)) - 1.0;
             return (int) (1000.0 * Math.exp(l / decelMinusOne));
-        }
-
-        /*zune：获取惯性滑动的距离的一个公式**/
-        private double getSplineFlingDistance(float velocity) {
-            final double l = Math.log(0.35f * Math.abs(velocity) / (ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f));
-            final double decelMinusOne = (float) (Math.log(0.78) / Math.log(0.9)) - 1.0;
-            return ViewConfiguration.getScrollFriction() * SensorManager.GRAVITY_EARTH * 39.37f * getResources().getDisplayMetrics().density * 160.0f * 0.84f * Math.exp((float) (Math.log(0.78) / Math.log(0.9)) / decelMinusOne * l);
         }
     });
 
@@ -508,4 +509,10 @@ public class PhotoImageView extends View {
 
     /*zune：真正的大图碎片，保存起来，每个碎片，对应一个矩形区域**/
     private Map<Integer, Bitmap> realBitmap = new HashMap<>();
+
+    public class FillingValueAnimator extends ValueAnimator {
+        float velocityX, velocityY;
+        MotionEvent currentEvent, motionEvent;
+        float lastX = 0, lastY = 0;
+    }
 }
