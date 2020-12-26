@@ -199,10 +199,36 @@ public class PhotoImageView extends View {
     }
 
     private void dispatchSingleViewRect(float left, float top, float right, float bottom) {
-        float minX = (1 - scaleFactor) * measuredWidth;
-        float maxX = scaleFactor * measuredWidth;
-        float minY = (1 - scaleFactor) * measuredHeight;
-        float maxY = scaleFactor * measuredHeight;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            float baseScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
+            float offsetTop = measuredHeight * (1 - scaleFactor) / 2f;
+            if (scaleFactor < baseScale) {
+                top = offsetTop;
+                bottom = top + scaleFactor * mImageHeight;
+            }
+            if (left < (1 - scaleFactor) * measuredWidth) {
+                left = (1 - scaleFactor) * measuredWidth;
+                right = measuredWidth;
+            }
+            if (right > scaleFactor * measuredWidth) {
+                right = scaleFactor * measuredWidth;
+                left = 0;
+            }
+        } else {
+            float baseScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
+            if (scaleFactor < baseScale) {
+                left = measuredWidth * (1 - scaleFactor) / 2f;
+                right = left + scaleFactor * mImageWidth;
+            }
+            if (top < (1 - scaleFactor) * measuredHeight) {
+                top = (1 - scaleFactor) * measuredHeight;
+                bottom = measuredHeight;
+            }
+            if (bottom > scaleFactor * measuredHeight) {
+                bottom = scaleFactor * measuredHeight;
+                top = 0;
+            }
+        }
         mViewRect.set(left, top, right, bottom);
     }
 
@@ -328,7 +354,7 @@ public class PhotoImageView extends View {
                     mImageWidth = tmpOptions.outWidth;
                     mImageHeight = tmpOptions.outHeight;
                 }
-                if (mImageWidth >= mImageHeight) {
+                if (1f * mImageWidth / measuredWidth >= 1f * mImageHeight / measuredHeight) {
                     orientation = LinearLayout.HORIZONTAL;
                 } else {
                     orientation = LinearLayout.VERTICAL;
