@@ -135,6 +135,10 @@ public class PhotoImageView extends View {
 
     /*zune：设置画布的边界**/
     private void updateViewRect(float left, float top, float right, float bottom) {
+        if (mImageWidth < measuredWidth && mImageHeight < measuredHeight) {
+            dispatchSingleViewRect(left, top, right, bottom);
+            return;
+        }
         float minX = (1 - scaleFactor) * measuredWidth + getMarginLeft();
         float maxX = scaleFactor * measuredWidth - getMarginLeft();
         float minY = (1 - scaleFactor) * measuredHeight + getMarginTop();
@@ -191,6 +195,14 @@ public class PhotoImageView extends View {
                 }
             }
         }
+        mViewRect.set(left, top, right, bottom);
+    }
+
+    private void dispatchSingleViewRect(float left, float top, float right, float bottom) {
+        float minX = (1 - scaleFactor) * measuredWidth;
+        float maxX = scaleFactor * measuredWidth;
+        float minY = (1 - scaleFactor) * measuredHeight;
+        float maxY = scaleFactor * measuredHeight;
         mViewRect.set(left, top, right, bottom);
     }
 
@@ -376,6 +388,10 @@ public class PhotoImageView extends View {
                 float height = measuredHeight;
                 int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
                 int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
+                if (hCount == 1 && vCount == 1) {
+                    dispatchSingleImage();
+                    return -1;
+                }
                 for (int i = 0; i < hCount; i++) {
                     for (int j = 0; j < vCount; j++) {
                         Rect rect = new Rect();
@@ -398,6 +414,10 @@ public class PhotoImageView extends View {
                 .subscribe(new SimpleObserver<Integer, Integer>(1, false) {
                     @Override
                     public void onNext(Integer integer, Integer integer2) {
+                        if (integer == -1) {
+                            splitCanvasRect();
+                            return;
+                        }
                         if (orientation == LinearLayout.HORIZONTAL) {
                             if (mImageHeight < measuredHeight) {
                                 /*zune：如果是超宽图，初始化的时候，默认将高度放大到屏幕高度**/
@@ -421,6 +441,21 @@ public class PhotoImageView extends View {
                 });
     }
 
+    private void dispatchSingleImage() {
+        Rect rect = new Rect();
+        rect.left = 0;
+        rect.right = mImageWidth;
+        rect.top = 0;
+        rect.bottom = mImageHeight;
+        Bitmap bitmap = mDecoder.decodeRegion(rect, options);
+        girdBitmaps.add(bitmap);
+        mBitmapRectList.add(rect);
+        if (onProgressCallBack != null) {
+            onProgressCallBack.onPosition(1);
+        }
+        imageRequest = false;
+    }
+
     private void splitCanvasRect() {
         /*zune：绘制画布的网格，将画布分成与网格对应数量的碎片，画布是可以缩放的，因此，网格的大小也是变化的**/
         mCanvasRectList.clear();
@@ -442,6 +477,10 @@ public class PhotoImageView extends View {
         }
         int hCount = (int) (imageWidth / measuredWidth + (imageWidth % measuredWidth == 0 ? 0 : 1));
         int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
+        if (hCount == 1 && vCount == 1) {
+            dispatchSingleCanvas();
+            return;
+        }
         for (int i = 0; i < hCount; i++) {
             for (int j = 0; j < vCount; j++) {
                 RectF rect = new RectF();
@@ -486,12 +525,30 @@ public class PhotoImageView extends View {
         }, 200);
     }
 
+    private void dispatchSingleCanvas() {
+        RectF rect = new RectF();
+        rect.left = mViewRect.left;
+        rect.right = rect.left + measuredWidth * scaleFactor;
+        rect.top = mViewRect.top;
+        rect.bottom = rect.top + measuredHeight * scaleFactor;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            rect.top = mViewRect.top + (measuredHeight - 1f * mImageHeight / mImageWidth * measuredWidth) / 2f * scaleFactor;
+            rect.bottom = rect.top + 1f * mImageHeight / mImageWidth * measuredWidth * scaleFactor;
+        }
+        if (orientation == LinearLayout.VERTICAL) {
+            rect.left = mViewRect.left + (measuredWidth - 1f * mImageWidth / mImageHeight * measuredHeight) / 2f * scaleFactor;
+            rect.right = rect.left + 1f * mImageWidth / mImageHeight * measuredHeight * scaleFactor;
+        }
+        mCanvasRectList.add(rect);
+        postInvalidate();
+    }
+
     private Handler loadingHandler = new Handler();
 
 
     private float getMarginLeft() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕左边的距离(计算网格从哪里开始绘制)**/
-        if (orientation == LinearLayout.VERTICAL) {
+        if (orientation == LinearLayout.VERTICAL && mImageHeight > measuredHeight) {
             return (measuredWidth * scaleFactor - 1f * measuredHeight * scaleFactor * mImageWidth / mImageHeight) / 2;
         } else {
             return 0;
@@ -500,7 +557,7 @@ public class PhotoImageView extends View {
 
     private float getMarginTop() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕上方的距离(计算网格从哪里开始绘制)**/
-        if (orientation == LinearLayout.HORIZONTAL) {
+        if (orientation == LinearLayout.HORIZONTAL && mImageWidth > measuredWidth) {
             return (measuredHeight * scaleFactor - 1f * measuredWidth * scaleFactor * mImageHeight / mImageWidth) / 2;
         } else {
             return 0;

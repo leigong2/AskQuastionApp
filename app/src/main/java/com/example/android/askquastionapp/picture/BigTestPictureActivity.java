@@ -68,10 +68,8 @@ public class BigTestPictureActivity extends AppCompatActivity {
             }
         });
         try {
-//            InputStream inputStream = getResources().getAssets().open("long_pic.jpg");
-//            bigImageView.setImageResource(inputStream);
-            File file  = new File(Environment.getExternalStorageDirectory(), "test.jpg");
-            bigImageView.setFile(file);
+            InputStream inputStream = getResources().getAssets().open("small_world.jpg");
+            bigImageView.setImageResource(inputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }

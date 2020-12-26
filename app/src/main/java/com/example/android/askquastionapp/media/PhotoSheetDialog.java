@@ -24,11 +24,11 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.phoenix.xphotoview.XPhotoView;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +47,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
     private RecyclerView mRecyclerView;
     private BottomSheetBehavior<View> mBehavior;
-    private XPhotoView mBitImageView;
+    private PhotoImageView mBitImageView;
     private View close;
 
     @Override
@@ -147,7 +147,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         mBitImageView.setVisibility(View.VISIBLE);
                         close.setVisibility(View.VISIBLE);
                         File file = new File(mediaData.path);
-                        mBitImageView.setImage(file);
+                        mBitImageView.setFile(file);
                     }
                 });
             }
