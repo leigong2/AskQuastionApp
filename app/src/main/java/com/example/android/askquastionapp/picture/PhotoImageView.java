@@ -58,6 +58,7 @@ public class PhotoImageView extends View {
     private Paint colorPaint;
     private FillingValueAnimator filingAnimator;
     private int orientation = LinearLayout.HORIZONTAL;
+    private ValueAnimator dismissAnimator;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -130,17 +131,20 @@ public class PhotoImageView extends View {
      * left = -(x - mView.left) / oldScale * scale - x
      *
      *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  ***/
+    private boolean isTopLimit;
+
     private void updateScaleViewRect(float cx, float cy, float oldScale, float scaleFactor) {
         /*zune：-(x - mView.left) / oldScale * scale - x  **/
         float left = -((cx - mViewRect.left) / oldScale * scaleFactor - cx);
         float top = -((cy - mViewRect.top) / oldScale * scaleFactor - cy);
         float right = left + measuredWidth * scaleFactor;
         float bottom = top + measuredHeight * scaleFactor;
-        updateViewRect(left, top, right, bottom);
+        updateViewRect(left, top, right, bottom, false);
     }
 
     /*zune：设置画布的边界**/
-    private void updateViewRect(float left, float top, float right, float bottom) {
+    private void updateViewRect(float left, float top, float right, float bottom, boolean byScroll) {
+        isTopLimit = false;
         if (mImageWidth < measuredWidth && mImageHeight < measuredHeight) {
             dispatchSingleViewRect(left, top, right, bottom);
             return;
@@ -165,6 +169,7 @@ public class PhotoImageView extends View {
                 /*zune：当高度还没有手机屏幕高，就固定死上下距离**/
                 top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
                 bottom = measuredHeight * scaleFactor - top;
+                isTopLimit = byScroll;
             } else {
                 if (top < minY) {
                     top = minY;
@@ -173,6 +178,7 @@ public class PhotoImageView extends View {
                 if (bottom > maxY) {
                     bottom = maxY;
                     top = -getMarginTop();
+                    isTopLimit = byScroll;
                 }
             }
         } else {
@@ -180,6 +186,7 @@ public class PhotoImageView extends View {
             if (top < minY) {
                 top = minY;
                 bottom = measuredHeight;
+                isTopLimit = byScroll;
             }
             if (bottom > maxY) {
                 bottom = maxY;
@@ -213,6 +220,7 @@ public class PhotoImageView extends View {
             if (scaleFactor < baseScale) {
                 top = -offsetTop;
                 bottom = top + scaleFactor * mImageHeight;
+                isTopLimit = true;
             } else {
                 float nowImageWidth = scaleFactor * measuredWidth;
                 float nowImageHeight = nowImageWidth * mImageHeight / mImageWidth;
@@ -224,6 +232,7 @@ public class PhotoImageView extends View {
                 }
                 if (top > maxTop) {
                     top = maxTop;
+                    isTopLimit = true;
                 }
                 bottom = top + scaleFactor * measuredHeight;
             }
@@ -262,23 +271,68 @@ public class PhotoImageView extends View {
             if (bottom > scaleFactor * measuredHeight) {
                 bottom = scaleFactor * measuredHeight;
                 top = 0;
+                isTopLimit = true;
             }
         }
         mViewRect.set(left, top, right, bottom);
     }
 
-    private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+    private boolean isDismiss;
 
-        @Override
-        public boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY) {
+    private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        private boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY, boolean byScroll) {
+            if (isDismiss) {
+                return false;
+            }
             float left = mViewRect.left - scrollX;
             float top = mViewRect.top - scrollY;
             float right = mViewRect.right - scrollX;
             float bottom = mViewRect.bottom - scrollY;
-            updateViewRect(left, top, right, bottom);
+            if (isTopLimit && scrollY < -DensityUtil.dp2px(30) && Math.abs(scrollY) > Math.abs(scrollX) && (dismissAnimator == null || !dismissAnimator.isRunning())) {
+                if (isDismiss) {
+                    return false;
+                }
+                isDismiss = true;
+                if (dismissAnimator == null) {
+                    dismissAnimator = ValueAnimator.ofFloat(1f, 0);
+                    dismissAnimator.setDuration(300);
+                } else if (dismissAnimator.isRunning()) {
+                    return false;
+                }
+                dismissAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                        float animatedValue = (float) valueAnimator.getAnimatedValue();
+                        setAlpha(animatedValue);
+                        setScaleX(animatedValue);
+                        setScaleY(animatedValue);
+                        setTranslationY(measuredHeight * (1 - animatedValue));
+                        if (animatedValue == 0) {
+                            setVisibility(GONE);
+                            setAlpha(1);
+                            setScaleX(1);
+                            setScaleY(1);
+                            setTranslationY(0);
+                            if (onProgressCallBack != null) {
+                                onProgressCallBack.onDismiss();
+                            }
+                            isDismiss = false;
+                            isTopLimit = false;
+                        }
+                    }
+                });
+                dismissAnimator.start();
+                return false;
+            }
+            updateViewRect(left, top, right, bottom, true);
             splitCanvasRect();
             postInvalidate();
             return false;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY) {
+            return onScroll(currentEvent, motionEvent, scrollX, scrollY, true);
         }
 
         private boolean isScaling;
@@ -317,6 +371,9 @@ public class PhotoImageView extends View {
                 filingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                        if (filingAnimator == null) {
+                            return;
+                        }
                         float value = (float) valueAnimator.getAnimatedValue();
                         /*zune：时间 * 速度 / 4大概是移动距离**/
                         float curDisX = -filingAnimator.getDuration() * value * filingAnimator.velocityX / 1000 / 4;
@@ -330,7 +387,7 @@ public class PhotoImageView extends View {
                         float dy = curDisY - filingAnimator.lastY;
                         filingAnimator.lastX = curDisX;
                         filingAnimator.lastY = curDisY;
-                        onScroll(filingAnimator.currentEvent, filingAnimator.motionEvent, dx, dy);
+                        onScroll(filingAnimator.currentEvent, filingAnimator.motionEvent, dx, dy, false);
                     }
                 });
             } else if (filingAnimator.isRunning()) {
@@ -420,7 +477,7 @@ public class PhotoImageView extends View {
         /*zune：测量view宽高，目的，拿到view的最大显示位置：初始化图片网格，画布网格**/
         measuredWidth = getMeasuredWidth();
         measuredHeight = getMeasuredHeight();
-        updateViewRect(0, 0, measuredWidth, measuredHeight);
+        updateViewRect(0, 0, measuredWidth, measuredHeight, false);
         splitImageRect();
     }
 
@@ -747,6 +804,11 @@ public class PhotoImageView extends View {
     private Map<Integer, Bitmap> realBitmap = new HashMap<>();
 
     public void release() {
+        setAlpha(1);
+        setScaleX(1);
+        setScaleY(1);
+        setTranslationY(0);
+        scaleFactor = 1f;
         try {
             if (mInputStream != null) {
                 mInputStream.close();
@@ -766,6 +828,16 @@ public class PhotoImageView extends View {
         measuredHeight = 0;
         imageRequest = false;
         mInputStream = null;
+        isTopLimit = false;
+        if (dismissAnimator != null) {
+            dismissAnimator.cancel();
+        }
+        dismissAnimator = null;
+        if (filingAnimator != null) {
+            filingAnimator.cancel();
+        }
+        filingAnimator = null;
+        isDismiss = false;
     }
 
     public static class FillingValueAnimator extends ValueAnimator {
@@ -775,7 +847,10 @@ public class PhotoImageView extends View {
     }
 
     public interface OnProgressCallBack {
-        void onPosition(float progress);
+        default void onPosition(float progress) {
+        }
+
+        void onDismiss();
     }
 
     private OnProgressCallBack onProgressCallBack;

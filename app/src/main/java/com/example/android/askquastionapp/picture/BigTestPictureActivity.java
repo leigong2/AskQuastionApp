@@ -62,6 +62,11 @@ public class BigTestPictureActivity extends AppCompatActivity {
                 msg.obj = progress;
                 mHandler.sendMessage(msg);
             }
+
+            @Override
+            public void onDismiss() {
+                finish();
+            }
         });
         try {
             InputStream inputStream = getResources().getAssets().open("long_pic.jpg");

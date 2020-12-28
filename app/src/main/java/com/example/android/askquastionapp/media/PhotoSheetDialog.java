@@ -62,6 +62,13 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             v.setVisibility(View.GONE);
             mBitImageView.setVisibility(View.GONE);
         });
+        mBitImageView.setOnProgressCallBack(new PhotoImageView.OnProgressCallBack() {
+            @Override
+            public void onDismiss() {
+                close.setVisibility(View.GONE);
+                mBitImageView.setVisibility(View.GONE);
+            }
+        });
         mRecyclerView.setMinimumHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
         initView();
         mBehavior = BottomSheetBehavior.from((View) view.getParent());
