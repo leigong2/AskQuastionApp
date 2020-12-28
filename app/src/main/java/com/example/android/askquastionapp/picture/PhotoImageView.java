@@ -15,6 +15,10 @@ import android.graphics.RectF;
 import android.hardware.SensorManager;
 import android.media.ExifInterface;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -35,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,6 +64,7 @@ public class PhotoImageView extends View {
     private FillingValueAnimator filingAnimator;
     private int orientation = LinearLayout.HORIZONTAL;
     private ValueAnimator dismissAnimator;
+    private TextPaint mTextPaint;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -83,6 +89,11 @@ public class PhotoImageView extends View {
         PathEffect effects = new DashPathEffect(new float[]{dp_1 * 5, dp_1 * 5, dp_1 * 5, dp_1 * 5}, dp_1);
         colorPaint.setPathEffect(effects);
         colorPaint.setStyle(Paint.Style.STROKE);
+
+        mTextPaint = new TextPaint();
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setColor(Color.RED);
+        mTextPaint.setTextSize(DensityUtil.dp2px(16));
     }
 
     private ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
@@ -186,11 +197,11 @@ public class PhotoImageView extends View {
             if (top < minY) {
                 top = minY;
                 bottom = measuredHeight;
-                isTopLimit = byScroll;
             }
             if (bottom > maxY) {
                 bottom = maxY;
                 top = 0;
+                isTopLimit = byScroll;
             }
             screenScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
             if (scaleFactor < screenScale) {
@@ -299,6 +310,7 @@ public class PhotoImageView extends View {
                 } else if (dismissAnimator.isRunning()) {
                     return false;
                 }
+                setBackgroundColor(Color.TRANSPARENT);
                 dismissAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -313,8 +325,8 @@ public class PhotoImageView extends View {
                             setScaleX(1);
                             setScaleY(1);
                             setTranslationY(0);
-                            if (onProgressCallBack != null) {
-                                onProgressCallBack.onDismiss();
+                            if (onDismissCallBack != null) {
+                                onDismissCallBack.onDismiss();
                             }
                             isDismiss = false;
                             isTopLimit = false;
@@ -532,8 +544,12 @@ public class PhotoImageView extends View {
                         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
                         girdBitmaps.add(bitmap);
                         mBitmapRectList.add(rect);
-                        if (onProgressCallBack != null) {
-                            onProgressCallBack.onPosition(1f * girdBitmaps.size() / (hCount * vCount));
+                        if (onDismissCallBack != null) {
+                            float progress = 1f * girdBitmaps.size() / (hCount * vCount);
+                            Message msg = new Message();
+                            msg.what = 1001;
+                            msg.obj = progress;
+                            loadingHandler.sendMessage(msg);
                         }
                     }
                 }
@@ -581,10 +597,8 @@ public class PhotoImageView extends View {
         Bitmap bitmap = mDecoder.decodeRegion(rect, options);
         girdBitmaps.add(bitmap);
         mBitmapRectList.add(rect);
-        if (onProgressCallBack != null) {
-            onProgressCallBack.onPosition(1);
-        }
         imageRequest = false;
+        loadingText = null;
     }
 
     private void splitCanvasRect() {
@@ -675,8 +689,22 @@ public class PhotoImageView extends View {
         postInvalidate();
     }
 
-    private Handler loadingHandler = new Handler();
-
+    private Handler loadingHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 1001) {
+                float progress = (float) msg.obj;
+                DecimalFormat df = new DecimalFormat("######0.00");
+                if (progress == 1) {
+                    loadingText = null;
+                } else {
+                    loadingText = df.format(progress * 100) + "%";
+                    postInvalidate();
+                }
+            }
+        }
+    };
 
     private float getMarginLeft() {
         /*zune：整体视图view，在不缩放的情况下相对屏幕左边的距离(计算网格从哪里开始绘制)**/
@@ -708,6 +736,10 @@ public class PhotoImageView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if (!TextUtils.isEmpty(loadingText)) {
+            canvas.drawText(loadingText, measuredWidth / 2f, measuredHeight / 2f, mTextPaint);
+            return;
+        }
         if (mDecoder == null) {
             return;
         }
@@ -838,6 +870,9 @@ public class PhotoImageView extends View {
         }
         filingAnimator = null;
         isDismiss = false;
+        setBackgroundColor(Color.BLACK);
+        loadingText = null;
+        loadingHandler.removeCallbacksAndMessages(null);
     }
 
     public static class FillingValueAnimator extends ValueAnimator {
@@ -846,16 +881,15 @@ public class PhotoImageView extends View {
         float lastX = 0, lastY = 0;
     }
 
-    public interface OnProgressCallBack {
-        default void onPosition(float progress) {
-        }
-
+    public interface OnDismissCallBack {
         void onDismiss();
     }
 
-    private OnProgressCallBack onProgressCallBack;
+    private OnDismissCallBack onDismissCallBack;
 
-    public void setOnProgressCallBack(OnProgressCallBack onProgressCallBack) {
-        this.onProgressCallBack = onProgressCallBack;
+    public void setOnDismissCallBack(OnDismissCallBack onDismissCallBack) {
+        this.onDismissCallBack = onDismissCallBack;
     }
+
+    private String loadingText;
 }

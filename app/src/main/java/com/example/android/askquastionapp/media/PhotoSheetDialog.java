@@ -62,7 +62,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             v.setVisibility(View.GONE);
             mBitImageView.setVisibility(View.GONE);
         });
-        mBitImageView.setOnProgressCallBack(new PhotoImageView.OnProgressCallBack() {
+        mBitImageView.setOnDismissCallBack(new PhotoImageView.OnDismissCallBack() {
             @Override
             public void onDismiss() {
                 close.setVisibility(View.GONE);
