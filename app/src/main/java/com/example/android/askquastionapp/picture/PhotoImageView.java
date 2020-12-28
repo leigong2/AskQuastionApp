@@ -7,7 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.PathEffect;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.SensorManager;
@@ -26,10 +28,12 @@ import androidx.annotation.Nullable;
 
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.scwang.smartrefresh.layout.util.DensityUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +78,9 @@ public class PhotoImageView extends View {
         colorPaint = new Paint();
         colorPaint.setAntiAlias(true);
         colorPaint.setColor(Color.RED);
-        colorPaint.setStrokeWidth(1f);
+        int dp_1 = DensityUtil.dp2px(1f);
+        PathEffect effects = new DashPathEffect(new float[]{dp_1 * 5, dp_1 * 5, dp_1 * 5, dp_1 * 5}, dp_1);
+        colorPaint.setPathEffect(effects);
         colorPaint.setStyle(Paint.Style.STROKE);
     }
 
@@ -198,13 +204,28 @@ public class PhotoImageView extends View {
         mViewRect.set(left, top, right, bottom);
     }
 
+    /*zune：画布碎片和图片碎片只有一张的情况，设置视图边界**/
     private void dispatchSingleViewRect(float left, float top, float right, float bottom) {
         if (orientation == LinearLayout.HORIZONTAL) {
+            /*zune：基准缩放标准是指的是针对横图，图片高度刚好缩放到可视高度的缩放量**/
             float baseScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
-            float offsetTop = measuredHeight * (1 - scaleFactor) / 2f;
+            float offsetTop = measuredHeight * (scaleFactor - 1) / 2f;
             if (scaleFactor < baseScale) {
-                top = offsetTop;
+                top = -offsetTop;
                 bottom = top + scaleFactor * mImageHeight;
+            } else {
+                float nowImageWidth = scaleFactor * measuredWidth;
+                float nowImageHeight = nowImageWidth * mImageHeight / mImageWidth;
+                float offsetY = (nowImageHeight - measuredHeight) / 2;
+                float minTop = -offsetTop - offsetY;
+                float maxTop = -offsetTop + offsetY;
+                if (top < minTop) {
+                    top = minTop;
+                }
+                if (top > maxTop) {
+                    top = maxTop;
+                }
+                bottom = top + scaleFactor * measuredHeight;
             }
             if (left < (1 - scaleFactor) * measuredWidth) {
                 left = (1 - scaleFactor) * measuredWidth;
@@ -216,9 +237,23 @@ public class PhotoImageView extends View {
             }
         } else {
             float baseScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
+            float offsetLeft = measuredWidth * (scaleFactor - 1) / 2f;
             if (scaleFactor < baseScale) {
-                left = measuredWidth * (1 - scaleFactor) / 2f;
+                left = -offsetLeft;
                 right = left + scaleFactor * mImageWidth;
+            } else {
+                float nowImageHeight = scaleFactor * measuredHeight;
+                float nowImageWidth = nowImageHeight * mImageWidth / mImageHeight;
+                float offsetX = (nowImageWidth - measuredWidth) / 2;
+                float minLeft = -offsetLeft - offsetX;
+                float maxLeft = -offsetLeft + offsetX;
+                if (left < minLeft) {
+                    left = minLeft;
+                }
+                if (left > maxLeft) {
+                    left = maxLeft;
+                }
+                right = left + scaleFactor * measuredHeight;
             }
             if (top < (1 - scaleFactor) * measuredHeight) {
                 top = (1 - scaleFactor) * measuredHeight;
@@ -299,7 +334,7 @@ public class PhotoImageView extends View {
                     }
                 });
             } else if (filingAnimator.isRunning()) {
-                return false;
+                filingAnimator.cancel();
             }
             filingAnimator.lastX = 0;
             filingAnimator.lastY = 0;
@@ -333,31 +368,35 @@ public class PhotoImageView extends View {
         setImageResource(inputStream, null);
     }
 
+    private InputStream mInputStream;
+
     public void setImageResource(InputStream inputStream, File file) {
+        if (mInputStream == inputStream) {
+            return;
+        }
+        release();
+        mInputStream = inputStream;
         Observable.just(inputStream).map(new Function<InputStream, Integer>() {
             @Override
             public Integer apply(InputStream inputStream) throws Exception {
-                mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
-                BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
-                tmpOptions.inJustDecodeBounds = true;
-                BitmapFactory.decodeStream(inputStream, null, tmpOptions);
-                if (tmpOptions.outHeight == -1 || tmpOptions.outWidth == -1) {
-                    if (file == null) {
+                if (file == null) {
+                    BitmapFactory.Options tmpOptions = new BitmapFactory.Options();
+                    tmpOptions.inJustDecodeBounds = true;
+                    BitmapFactory.decodeStream(inputStream, null, tmpOptions);
+                    mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
+                    if (tmpOptions.outHeight == -1 || tmpOptions.outWidth == -1) {
                         return 1;
+                    } else {
+                        mImageWidth = tmpOptions.outWidth;
+                        mImageHeight = tmpOptions.outHeight;
                     }
+                } else {
                     ExifInterface exifInterface = new ExifInterface(file.getPath());
                     mImageHeight = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH
                             , ExifInterface.ORIENTATION_NORMAL);
                     mImageWidth = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH
                             , ExifInterface.ORIENTATION_NORMAL);
-                } else {
-                    mImageWidth = tmpOptions.outWidth;
-                    mImageHeight = tmpOptions.outHeight;
-                }
-                if (1f * mImageWidth / measuredWidth >= 1f * mImageHeight / measuredHeight) {
-                    orientation = LinearLayout.HORIZONTAL;
-                } else {
-                    orientation = LinearLayout.VERTICAL;
+                    mDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
                 }
                 splitImageRect();
                 return 1;
@@ -392,6 +431,13 @@ public class PhotoImageView extends View {
         if (mDecoder == null || measuredWidth == 0 || imageRequest) {
             return;
         }
+        float widthWeight = 1f * mImageWidth / measuredWidth;
+        float heightWeight = 1f * mImageHeight / measuredHeight;
+        if (widthWeight >= heightWeight) {
+            orientation = LinearLayout.HORIZONTAL;
+        } else {
+            orientation = LinearLayout.VERTICAL;
+        }
         imageRequest = true;
         Observable.just(1).map(new Function<Integer, Integer>() {
             @Override
@@ -416,6 +462,7 @@ public class PhotoImageView extends View {
                 int vCount = (int) (imageHeight / measuredHeight + (imageHeight % measuredHeight == 0 ? 0 : 1));
                 if (hCount == 1 && vCount == 1) {
                     dispatchSingleImage();
+                    imageRequest = false;
                     return -1;
                 }
                 for (int i = 0; i < hCount; i++) {
@@ -467,6 +514,7 @@ public class PhotoImageView extends View {
                 });
     }
 
+    /*zune：画布碎片和图片碎片只有一张的情况，设置图片碎片**/
     private void dispatchSingleImage() {
         Rect rect = new Rect();
         rect.left = 0;
@@ -551,6 +599,7 @@ public class PhotoImageView extends View {
         }, 200);
     }
 
+    /*zune：画布碎片和图片碎片只有一张的情况，设置画布碎片**/
     private void dispatchSingleCanvas() {
         RectF rect = new RectF();
         rect.left = mViewRect.left;
@@ -609,7 +658,7 @@ public class PhotoImageView extends View {
     }
 
     /*zune：核心的绘制业务逻辑，绘制之前先计算采样率，然后过滤掉不可视的矩形画布，最后将bitmap存入容器中，并根据矩形绘制出对应的图片**/
-    private void drawImageBitmap(Canvas canvas) {
+    private synchronized void drawImageBitmap(Canvas canvas) {
         if (girdBitmaps.isEmpty() || mCanvasRectList.isEmpty()) {
             return;
         }
@@ -696,6 +745,28 @@ public class PhotoImageView extends View {
 
     /*zune：真正的大图碎片，保存起来，每个碎片，对应一个矩形区域**/
     private Map<Integer, Bitmap> realBitmap = new HashMap<>();
+
+    public void release() {
+        try {
+            if (mInputStream != null) {
+                mInputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        realBitmap.clear();
+        girdBitmaps.clear();
+        mBitmapRectList.clear();
+        mCanvasRectList.clear();
+        mDecoder = null;
+        options.inSampleSize = 0;
+        mImageWidth = 0;
+        mImageHeight = 0;
+        measuredWidth = 0;
+        measuredHeight = 0;
+        imageRequest = false;
+        mInputStream = null;
+    }
 
     public static class FillingValueAnimator extends ValueAnimator {
         float velocityX, velocityY;
