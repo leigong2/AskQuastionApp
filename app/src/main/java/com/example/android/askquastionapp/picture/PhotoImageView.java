@@ -142,7 +142,7 @@ public class PhotoImageView extends View {
      * left = -(x - mView.left) / oldScale * scale - x
      *
      *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  ***/
-    private boolean isTopLimit;
+    private boolean[] limitRect = new boolean[]{false, false, false, false};
 
     private void updateScaleViewRect(float cx, float cy, float oldScale, float scaleFactor) {
         /*zune：-(x - mView.left) / oldScale * scale - x  **/
@@ -155,9 +155,11 @@ public class PhotoImageView extends View {
 
     /*zune：设置画布的边界**/
     private void updateViewRect(float left, float top, float right, float bottom, boolean byScroll) {
-        isTopLimit = false;
+        for (int i = 0; i < 4; i++) {
+            limitRect[i] = false;
+        }
         if (mImageWidth < measuredWidth && mImageHeight < measuredHeight) {
-            dispatchSingleViewRect(left, top, right, bottom);
+            dispatchSingleViewRect(left, top, right, bottom, byScroll);
             return;
         }
         float minX = (1 - scaleFactor) * measuredWidth + getMarginLeft();
@@ -170,26 +172,30 @@ public class PhotoImageView extends View {
             if (left < minX) {
                 left = minX;
                 right = measuredWidth;
+                limitRect[2] = byScroll;
             }
             if (right > maxX) {
                 right = maxX;
                 left = 0;
+                limitRect[0] = byScroll;
             }
             screenScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
             if (scaleFactor < screenScale) {
                 /*zune：当高度还没有手机屏幕高，就固定死上下距离**/
                 top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
                 bottom = measuredHeight * scaleFactor - top;
-                isTopLimit = byScroll;
+                limitRect[1] = byScroll;
+                limitRect[3] = byScroll;
             } else {
                 if (top < minY) {
                     top = minY;
                     bottom = measuredHeight + getMarginTop();
+                    limitRect[3] = byScroll;
                 }
                 if (bottom > maxY) {
                     bottom = maxY;
                     top = -getMarginTop();
-                    isTopLimit = byScroll;
+                    limitRect[1] = byScroll;
                 }
             }
         } else {
@@ -197,25 +203,30 @@ public class PhotoImageView extends View {
             if (top < minY) {
                 top = minY;
                 bottom = measuredHeight;
+                limitRect[3] = byScroll;
             }
             if (bottom > maxY) {
                 bottom = maxY;
                 top = 0;
-                isTopLimit = byScroll;
+                limitRect[1] = byScroll;
             }
             screenScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
             if (scaleFactor < screenScale) {
                 /*zune：当宽度还没有手机屏幕宽，就固定死左右距离**/
                 left = (-measuredWidth * scaleFactor + measuredWidth) / 2;
                 right = measuredWidth * scaleFactor - left;
+                limitRect[0] = byScroll;
+                limitRect[2] = byScroll;
             } else {
                 if (left < minX) {
                     left = minX;
                     right = measuredWidth + getMarginLeft();
+                    limitRect[2] = byScroll;
                 }
                 if (right > maxX) {
                     right = maxX;
                     left = -getMarginLeft();
+                    limitRect[0] = byScroll;
                 }
             }
         }
@@ -223,7 +234,7 @@ public class PhotoImageView extends View {
     }
 
     /*zune：画布碎片和图片碎片只有一张的情况，设置视图边界**/
-    private void dispatchSingleViewRect(float left, float top, float right, float bottom) {
+    private void dispatchSingleViewRect(float left, float top, float right, float bottom, boolean byScroll) {
         if (orientation == LinearLayout.HORIZONTAL) {
             /*zune：基准缩放标准是指的是针对横图，图片高度刚好缩放到可视高度的缩放量**/
             float baseScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
@@ -231,7 +242,8 @@ public class PhotoImageView extends View {
             if (scaleFactor < baseScale) {
                 top = -offsetTop;
                 bottom = top + scaleFactor * mImageHeight;
-                isTopLimit = true;
+                limitRect[1] = byScroll;
+                limitRect[3] = byScroll;
             } else {
                 float nowImageWidth = scaleFactor * measuredWidth;
                 float nowImageHeight = nowImageWidth * mImageHeight / mImageWidth;
@@ -240,20 +252,23 @@ public class PhotoImageView extends View {
                 float maxTop = -offsetTop + offsetY;
                 if (top < minTop) {
                     top = minTop;
+                    limitRect[3] = byScroll;
                 }
                 if (top > maxTop) {
                     top = maxTop;
-                    isTopLimit = true;
+                    limitRect[1] = byScroll;
                 }
                 bottom = top + scaleFactor * measuredHeight;
             }
             if (left < (1 - scaleFactor) * measuredWidth) {
                 left = (1 - scaleFactor) * measuredWidth;
                 right = measuredWidth;
+                limitRect[2] = byScroll;
             }
             if (right > scaleFactor * measuredWidth) {
                 right = scaleFactor * measuredWidth;
                 left = 0;
+                limitRect[0] = byScroll;
             }
         } else {
             float baseScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
@@ -261,6 +276,8 @@ public class PhotoImageView extends View {
             if (scaleFactor < baseScale) {
                 left = -offsetLeft;
                 right = left + scaleFactor * mImageWidth;
+                limitRect[0] = byScroll;
+                limitRect[2] = byScroll;
             } else {
                 float nowImageHeight = scaleFactor * measuredHeight;
                 float nowImageWidth = nowImageHeight * mImageWidth / mImageHeight;
@@ -269,20 +286,23 @@ public class PhotoImageView extends View {
                 float maxLeft = -offsetLeft + offsetX;
                 if (left < minLeft) {
                     left = minLeft;
+                    limitRect[2] = byScroll;
                 }
                 if (left > maxLeft) {
                     left = maxLeft;
+                    limitRect[0] = byScroll;
                 }
                 right = left + scaleFactor * measuredHeight;
             }
             if (top < (1 - scaleFactor) * measuredHeight) {
                 top = (1 - scaleFactor) * measuredHeight;
                 bottom = measuredHeight;
+                limitRect[3] = byScroll;
             }
             if (bottom > scaleFactor * measuredHeight) {
                 bottom = scaleFactor * measuredHeight;
                 top = 0;
-                isTopLimit = true;
+                limitRect[1] = byScroll;
             }
         }
         mViewRect.set(left, top, right, bottom);
@@ -299,7 +319,21 @@ public class PhotoImageView extends View {
             float top = mViewRect.top - scrollY;
             float right = mViewRect.right - scrollX;
             float bottom = mViewRect.bottom - scrollY;
-            if (isTopLimit && scrollY < -DensityUtil.dp2px(30) && Math.abs(scrollY) > Math.abs(scrollX) && (dismissAnimator == null || !dismissAnimator.isRunning())) {
+            boolean isScrollHorizontal = Math.abs(scrollX) >= Math.abs(scrollY);
+            int dp_30 = DensityUtil.dp2px(30);
+            if (limitRect[0] && scrollX < -dp_30 && isScrollHorizontal) {
+                if (onDismissCallBack != null) {
+                    onDismissCallBack.onLeftLimit();
+                    return false;
+                }
+            }
+            if (limitRect[2] && scrollX > dp_30 && isScrollHorizontal) {
+                if (onDismissCallBack != null) {
+                    onDismissCallBack.onRightLimit();
+                    return false;
+                }
+            }
+            if (limitRect[1] && scrollY < -dp_30 && !isScrollHorizontal && (dismissAnimator == null || !dismissAnimator.isRunning())) {
                 if (isDismiss) {
                     return false;
                 }
@@ -320,16 +354,7 @@ public class PhotoImageView extends View {
                         setScaleY(animatedValue);
                         setTranslationY(measuredHeight * (1 - animatedValue));
                         if (animatedValue == 0) {
-                            setVisibility(GONE);
-                            setAlpha(1);
-                            setScaleX(1);
-                            setScaleY(1);
-                            setTranslationY(0);
-                            if (onDismissCallBack != null) {
-                                onDismissCallBack.onDismiss();
-                            }
-                            isDismiss = false;
-                            isTopLimit = false;
+                            dismiss();
                         }
                     }
                 });
@@ -602,6 +627,9 @@ public class PhotoImageView extends View {
     }
 
     private void splitCanvasRect() {
+        if (girdBitmaps.isEmpty()) {
+            return;
+        }
         /*zune：绘制画布的网格，将画布分成与网格对应数量的碎片，画布是可以缩放的，因此，网格的大小也是变化的**/
         mCanvasRectList.clear();
         float imageHeight = this.mImageHeight;
@@ -696,11 +724,10 @@ public class PhotoImageView extends View {
             if (msg.what == 1001) {
                 float progress = (float) msg.obj;
                 DecimalFormat df = new DecimalFormat("######0.00");
+                loadingText = df.format(progress * 100) + "%";
+                postInvalidate();
                 if (progress == 1) {
                     loadingText = null;
-                } else {
-                    loadingText = df.format(progress * 100) + "%";
-                    postInvalidate();
                 }
             }
         }
@@ -860,7 +887,9 @@ public class PhotoImageView extends View {
         measuredHeight = 0;
         imageRequest = false;
         mInputStream = null;
-        isTopLimit = false;
+        for (int i = 0; i < 4; i++) {
+            limitRect[i] = false;
+        }
         if (dismissAnimator != null) {
             dismissAnimator.cancel();
         }
@@ -881,13 +910,34 @@ public class PhotoImageView extends View {
         float lastX = 0, lastY = 0;
     }
 
-    public interface OnDismissCallBack {
+    public interface OnLimitCallBack {
         void onDismiss();
+
+        default void onLeftLimit() {
+        }
+
+        default void onRightLimit() {
+        }
     }
 
-    private OnDismissCallBack onDismissCallBack;
+    public void dismiss() {
+        setVisibility(GONE);
+        setAlpha(1);
+        setScaleX(1);
+        setScaleY(1);
+        setTranslationY(0);
+        if (onDismissCallBack != null) {
+            onDismissCallBack.onDismiss();
+        }
+        isDismiss = false;
+        for (int i = 0; i < 4; i++) {
+            limitRect[i] = false;
+        }
+    }
 
-    public void setOnDismissCallBack(OnDismissCallBack onDismissCallBack) {
+    private OnLimitCallBack onDismissCallBack;
+
+    public void setOnDismissCallBack(OnLimitCallBack onDismissCallBack) {
         this.onDismissCallBack = onDismissCallBack;
     }
 

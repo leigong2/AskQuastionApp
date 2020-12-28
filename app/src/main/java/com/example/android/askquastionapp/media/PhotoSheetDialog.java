@@ -49,6 +49,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     private BottomSheetBehavior<View> mBehavior;
     private PhotoImageView mBitImageView;
     private View close;
+    private int mClickPosition;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -62,11 +63,51 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             v.setVisibility(View.GONE);
             mBitImageView.setVisibility(View.GONE);
         });
-        mBitImageView.setOnDismissCallBack(new PhotoImageView.OnDismissCallBack() {
+        mBitImageView.setOnDismissCallBack(new PhotoImageView.OnLimitCallBack() {
+            long time = System.currentTimeMillis();
+
             @Override
             public void onDismiss() {
                 close.setVisibility(View.GONE);
                 mBitImageView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onLeftLimit() {
+                if (System.currentTimeMillis() - time < 500) {
+                    return;
+                }
+                time = System.currentTimeMillis();
+                if (mClickPosition - 1 >= 0) {
+                    mClickPosition--;
+                    if (mDataList.get(mClickPosition).path != null) {
+                        itemClick(mClickPosition);
+                    } else if (mClickPosition - 1 >= 0) {
+                        mClickPosition--;
+                        if (mDataList.get(mClickPosition).path != null) {
+                            itemClick(mClickPosition);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onRightLimit() {
+                if (System.currentTimeMillis() - time < 500) {
+                    return;
+                }
+                time = System.currentTimeMillis();
+                if (mClickPosition + 1 < mDataList.size()) {
+                    mClickPosition++;
+                    if (mDataList.get(mClickPosition).path != null) {
+                        itemClick(mClickPosition);
+                    } else if (mClickPosition + 1 < mDataList.size()) {
+                        mClickPosition++;
+                        if (mDataList.get(mClickPosition).path != null) {
+                            itemClick(mClickPosition);
+                        }
+                    }
+                }
             }
         });
         mRecyclerView.setMinimumHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
@@ -116,8 +157,17 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
             @NotNull
             private RecyclerView.ViewHolder getNormalViewHolder(@NonNull ViewGroup parent) {
-                return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(getLayoutId(), parent, false)) {
+                RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(getLayoutId(), parent, false)) {
                 };
+                ImageView imageView = viewHolder.itemView.findViewById(R.id.image_view);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickPosition = (int) view.getTag();
+                        itemClick(mClickPosition);
+                    }
+                });
+                return viewHolder;
             }
 
             private RecyclerView.ViewHolder getHeaderHolder(ViewGroup parent) {
@@ -148,15 +198,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         .load(mediaData.path)
                         .apply(new RequestOptions().override(200, 200).fitCenter().placeholder(R.mipmap.place_loading))
                         .into(imageView);
-                imageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mBitImageView.setVisibility(View.VISIBLE);
-                        close.setVisibility(View.VISIBLE);
-                        File file = new File(mediaData.path);
-                        mBitImageView.setFile(file);
-                    }
-                });
+                imageView.setTag(position);
             }
 
             @Override
@@ -176,6 +218,14 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         setData(stringListMap);
                     }
                 });
+    }
+
+    private void itemClick(int position) {
+        mBitImageView.dismiss();
+        mBitImageView.setVisibility(View.VISIBLE);
+        close.setVisibility(View.VISIBLE);
+        File file = new File(mDataList.get(position).path);
+        mBitImageView.setFile(file);
     }
 
     public void setData(Map<String, List<PictureCheckManager.MediaData>> datas) {

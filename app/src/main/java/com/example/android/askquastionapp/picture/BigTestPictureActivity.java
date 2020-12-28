@@ -3,9 +3,6 @@ package com.example.android.askquastionapp.picture;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,7 +23,7 @@ public class BigTestPictureActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_big_test_picture);
         PhotoImageView bigImageView = findViewById(R.id.big_image_view);
-        bigImageView.setOnDismissCallBack(new PhotoImageView.OnDismissCallBack() {
+        bigImageView.setOnDismissCallBack(new PhotoImageView.OnLimitCallBack() {
             @Override
             public void onDismiss() {
                 finish();
