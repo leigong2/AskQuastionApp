@@ -8,12 +8,13 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.jsoup.GsonGetter;
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.utils.ContactsUtils;
-import com.example.android.askquastionapp.utils.HttpUtils;
+import com.example.android.askquastionapp.aes.AES;
 import com.example.android.askquastionapp.contacts.PhoneBean;
+import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.HttpUtils;
+import com.example.jsoup.GsonGetter;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -106,13 +107,16 @@ public class ClearHolder {
                     @Override
                     public void onSubscribe(Disposable d) {
                     }
+
                     @Override
                     public void onNext(List<String> integer) {
                         stopLoad(integer, false);
                     }
+
                     @Override
                     public void onError(Throwable e) {
                     }
+
                     @Override
                     public void onComplete() {
                     }
@@ -143,13 +147,16 @@ public class ClearHolder {
                         @Override
                         public void onSubscribe(Disposable d) {
                         }
+
                         @Override
                         public void onNext(Integer integer) {
                             mAdapter.notifyDataSetChanged();
                         }
+
                         @Override
                         public void onError(Throwable e) {
                         }
+
                         @Override
                         public void onComplete() {
                         }
@@ -196,7 +203,13 @@ public class ClearHolder {
                 } else {
                     viewHolder = (ViewHolder) view.getTag();
                 }
-                viewHolder.pathText.setText(mDatas.get(position));
+                viewHolder.pathText.setText(AES.encryptToBase64(mDatas.get(position), s));
+                viewHolder.pathText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ((TextView) view).setText(AES.decryptFromBase64(((TextView) view).getText().toString(), s));
+                    }
+                });
                 return view;
             }
 
@@ -206,4 +219,5 @@ public class ClearHolder {
         };
     }
 
+    private String s = "$%^ETDFc)(KL:JD)";//key16位，可自行修改
 }

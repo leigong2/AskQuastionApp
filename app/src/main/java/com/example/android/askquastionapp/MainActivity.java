@@ -42,6 +42,7 @@ import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.aes.test;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.UpdateCompanyBean;
 import com.example.android.askquastionapp.besar.BesarActivity;
@@ -309,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("铃声获取");
         added.add("音视频");
         added.add("相册");
+        added.add("加密解密");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -511,6 +513,13 @@ public class MainActivity extends AppCompatActivity {
             case "相册":
                 PhotoSheetDialog dialog = new PhotoSheetDialog();
                 dialog.show(getSupportFragmentManager(), PhotoSheetDialog.class.getSimpleName());
+                break;
+            case "加密解密":
+                try {
+                    test.main(null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }

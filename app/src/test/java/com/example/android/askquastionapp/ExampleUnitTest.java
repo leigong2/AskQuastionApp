@@ -12,10 +12,11 @@ import java.util.Random;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class ExampleUnitTest {
-    private int sMoney = 2185714;
+    private int sMoney = 3801458;
 
     @Test
     public void addition_isCorrect() {
+        du();
     }
 
     private void du() {
@@ -28,6 +29,10 @@ public class ExampleUnitTest {
                 sb.append(test > 0 ? "+" + test : test);
             }
             sMoney += now;
+            if (sMoney > 3800000) {
+                System.out.println(sb + " = " + now + ", 还剩下：" + sMoney);
+                break;
+            }
             System.out.println(sb + " = " + now + ", 还剩下：" + sMoney);
         }
     }
