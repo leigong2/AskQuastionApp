@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -12,29 +13,38 @@ import java.util.Random;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class ExampleUnitTest {
-    private int sMoney = 3801458;
+    private int sMoney = 10000000;
+    private int count;
 
     @Test
     public void addition_isCorrect() {
-        du();
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()) {
+            String next = scanner.next();
+            try {
+                count = Integer.parseInt(next);
+                //du();
+                List<String> test = new ArrayList<>();
+                test.add("1877777777");
+                test.add("1877777776");
+                test.add("1877777775");
+                System.out.println(test.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void du() {
-        for (int j = 0; j < 10000; j++) {
-            StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < count; j++) {
             int now = 0;
-            for (int i = 0; i < 10; i++) {
-                int test = test();
-                now += test;
-                sb.append(test > 0 ? "+" + test : test);
-            }
+            int test = test();
+            now += test;
+            sb.append(test > 0 ? "+" + test : test);
             sMoney += now;
-            if (sMoney > 3800000) {
-                System.out.println(sb + " = " + now + ", 还剩下：" + sMoney);
-                break;
-            }
-            System.out.println(sb + " = " + now + ", 还剩下：" + sMoney);
         }
+        System.out.println("过程： " + sb + ", 还剩下：" + sMoney);
     }
 
     /*zune:

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#80000000"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/layout_poll_number"
+        android:id="@+id/poll_number_view"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center" />
+
+    <Button
+        android:id="@+id/button"
+        android:text="重置文字"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</FrameLayout>

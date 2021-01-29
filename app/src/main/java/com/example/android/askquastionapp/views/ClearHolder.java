@@ -204,10 +204,16 @@ public class ClearHolder {
                     viewHolder = (ViewHolder) view.getTag();
                 }
                 viewHolder.pathText.setText(AES.encryptToBase64(mDatas.get(position), s));
+                viewHolder.pathText.setSelected(false);
                 viewHolder.pathText.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        ((TextView) view).setText(AES.decryptFromBase64(((TextView) view).getText().toString(), s));
+                        view.setSelected(!view.isSelected());
+                        if (view.isSelected()) {
+                            ((TextView) view).setText(AES.decryptFromBase64(((TextView) view).getText().toString(), s));
+                        } else {
+                            ((TextView) view).setText(AES.encryptToBase64(((TextView) view).getText().toString(), s));
+                        }
                     }
                 });
                 return view;

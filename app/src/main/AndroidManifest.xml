@@ -203,6 +203,7 @@
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:theme="@style/DialogStyle" />
+        <activity android:name=".pollnumber.PollNumberActivity" />
     </application>
 
 </manifest>
