@@ -56,6 +56,7 @@ import com.example.android.askquastionapp.math.MathFunActivity;
 import com.example.android.askquastionapp.math.WebWordProblemActivity;
 import com.example.android.askquastionapp.media.MediaActivity;
 import com.example.android.askquastionapp.media.PhotoSheetDialog;
+import com.example.android.askquastionapp.ninepatch.NinePatchActivity;
 import com.example.android.askquastionapp.picture.BigPictureActivity;
 import com.example.android.askquastionapp.picture.BigTestPictureActivity;
 import com.example.android.askquastionapp.picture.ImageViewActivity;
@@ -313,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("相册");
         added.add("加密解密");
         added.add("数字滚动");
+        added.add("动态9patch");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -525,6 +527,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "数字滚动":
                 PollNumberActivity.start(this);
+                break;
+            case "动态9patch":
+                NinePatchActivity.start(this);
                 break;
         }
     }
