@@ -18,7 +18,7 @@ public class ScrollSpeedLinearLayoutManger extends LinearLayoutManager {
 
     public ScrollSpeedLinearLayoutManger(Context context) {
         super(context);
-        setSpeed(0.35f);
+        setSpeed(2.35f);
     }
 
     @Override

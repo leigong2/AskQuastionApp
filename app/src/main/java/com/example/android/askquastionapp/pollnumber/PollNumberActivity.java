@@ -14,7 +14,7 @@ import com.example.android.askquastionapp.R;
 import java.util.Random;
 
 public class PollNumberActivity extends AppCompatActivity {
-    private int mCount = 999;
+    private int mCount = 0;
     public static void start(Context context) {
         Intent intent = new Intent(context, PollNumberActivity.class);
         context.startActivity(intent);
@@ -26,27 +26,16 @@ public class PollNumberActivity extends AppCompatActivity {
         setTitle("数字滚轮测试");
         ViewGroup pollNumberView = findViewById(R.id.poll_number_view);
         PollNumberLayout pollNumber = new PollNumberLayout(pollNumberView);
-        pollNumber.setText(String.valueOf(mCount), false);
+        pollNumber.setNumber(mCount, false);
         findViewById(R.id.button).setOnClickListener(view -> {
             if (mCount == 0) {
                 mCount = 999;
-                pollNumber.setText("999", true);
+                pollNumber.setNumber(999, true);
                 return;
             }
             int i = new Random().nextInt(mCount);
-            pollNumber.setText(getStringContent(i), true);
+            pollNumber.setNumber(i, true);
             ToastUtils.showShort("目标数字是：" + i);
         });
-    }
-
-    private String getStringContent(int i) {
-        mCount = i;
-        if (i < 10) {
-            return "00" + i;
-        }
-        if (i < 100) {
-            return "0" + i;
-        }
-        return "" + i;
     }
 }

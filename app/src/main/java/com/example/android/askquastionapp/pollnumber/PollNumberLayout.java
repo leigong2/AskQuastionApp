@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,16 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PollNumberLayout {
+    private final View mView;
     private List<String> mData = new ArrayList<>();
     private DisTouchRecyclerView firstItem;
     private DisTouchRecyclerView secondItem;
     private DisTouchRecyclerView thirdItem;
-    private int mCurrentFirstPosition;
-    private int mCurrentSecondPosition;
-    private int mCurrentThirdPosition;
     private MediaPlayer mPlayer;
+    private static final int MAX_VALUE = 100;
 
     public PollNumberLayout(View view) {
+        mView = view;
         initView(view);
     }
 
@@ -48,10 +49,9 @@ public class PollNumberLayout {
         initRecyclerView(firstItem);
         initRecyclerView(secondItem);
         initRecyclerView(thirdItem);
-        mCurrentFirstPosition = mCurrentSecondPosition = mCurrentThirdPosition = Integer.MAX_VALUE / 2 - Integer.MAX_VALUE / 2 % 10;
-        firstItem.scrollToPosition(mCurrentFirstPosition);
-        secondItem.scrollToPosition(mCurrentFirstPosition);
-        thirdItem.scrollToPosition(mCurrentFirstPosition);
+        firstItem.scrollToPosition(10);
+        secondItem.scrollToPosition(10);
+        thirdItem.scrollToPosition(10);
         if (firstItem.getAdapter() != null) {
             firstItem.getAdapter().notifyDataSetChanged();
         }
@@ -112,60 +112,102 @@ public class PollNumberLayout {
 
         @Override
         public int getItemCount() {
-            return Integer.MAX_VALUE;
+            return MAX_VALUE;
         }
     }
 
-    public void setText(String number, boolean smooth) {
-        if (number == null) {
-            number = "";
+    public void setNumber(@IntRange(from = 0, to = 999) int number, boolean smooth) {
+        if (!smooth) {
+            mView.setAlpha(0);
+            BaseApplication.getInstance().getHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mView.setAlpha(1);
+                }
+            }, 300);
         }
-        for (int i = 3; i > 0; i--) {
-            int offsetScroll = mData.size() * 3;
-            switch (i) {
-                case 3:
-                    int position;
-                    if (number.length() < 3) {
-                        position = mCurrentFirstPosition + offsetScroll;
-                    } else {
-                        position = mCurrentFirstPosition + offsetScroll + mData.indexOf(String.valueOf(number.charAt(0)));
+        number = Math.min(999, Math.max(0, number));
+        firstItem.scrollToPosition(10);
+        secondItem.scrollToPosition(10);
+        thirdItem.scrollToPosition(10);
+        mView.post(new CustomRunnable(number, smooth) {
+            @Override
+            public void run(int number, boolean smooth) {
+                if (firstItem == null || secondItem == null || thirdItem == null) {
+                    return;
+                }
+                for (int i = 3; i > 0; i--) {
+                    int offsetScroll = mData.size() * 3;
+                    switch (i) {
+                        case 3:
+                            String selectString;
+                            int position;
+                            if (number < 100) {
+                                selectString = "0";
+                                position = 10 + offsetScroll;
+                            } else {
+                                selectString = String.valueOf(number / 100);
+                                position = 10 + offsetScroll + mData.indexOf(selectString);
+                            }
+                            if (smooth) {
+                                firstItem.smoothScrollToPosition(position);
+                            } else {
+                                firstItem.smoothScrollToPosition(position - offsetScroll);
+                            }
+                            break;
+                        case 2:
+                            int position2;
+                            String selectString2;
+                            if (number < 10) {
+                                selectString2 = "0";
+                                position2 = 10 + offsetScroll;
+                            } else {
+                                selectString2 = String.valueOf(number / 10 % 10);
+                                position2 = 10 + offsetScroll + mData.indexOf(selectString2);
+                            }
+                            if (smooth) {
+                                secondItem.smoothScrollToPosition(position2);
+                            } else {
+                                secondItem.smoothScrollToPosition(position2 - offsetScroll);
+                            }
+                            break;
+                        case 1:
+                            int position3;
+                            String selectString3 = "0";
+                            if (number == 0) {
+                                selectString3 = "0";
+                                position3 = 10 + offsetScroll;
+                            } else {
+                                selectString3 = String.valueOf(number % 10);
+                                position3 = 10 + offsetScroll + mData.indexOf(selectString3);
+                            }
+                            if (smooth) {
+                                thirdItem.smoothScrollToPosition(position3);
+                            } else {
+                                thirdItem.smoothScrollToPosition(position3 - offsetScroll);
+                            }
+                            break;
                     }
-                    mCurrentFirstPosition += offsetScroll;
-                    if (smooth) {
-                        firstItem.smoothScrollToPosition(position);
-                    } else {
-                        firstItem.smoothScrollToPosition(position - offsetScroll);
-                    }
-                    break;
-                case 2:
-                    int position2;
-                    if (number.length() < 2) {
-                        position2 = mCurrentSecondPosition + offsetScroll;
-                    } else {
-                        position2 = mCurrentSecondPosition + offsetScroll + mData.indexOf(String.valueOf(number.charAt(1)));
-                    }
-                    mCurrentSecondPosition += offsetScroll;
-                    if (smooth) {
-                        secondItem.smoothScrollToPosition(position2);
-                    } else {
-                        secondItem.smoothScrollToPosition(position2 - offsetScroll);
-                    }
-                    break;
-                case 1:
-                    int position3;
-                    if (number.length() < 1) {
-                        position3 = mCurrentThirdPosition + offsetScroll;
-                    } else {
-                        position3 = mCurrentThirdPosition + offsetScroll + mData.indexOf(String.valueOf(number.charAt(2)));
-                    }
-                    mCurrentThirdPosition += offsetScroll;
-                    if (smooth) {
-                        thirdItem.smoothScrollToPosition(position3);
-                    } else {
-                        thirdItem.smoothScrollToPosition(position3 - offsetScroll);
-                    }
-                    break;
+                }
             }
+        });
+    }
+    public static abstract class CustomRunnable implements Runnable {
+
+        private int number;
+        private boolean smooth;
+
+        public CustomRunnable(int number, boolean smooth) {
+            this.number = number;
+            this.smooth = smooth;
+        }
+
+        public abstract void run(int number, boolean smooth);
+
+        @Override
+        public void run() {
+            run(number, smooth);
         }
     }
+
 }
