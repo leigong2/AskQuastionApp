@@ -9,7 +9,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:padding="5dp"
+        android:paddingTop="5dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:paddingBottom="15dp"
         android:layout_margin="10dp"
         android:text="我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼我是一条鱼" />
 

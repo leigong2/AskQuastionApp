@@ -25,10 +25,10 @@ class NinePatchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nine_patch)
-        val file = File(Environment.getExternalStorageDirectory(), "test.png")
-        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+        val fileInputStream = resources.assets.open("test_nine_patch.png")
+        val bitmap = BitmapFactory.decodeStream(fileInputStream)
         val chunk: ByteBuffer = NinePatchUtil.getByteBufferFixed(12, 12, 13, 13)
-        findViewById<TextView>(R.id.bg_test_text).background = NinePatchDrawable(resources, bitmap, NinePatchUtil.bytebuffer2ByteArray(chunk), Rect(), file.absolutePath)
+        findViewById<TextView>(R.id.bg_test_text).background = NinePatchDrawable(resources, bitmap, NinePatchUtil.bytebuffer2ByteArray(chunk), Rect(), "test_nine_patch.png")
 //        findViewById<TextView>(R.id.bg_test_text).setBackgroundResource(R.drawable.test)
     }
 
