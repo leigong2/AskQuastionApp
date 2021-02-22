@@ -2,6 +2,7 @@ package com.example.android.askquastionapp.scan;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.zxing.BarcodeFormat;
@@ -12,6 +13,8 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -103,28 +106,13 @@ public class CapturePictureUtil {
         Observable.just(bitmap).map(new Function<Bitmap, String>() {
             @Override
             public String apply(Bitmap bitmap) throws Exception {
-                Result result = null;
-                RGBLuminanceSource source = null;
-                try {
-                    int width = bitmap.getWidth();
-                    int height = bitmap.getHeight();
-                    int[] pixels = new int[width * height];
-                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                    source = new RGBLuminanceSource(width, height, pixels);
-                    result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINTS);
-                    return result.getText();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (source != null) {
-                        try {
-                            result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), HINTS);
-                            return result.getText();
-                        } catch (Throwable e2) {
-                            e2.printStackTrace();
-                        }
+                for (int i = 0; i < 4; i++) {
+                    String s = bitmap2Result(rotate(bitmap, i * 90));
+                    if (s != null) {
+                        return s;
                     }
-                    return null;
                 }
+                return null;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SimpleObserver<String, OnResultListener>(onResultListener, false) {
@@ -143,6 +131,45 @@ public class CapturePictureUtil {
                         }
                     }
                 });
+    }
+
+    @Nullable
+    private static String bitmap2Result(Bitmap bitmap) {
+        if (bitmap == null) {
+            return null;
+        }
+        Result result = null;
+        RGBLuminanceSource source = null;
+        try {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            int[] pixels = new int[width * height];
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+            source = new RGBLuminanceSource(width, height, pixels);
+            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINTS);
+            return result.getText();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            if (source != null) {
+                try {
+                    result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), HINTS);
+                    return result.getText();
+                } catch (Throwable e2) {
+                    e2.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Bitmap rotate(Bitmap bitmap, int degree) {
+        if (degree != 0) {
+            Matrix matrix = new Matrix();
+            matrix.setRotate(degree);
+            Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            return bmp;
+        }
+        return bitmap;
     }
 
     public interface OnResultListener {

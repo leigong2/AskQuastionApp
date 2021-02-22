@@ -76,6 +76,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             @Override
             public boolean onLongClick(View view) {
                 if (view instanceof PhotoImageView) {
+                    ToastUtils.showShort("已捕获，正在扫描");
                     Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
                     CapturePictureUtil.parseQCodeInBitmap(bitmap, new CapturePictureUtil.OnResultListener() {
                         @Override

@@ -8,11 +8,13 @@ import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.SensorManager;
+import android.media.ExifInterface;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -63,6 +65,7 @@ abstract class AbstractPhotoImageView extends View {
     private FillingValueAnimator filingAnimator; // 惯性动画
     private int orientation = LinearLayout.HORIZONTAL;
     private TextPaint mTextPaint;  //画文字的画笔
+    private File mFile;
 
     public AbstractPhotoImageView(Context context) {
         super(context);
@@ -452,6 +455,7 @@ abstract class AbstractPhotoImageView extends View {
         }
         release();
         mInputStream = inputStream;
+        mFile = file;
         Observable.just(inputStream).map(new Function<InputStream, Integer>() {
             @Override
             public Integer apply(InputStream inputStream) throws Exception {
@@ -485,22 +489,62 @@ abstract class AbstractPhotoImageView extends View {
     }
 
     public Bitmap getImageBitmap() {
-        if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0) {
+        if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0 || mFile == null) {
             return null;
         }
-        Rect rect = new Rect();
-        rect.left = 0;
-        rect.right = mImageWidth;
-        rect.top = 0;
-        rect.bottom = mImageHeight;
-        /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        if (orientation == LinearLayout.HORIZONTAL) {
-            options.inSampleSize = (int) (1 / mImageWidth / measuredWidth);
-        } else {
-            options.inSampleSize = (int) (1 / mImageHeight / measuredHeight);
+        try {
+            // 从指定路径下读取图片，并获取其EXIF信息
+            InputStream inputStream = new FileInputStream(mFile);
+            ExifInterface exifInterface = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                exifInterface = new ExifInterface(inputStream);
+            } else {
+                exifInterface = new ExifInterface(mFile.getPath());
+            }
+            // 获取图片的旋转信息
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+            int degree = 0;
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+                default:
+                    break;
+            }
+
+            Rect rect = new Rect();
+            rect.left = 0;
+            rect.right = mImageWidth;
+            rect.top = 0;
+            rect.bottom = mImageHeight;
+            /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            options.inSampleSize = (int) (1f * Math.max(mImageWidth, mImageHeight) / Math.max(measuredWidth, measuredHeight));
+            Bitmap bitmap = mDecoder.decodeRegion(rect, options);
+            return rotate(bitmap, degree);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return mDecoder.decodeRegion(rect, options);
+        return null;
+    }
+
+    private Bitmap rotate(Bitmap bitmap, int degree) {
+        if (degree != 0) {
+            Matrix matrix = new Matrix();
+            matrix.setRotate(degree);
+            Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            return bmp;
+        }
+        return bitmap;
     }
 
     @Override
