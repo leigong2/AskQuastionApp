@@ -64,7 +64,9 @@ import com.example.android.askquastionapp.picture.PictureActivity;
 import com.example.android.askquastionapp.pollnumber.PollNumberActivity;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
+import com.example.android.askquastionapp.scan.CaptureActivity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
+import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.CustomItemTouchHelperCallBack;
@@ -138,6 +140,7 @@ import static java.io.File.separator;
 public class MainActivity extends AppCompatActivity {
 
     public static final int EXTERNAL_FILE_CODE = 200;
+    private static final int REQUEST_CODE_SCAN = 201;
     private ClearHolder clearHolder;
     private ShareDialog shareDialog;
     private static final int EXTERNAL_TXT_CHOOSE = 1;
@@ -315,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("加密解密");
         added.add("数字滚动");
         added.add("动态9patch");
+        added.add("扫一扫");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -531,6 +535,21 @@ public class MainActivity extends AppCompatActivity {
             case "动态9patch":
                 NinePatchActivity.start(this);
                 break;
+            case "扫一扫":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    int cameraPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.CAMERA);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED
+                            || cameraPermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                , Manifest.permission.CAMERA}, 1);
+                        return;
+                    }
+                }
+                CaptureActivity.start(MainActivity.this, REQUEST_CODE_SCAN);
+                break;
         }
     }
 
@@ -557,60 +576,27 @@ public class MainActivity extends AppCompatActivity {
                 String path = (String) clearHolder.getResults().getAdapter().getItem(position);
                 switch (path) {
                     case "facecastDevelop":
-                        startDownloadApp(devolop, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, devolop);
                         break;
                     case "facecastPreProducation":
-                        startDownloadApp(preProducation, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, preProducation);
                         break;
                     case "facecastProduction_blue":
-                        startDownloadApp(production_blue, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, production_blue);
                         break;
                     case "facecastProduction":
-                        startDownloadApp(production, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, production);
                         break;
                     case "release":
-                        startDownloadApp(release, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, release);
                         break;
                     default:
-                        startDownloadApp(self, path);
+                        BrowserUtils.goToBrowser(MainActivity.this, self);
                         break;
                 }
                 clearHolder.dismiss();
             }
         });
-    }
-
-    /**
-     * 调用第三方浏览器打开
-     *
-     * @param url 要浏览的资源地址
-     */
-    private void startDownloadApp(String url, String path) {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            intent.setClassName("com.tencent.mtt", "com.tencent.mtt.MainActivity");//打开QQ浏览器
-            startActivity(intent);
-        } catch (Exception e1) {
-            try {
-                intent.setClassName("com.android.browser", "com.android.browser.BrowserActivity");
-                startActivity(intent);
-            } catch (Exception e2) {
-                try {
-                    intent.setClassName("mark.via", "mark.via.ui.activity.BrowserActivity");
-                    startActivity(intent);
-                } catch (Exception e3) {
-                    // 注意此处的判断intent.resolveActivity()可以返回显示该Intent的Activity对应的组件名
-                    // 官方解释 : Name of the component implementing an activity that can display the intent
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(Intent.createChooser(intent, "请选择浏览器"));
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请下载浏览器", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
     }
 
     private void startTranslate() {

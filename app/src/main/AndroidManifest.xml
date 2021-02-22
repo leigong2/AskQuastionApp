@@ -205,6 +205,7 @@
             android:theme="@style/DialogStyle" />
         <activity android:name=".pollnumber.PollNumberActivity" />
         <activity android:name=".ninepatch.NinePatchActivity"/>
+        <activity android:name=".scan.CaptureActivity"/>
     </application>
 
 </manifest>

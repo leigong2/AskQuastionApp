@@ -1,6 +1,10 @@
 package com.example.android.askquastionapp.media;
 
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -21,10 +25,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.ScreenUtils;
+import com.blankj.utilcode.util.ToastUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.picture.PhotoImageView;
+import com.example.android.askquastionapp.scan.CapturePictureUtil;
+import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -34,6 +42,7 @@ import com.scwang.smartrefresh.layout.util.DensityUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +71,34 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         close.setOnClickListener(v -> {
             v.setVisibility(View.GONE);
             mBitImageView.setVisibility(View.GONE);
+        });
+        mBitImageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (view instanceof PhotoImageView) {
+                    Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
+                    CapturePictureUtil.parseQCodeInBitmap(bitmap, new CapturePictureUtil.OnResultListener() {
+                        @Override
+                        public void onResult(String s) {
+                            if (s == null) {
+                                ToastUtils.showShort("扫描失败");
+                                return;
+                            } else {
+                                ToastUtils.showShort("扫描成功，扫描结果已返回剪切板");
+                            }
+                            ClipboardManager clipboardManager = (ClipboardManager) BaseApplication.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
+                            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, s));
+                            if (clipboardManager.getPrimaryClip() != null && clipboardManager.hasPrimaryClip()) {
+                                clipboardManager.getPrimaryClip().getItemAt(0).getText();
+                            }
+                            if (s.startsWith("http")) {
+                                BrowserUtils.goToBrowser(getContext(), s);
+                            }
+                        }
+                    });
+                }
+                return false;
+            }
         });
         mBitImageView.setOnDismissCallBack(new PhotoImageView.OnLimitCallBack() {
             long time = System.currentTimeMillis();

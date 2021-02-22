@@ -309,6 +309,14 @@ abstract class AbstractPhotoImageView extends View {
     protected boolean isDismiss;
 
     private GestureDetector moveGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public void onLongPress(MotionEvent e) {
+            super.onLongPress(e);
+            if (onLongClickListener != null) {
+                onLongClickListener.onLongClick(AbstractPhotoImageView.this);
+            }
+        }
+
         private boolean onScroll(MotionEvent currentEvent, MotionEvent motionEvent, float scrollX, float scrollY, boolean byScroll) {
             if (isDismiss) {
                 return false;
@@ -470,6 +478,29 @@ abstract class AbstractPhotoImageView extends View {
                 return 1;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    }
+
+    public InputStream getImageResource() {
+        return mInputStream;
+    }
+
+    public Bitmap getImageBitmap() {
+        if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0) {
+            return null;
+        }
+        Rect rect = new Rect();
+        rect.left = 0;
+        rect.right = mImageWidth;
+        rect.top = 0;
+        rect.bottom = mImageHeight;
+        /*zune：绘制图片网格的列表，将图片分割为多个碎片**/
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            options.inSampleSize = (int) (1 / mImageWidth / measuredWidth);
+        } else {
+            options.inSampleSize = (int) (1 / mImageHeight / measuredHeight);
+        }
+        return mDecoder.decodeRegion(rect, options);
     }
 
     @Override
@@ -922,4 +953,11 @@ abstract class AbstractPhotoImageView extends View {
     private String loadingText;
 
     protected abstract void onGestureScroll(@PhotoImageView.GestureScrollType int type);
+
+    private OnLongClickListener onLongClickListener;
+
+    @Override
+    public void setOnLongClickListener(OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
+    }
 }
