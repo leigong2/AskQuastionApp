@@ -1,9 +1,21 @@
 package com.example.android.askquastionapp.scan;
 
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
 
+import com.example.android.askquastionapp.BaseApplication;
+import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.scan.zxing.decode.encode.CodeCreator;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
@@ -16,10 +28,18 @@ import com.google.zxing.common.HybridBinarizer;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -170,6 +190,85 @@ public class CapturePictureUtil {
             return bmp;
         }
         return bitmap;
+    }
+
+    public static Bitmap getQCodeBitmap(String s) {
+        return CodeCreator.createQRCode(s, 400, 400, BitmapFactory.decodeResource(BaseApplication.getInstance()
+                .getResources(), R.mipmap.ic_launcher, null));
+    }
+
+    /**
+     * 保存bitmap图片到本地
+     *
+     * @param context 上下文
+     * @param bmp     bitmap图片
+     * @param dirName 要保存到的文件路径
+     * @return 2成功 -1失败
+     */
+    public static int saveImageToGallery(Context context, Bitmap bmp, String dirName) {
+        //android 10 需要 用 MediaStore来存
+        String fileName = "QCode_"
+                + new SimpleDateFormat("yyyy_MM_dd_HH:mm:ss", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + ".png";
+        if (Build.VERSION.SDK_INT >= 29) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+            values.put("relative_path", "DCIM/Camera");
+            Uri external = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            ContentResolver resolver = BaseApplication.getInstance().getContentResolver();
+            Uri insertUri = resolver.insert(external, values);
+            if (insertUri != null) {
+                try (BufferedOutputStream outputStream = new BufferedOutputStream(resolver.openOutputStream(insertUri))) {
+                    bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return -1;
+                }
+            }
+            return 2;
+        }
+        //生成路径
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File appDir = new File(root, dirName);
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+        //获取文件
+        File file = new File(appDir, fileName);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, file.getAbsolutePath());
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Uri contentUri = Uri.fromFile(file);
+            mediaScanIntent.setData(contentUri);
+            context.sendBroadcast(mediaScanIntent);
+//            //通知系统相册刷新
+//            MediaStore.Images.Media.insertImage(context.getContentResolver(),file.getAbsolutePath(),fileName,null);
+//            context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+//                    Uri.fromFile(new File(file.getPath()))));
+            return 2;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+//                deleteFile(file.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
     }
 
     public interface OnResultListener {

@@ -2,6 +2,8 @@ package com.example.android.askquastionapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -65,6 +67,8 @@ import com.example.android.askquastionapp.pollnumber.PollNumberActivity;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.scan.CaptureActivity;
+import com.example.android.askquastionapp.scan.CapturePictureUtil;
+import com.example.android.askquastionapp.scan.QCodeDialog;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.ClearUtils;
@@ -319,6 +323,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("数字滚动");
         added.add("动态9patch");
         added.add("扫一扫");
+        added.add("生成二维码");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -549,6 +554,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 CaptureActivity.start(MainActivity.this, REQUEST_CODE_SCAN);
+                break;
+            case "生成二维码":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    int cameraPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.CAMERA);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED
+                            || cameraPermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                , Manifest.permission.CAMERA}, 1);
+                        return;
+                    }
+                }
+                QCodeDialog.showDialog(this);
                 break;
         }
     }
