@@ -1,6 +1,5 @@
 package com.example.android.askquastionapp.scan;
 
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -193,8 +192,8 @@ public class CapturePictureUtil {
     }
 
     public static Bitmap getQCodeBitmap(String s) {
-        return CodeCreator.createQRCode(s, 400, 400, BitmapFactory.decodeResource(BaseApplication.getInstance()
-                .getResources(), R.mipmap.ic_launcher, null));
+        return CodeCreator.createQRCode(s, 400, 400, CodeCreator.getCircleAvatar(
+                BitmapFactory.decodeResource(BaseApplication.getInstance().getResources(), R.mipmap.fifth)));
     }
 
     /**

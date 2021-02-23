@@ -1,6 +1,5 @@
 package com.example.android.askquastionapp.scan.zxing.decode.encode;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -106,11 +105,13 @@ public class CodeCreator {
 
     /**
      * 对图片进行切圆与描白边
-     * @param context 上下文
      * @param avatar 原bitmap
      * @return 新bitmap
      */
-    public static Bitmap getCircleAvatar(Context context, Bitmap avatar) {
+    public static Bitmap getCircleAvatar(Bitmap avatar) {
+        if (avatar == null) {
+            return null;
+        }
         Bitmap bitmap = Bitmap.createBitmap(avatar.getWidth(), avatar.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);

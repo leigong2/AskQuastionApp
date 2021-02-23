@@ -65,8 +65,10 @@ public class QCodeDialog extends DialogFragment {
                 }
                 CapturePictureUtil.saveImageToGallery(getActivity(), qCodeBitmap, "Pictures");
                 ToastUtils.showShort("已将剪切板生成二维码并保存至本地");
+                dismissAllowingStateLoss();
             }
         });
+        rootView.setOnClickListener(view -> dismissAllowingStateLoss());
         return rootView;
     }
 }
