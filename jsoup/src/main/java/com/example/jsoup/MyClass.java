@@ -17,8 +17,16 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.rerere10.com/index.php/arttype/26-2.html");
 //        SimpleThread simpleThread = new SimpleThread("https://100fj.xyz/search.php?key=%E5%B1%81%E7%9C%BC");
 //        SimpleThread simpleThread = new SimpleThread("http://www.kandegang.cn/video/kengwang/1140.html");
+//        SimpleThread simpleThread = new SimpleThread("https://spritiualne.wordpress.com/2021/01/24/%e5%a8%bc%e5%a6%93%e6%94%b9%e9%80%a0%e7%89%88/");
 //        simpleThread.start();
-        GetGifDownloader.getFileDetail();
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                ReaderUtils.convertToSimpleChinese("D:\\user\\zune\\text");
+            }
+        }.start();
+//        GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
             public void onChooseFileDir(String path) {

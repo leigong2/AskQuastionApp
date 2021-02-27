@@ -857,7 +857,7 @@ public class JsoupUtils {
         }
     }
 
-    public abstract class MyRunnable implements Runnable {
+    public abstract static class MyRunnable implements Runnable {
         String url;
         InfoData infoData;
 
