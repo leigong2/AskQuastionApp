@@ -1659,22 +1659,6 @@ public class MainActivity extends AppCompatActivity {
             clearHolder = new ClearHolder(findViewById(R.id.clear_root));
         }
         clearHolder.startLoad();
-        JsoupUtils.getInstance().setImageDir(getExternalFilesDir("img").getPath() + separator);
-        JsoupUtils.getInstance().setUnableImagePath(getExternalFilesDir("img").getPath() + separator + "unableImg.txt");
-        JsoupUtils.getInstance().setVideoPath(getExternalFilesDir("img").getPath() + separator + "invisibleVideo.txt");
-        JsoupUtils.getInstance().setOnResultListener(new JsoupUtils.OnResultListener() {
-            @Override
-            public void onResult(String url) {
-                ToastUtils.showShort(url);
-            }
-        });
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                JsoupUtils.getInstance().getContent(null, "http://www.udp2p.com");
-            }
-        }.start();
     }
 
     private void parseXsl() {

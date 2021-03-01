@@ -35,6 +35,7 @@ import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.jsoup.JsoupUtils;
+import com.example.jsoup.jsoup.webloaddata.BaseWebLoadUtils;
 import com.google.gson.reflect.TypeToken;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -372,7 +373,7 @@ public class PictureGallayActivity extends AppCompatActivity {
                             try {
                                 String html = new String(response.body().bytes());
                                 Document document = Jsoup.parseBodyFragment(html);
-                                List<HrefData> hrefs = JsoupUtils.getHrefs(document);
+                                List<HrefData> hrefs = BaseWebLoadUtils.getHrefs(document);
                                 if (!hrefs.isEmpty()) {
                                     mDatas.addAll(hrefs.subList(1, hrefs.size() - 1));
                                 }

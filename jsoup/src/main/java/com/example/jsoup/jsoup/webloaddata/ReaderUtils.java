@@ -1,13 +1,11 @@
-package com.example.jsoup;
+package com.example.jsoup.jsoup.webloaddata;
 
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.bean.InfoData;
 import com.example.jsoup.jsoup.JsoupUtils;
-import com.example.jsoup.thread.CustomThreadPoolExecutor;
 import com.mysql.cj.util.StringUtils;
 import com.spreada.utils.chinese.ZHConverter;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,61 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
-import static com.example.jsoup.jsoup.Content.userAgents;
-import static com.example.jsoup.jsoup.HttpsUrlValidator.trustAllHttpsCertificates;
-
-public class ReaderUtils {
-    private static Set<String> urls = new HashSet<>();
-    private static String baseUrl;
-    private static CustomThreadPoolExecutor sPool = new CustomThreadPoolExecutor(1000);
-
-    private static Document read(String url) {
-        if (urls.contains(url)) {
-            return null;
-        }
-        if (baseUrl == null) {
-            String[] split = url.split("/");
-            if (split.length >= 3) {
-                baseUrl = url.startsWith("https") ? "https://" + split[2] : "http://" + split[2];
-            }
-            if (baseUrl == null) {
-                baseUrl = url;
-            }
-        }
-        urls.add(url.startsWith("http") ? url : baseUrl + url);
-        Document document = null;
-        String userAgent = userAgents[(int) (userAgents.length * Math.random())];
-        try {
-            int i = (int) (Math.random() * 1000);////做一个随机延时，防止网站屏蔽
-            while (i != 0) {
-                i--;
-            }
-            if (url.startsWith("https")) {
-                trustAllHttpsCertificates();
-            }
-            document = Jsoup.connect(url)
-                    .userAgent(userAgent)
-                    .timeout(30000).get();
-        } catch (Exception e) {
-            try {
-                if (url.startsWith("https")) {
-                    trustAllHttpsCertificates();
-                }
-                document = Jsoup.connect(url)
-                        .userAgent(userAgent)
-                        .timeout(30000).post();
-                System.out.println("正常：" + url);
-            } catch (Exception e1) {
-                System.out.println("异常：" + url + "..........." + e1);
-            }
-        }
-        return document;
-    }
+public class ReaderUtils extends BaseWebLoadUtils {
 
     public static void load(String url) {
         Document document = read(url);
@@ -89,7 +36,7 @@ public class ReaderUtils {
             return;
         }
         for (int i = 0; i < 42; i++) {
-            sPool.execute(new MyRunnable(new HrefData(url + "/page/" + i, null, null)) {
+            sPool.execute(new BaseRunnable(new HrefData(url + "/page/" + i, null, null)) {
                 @Override
                 public void run(HrefData hrefData) {
                     List<String> urls = new ArrayList<>();
@@ -136,7 +83,7 @@ public class ReaderUtils {
         }
 //        List<HrefData> primaryHref = getPrimaryHref(document);
 //        for (HrefData s : primaryHref) {
-//            sPool.execute(new MyRunnable(s) {
+//            sPool.execute(new BaseRunnable(s) {
 //                @Override
 //                public void run(HrefData hrefData) {
 //                    Document primaryDocument = read(hrefData.href);
@@ -150,21 +97,6 @@ public class ReaderUtils {
 //                }
 //            });
 //        }
-    }
-
-    public abstract static class MyRunnable implements Runnable {
-        private HrefData hrefData;
-
-        public MyRunnable(HrefData hrefData) {
-            this.hrefData = hrefData;
-        }
-
-        public abstract void run(HrefData hrefData);
-
-        @Override
-        public void run() {
-            run(hrefData);
-        }
     }
 
     private static List<HrefData> getPrimaryHref(Document document) {
@@ -250,10 +182,10 @@ public class ReaderUtils {
     }
 
     public static void getContent(String url) {
-        sPool.execute(new JsoupUtils.MyRunnable(null, url) {
+        sPool.execute(new BaseRunnable(new HrefData(url, url, url)) {
             @Override
-            public void run(InfoData infoData, String url) {
-                Document document = read(url);
+            public void run(HrefData hrefData) {
+                Document document = read(hrefData.href);
                 if (document == null) {
                     return;
                 }
@@ -340,7 +272,7 @@ public class ReaderUtils {
      * @param descPath the desc path, 目标文件夹；
      */
     public static void mergeTxt(String dirPath, String descPath) {
-        sPool.execute(new MyRunnable(new HrefData(dirPath, dirPath, dirPath)) {
+        sPool.execute(new BaseRunnable(new HrefData(dirPath, dirPath, dirPath)) {
             @Override
             public void run(HrefData hrefData) {
                 File descDir = new File(descPath);
@@ -423,7 +355,7 @@ public class ReaderUtils {
      * @param srcDir the dir path
      */
     public static void renameTxt(String srcDir) {
-        sPool.execute(new MyRunnable(new HrefData(srcDir, srcDir, srcDir)) {
+        sPool.execute(new BaseRunnable(new HrefData(srcDir, srcDir, srcDir)) {
             @Override
             public void run(HrefData hrefData) {
                 File dir = new File(hrefData.text);

@@ -32,6 +32,7 @@ import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.HrefData;
 import com.example.jsoup.jsoup.JsoupUtils;
+import com.example.jsoup.jsoup.webloaddata.BaseWebLoadUtils;
 import com.google.gson.reflect.TypeToken;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -221,7 +222,7 @@ public class PictureActivity extends AppCompatActivity {
                 if (response != null && response.body() != null) {
                     String html = new String(response.body().bytes());
                     Document document = Jsoup.parseBodyFragment(html);
-                    List<HrefData> hrefs = JsoupUtils.getHrefs(document);
+                    List<HrefData> hrefs = BaseWebLoadUtils.getHrefs(document);
                     mDatas.addAll(hrefs);
                     mHandler.post(new Runnable() {
                         @Override

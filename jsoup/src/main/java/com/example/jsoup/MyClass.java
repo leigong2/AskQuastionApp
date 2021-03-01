@@ -1,7 +1,8 @@
 package com.example.jsoup;
 
-import com.example.jsoup.jsoup.GetGifDownloader;
-import com.example.jsoup.thread.CustomThreadPoolExecutor;
+import com.example.jsoup.jsoup.webloaddata.BaseWebLoadUtils;
+import com.example.jsoup.jsoup.webloaddata.DownloadPictureUtils;
+import com.example.jsoup.jsoup.webloaddata.ReaderUtils;
 
 public class MyClass {
     public static boolean sStop;
@@ -19,13 +20,7 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("http://www.kandegang.cn/video/kengwang/1140.html");
 //        SimpleThread simpleThread = new SimpleThread("https://spritiualne.wordpress.com/2021/01/24/%e5%a8%bc%e5%a6%93%e6%94%b9%e9%80%a0%e7%89%88/");
 //        simpleThread.start();
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                ReaderUtils.mergeTxt("D:\\user\\zune\\text", "D:\\user\\zune\\text2");
-            }
-        }.start();
+        DownloadPictureUtils.getImg();
 //        GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
@@ -91,9 +86,5 @@ public class MyClass {
 
     public static void stopEvery() {
         sStop = true;
-        CustomThreadPoolExecutor customThreadPoolExecutor = GetGifDownloader.getsPool();
-        if (customThreadPoolExecutor != null) {
-            customThreadPoolExecutor.shutdown();
-        }
     }
 }

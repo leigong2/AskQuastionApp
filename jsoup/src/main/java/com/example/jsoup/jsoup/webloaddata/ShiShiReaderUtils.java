@@ -1,11 +1,8 @@
-package com.example.jsoup;
+package com.example.jsoup.jsoup.webloaddata;
 
 import com.example.jsoup.bean.HrefData;
-import com.example.jsoup.thread.CustomThreadPoolExecutor;
 import com.mysql.cj.util.StringUtils;
-import com.spreada.utils.chinese.ZHConverter;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -14,68 +11,16 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashSet;
-import java.util.Set;
 
-import static com.example.jsoup.jsoup.Content.userAgents;
-import static com.example.jsoup.jsoup.HttpsUrlValidator.trustAllHttpsCertificates;
-
-public class ShiShiReaderUtils {
-    private static Set<String> urls = new HashSet<>();
-    private static String baseUrl;
-    private static CustomThreadPoolExecutor sPool = new CustomThreadPoolExecutor(1000);
-    private static ZHConverter converter = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
-
-    private static Document read(String url) {
-        if (urls.contains(url)) {
-            return null;
-        }
-        if (baseUrl == null) {
-            String[] split = url.split("/");
-            if (split.length >= 3) {
-                baseUrl = url.startsWith("https") ? "https://" + split[2] : "http://" + split[2];
-            }
-            if (baseUrl == null) {
-                baseUrl = url;
-            }
-        }
-        urls.add(url.startsWith("http") ? url : baseUrl + url);
-        Document document = null;
-        String userAgent = userAgents[(int) (userAgents.length * Math.random())];
-        try {
-            int i = (int) (Math.random() * 1000);////做一个随机延时，防止网站屏蔽
-            while (i != 0) {
-                i--;
-            }
-            if (url.startsWith("https")) {
-                trustAllHttpsCertificates();
-            }
-            document = Jsoup.connect(url)
-                    .userAgent(userAgent)
-                    .timeout(30000).get();
-        } catch (Exception e) {
-            try {
-                if (url.startsWith("https")) {
-                    trustAllHttpsCertificates();
-                }
-                document = Jsoup.connect(url)
-                        .userAgent(userAgent)
-                        .timeout(30000).post();
-                System.out.println("正常：" + url);
-            } catch (Exception e1) {
-                System.out.println("异常：" + url + "..........." + e1);
-            }
-        }
-        return document;
-    }
+public class ShiShiReaderUtils extends BaseWebLoadUtils {
 
     public static void load(String url) {
         Document document = read(url);
         if (document == null) {
             return;
         }
-        for (int i = 120; i <200; i++) {
-            sPool.execute(new MyRunnable(new HrefData(url + i, null, null)) {
+        for (int i = 120; i < 200; i++) {
+            sPool.execute(new BaseRunnable(new HrefData(url + i, null, null)) {
                 @Override
                 public void run(HrefData hrefData) {
                     Document document = read(hrefData.href);
@@ -125,32 +70,6 @@ public class ShiShiReaderUtils {
             }
         }
     }
-
-    private static String getNodeText(Element elementsDetail) {
-        for (int j = 0; j < elementsDetail.childNodeSize(); j++) {
-            Node nodeDetail = elementsDetail.childNode(j);
-            if (nodeDetail instanceof TextNode) {
-                return ((TextNode) nodeDetail).getWholeText();
-            }
-        }
-        return null;
-    }
-
-    public abstract static class MyRunnable implements Runnable {
-        private HrefData hrefData;
-
-        public MyRunnable(HrefData hrefData) {
-            this.hrefData = hrefData;
-        }
-
-        public abstract void run(HrefData hrefData);
-
-        @Override
-        public void run() {
-            run(hrefData);
-        }
-    }
-
     public static void getContent(String url) {
         Document document = read(url);
         if (document == null) {
