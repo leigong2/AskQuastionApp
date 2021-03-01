@@ -18,11 +18,14 @@ import org.jsoup.select.Elements;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -85,22 +88,68 @@ public class ReaderUtils {
         if (document == null) {
             return;
         }
-        List<HrefData> primaryHref = getPrimaryHref(document);
-        for (HrefData s : primaryHref) {
-            sPool.execute(new MyRunnable(s) {
+        for (int i = 0; i < 42; i++) {
+            sPool.execute(new MyRunnable(new HrefData(url + "/page/" + i, null, null)) {
                 @Override
                 public void run(HrefData hrefData) {
-                    Document primaryDocument = read(hrefData.href);
-                    if (primaryDocument == null) {
+                    List<String> urls = new ArrayList<>();
+                    Document document = read(hrefData.href);
+                    if (document == null) {
                         return;
                     }
-                    List<String> secondaryHref = getSecondaryHref(new ArrayList<>(), hrefData.href, primaryDocument, 1);
-                    for (String secondaryUrl : secondaryHref) {
-                        getContent(secondaryUrl);
+                    Elements elements = document.getElementsByTag("h2");
+                    for (Element element : elements) {
+                        String href = null;
+                        String title = null;
+                        for (int i = 0; i < element.childNodeSize(); i++) {
+                            Node node = element.childNode(i);
+                            if (node instanceof Element) {
+                                for (Attribute attribute : node.attributes()) {
+                                    String value = attribute.getValue();
+                                    if ("href".equals(attribute.getKey())) {
+                                        href = value;
+                                    }
+                                }
+                                for (Node childNode : node.childNodes()) {
+                                    if (childNode instanceof TextNode) {
+                                        title = ((TextNode) childNode).getWholeText();
+                                    }
+                                }
+                            }
+                        }
+                        if (title == null || StringUtils.isNullOrEmpty(title.trim())) {
+                            continue;
+                        }
+                        if (href == null || StringUtils.isNullOrEmpty(href.trim())) {
+                            continue;
+                        }
+                        if (urls.contains(href)) {
+                            continue;
+                        }
+                        urls.add(href);
+                    }
+                    for (String url : urls) {
+                        getContent(url);
                     }
                 }
             });
         }
+//        List<HrefData> primaryHref = getPrimaryHref(document);
+//        for (HrefData s : primaryHref) {
+//            sPool.execute(new MyRunnable(s) {
+//                @Override
+//                public void run(HrefData hrefData) {
+//                    Document primaryDocument = read(hrefData.href);
+//                    if (primaryDocument == null) {
+//                        return;
+//                    }
+//                    List<String> secondaryHref = getSecondaryHref(new ArrayList<>(), hrefData.href, primaryDocument, 1);
+//                    for (String secondaryUrl : secondaryHref) {
+//                        getContent(secondaryUrl);
+//                    }
+//                }
+//            });
+//        }
     }
 
     public abstract static class MyRunnable implements Runnable {
@@ -243,7 +292,14 @@ public class ReaderUtils {
 
     private static void writeToLocal(String title, String text) {
         try {
-            File file = new File("D:\\user\\zune\\text", title + ".txt");
+            File dir = new File("D:\\user\\zune\\text");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            File file = new File(dir, title.replaceAll("/", "").replaceAll(" ", "") + ".txt");
+            if (!file.exists()) {
+                file.createNewFile();
+            }
             FileWriter fw = new FileWriter(file);
             String[] split = text.split("\n");
             for (String s : split) {
@@ -273,7 +329,7 @@ public class ReaderUtils {
             }
             fw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("createNewFile error" + title);
         }
     }
 
@@ -304,11 +360,14 @@ public class ReaderUtils {
                     if (!fileDir.exists()) {
                         return;
                     }
-                    File[] files = fileDir.listFiles();
-                    if (files == null) {
+                    File[] temp = fileDir.listFiles();
+                    if (temp == null) {
                         return;
                     }
-                    BufferedWriter fw = new BufferedWriter(new FileWriter(descFile));
+                    List<File> files = new ArrayList<>();
+                    Collections.addAll(files, temp);
+                    Collections.sort(files, (f1, f2) -> (int) (f2.length() - f1.length()));
+                    BufferedWriter fw = new BufferedWriter(new FileWriter(descFile, false));
                     int count = 1;
                     BufferedReader fr = null;
                     long size = 0;
@@ -316,19 +375,15 @@ public class ReaderUtils {
                         if (!file.exists() || file.isDirectory() || !file.getPath().endsWith(".txt")) {
                             continue;
                         }
+                        fw.write("第" + count + "卷" + file.getName().replaceAll(".txt", ""));
+                        fw.newLine();
                         fr = new BufferedReader(new FileReader(file));
-                        boolean writeTitle = false;
                         while (true) {
                             String s = fr.readLine();
                             if (s == null) {
                                 break;
                             }
-                            if (!writeTitle) {
-                                writeTitle = true;
-                                fw.write("第" + count + "卷" + s);
-                            } else {
-                                fw.write(s);
-                            }
+                            fw.write(s);
                             size += s.getBytes().length;
                             fw.newLine();
                         }
@@ -378,8 +433,7 @@ public class ReaderUtils {
                 }
                 for (File file : files) {
                     try {
-                        FileReader reader = new FileReader(file);
-                        BufferedReader br = new BufferedReader(reader);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
                         String title = null;
                         while (true) {
                             title = br.readLine();
@@ -399,7 +453,6 @@ public class ReaderUtils {
                             title = title.substring(0, 20);
                         }
                         br.close();
-                        reader.close();
                         File valueFile = new File(hrefData.text, title.trim() + ".txt");
                         boolean b = file.renameTo(valueFile);
                         System.out.println(file.getPath() + "......" + b);

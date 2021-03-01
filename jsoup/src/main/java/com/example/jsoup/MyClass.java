@@ -23,7 +23,7 @@ public class MyClass {
             @Override
             public void run() {
                 super.run();
-                ReaderUtils.convertToSimpleChinese("D:\\user\\zune\\text");
+                ReaderUtils.mergeTxt("D:\\user\\zune\\text", "D:\\user\\zune\\text2");
             }
         }.start();
 //        GetGifDownloader.getFileDetail();
