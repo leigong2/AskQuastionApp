@@ -16,4 +16,7 @@ public class Company {
     public String address;
     public String scrop;
     public String updateTime;
+    public String repeatCount;
+    public float minMoney;
+    public float maxMoney;
 }

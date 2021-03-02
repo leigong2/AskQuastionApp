@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.ObjectUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.aes.test;
@@ -88,7 +89,6 @@ import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.KeyWords;
 import com.example.jsoup.bean.LanguageWords;
-import com.example.jsoup.jsoup.JsoupUtils;
 import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
@@ -872,10 +872,15 @@ public class MainActivity extends AppCompatActivity {
         String assetsBoss = "「郑州招聘信息」郑州招聘网 - BOSS直聘.xlsx";
         String assetsLiepin = "【郑州招聘信息_郑州招聘_郑州招聘网】-郑州猎聘.xlsx";
         String assets51 = "【郑州,android招聘，求职】-前程无忧.xlsx";
-        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<String>, Integer>(1, false) {
+        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<Company>, Integer>(1, false) {
             @Override
-            public void onNext(List<String> companyCounts, Integer o2) {
-                clearHolder.stopLoad(companyCounts, false);
+            public void onNext(List<Company> companyCounts, Integer o2) {
+                List<String> datas = new ArrayList<>();
+                for (int i = 0; i < companyCounts.size(); i++) {
+                    Company companyCount = companyCounts.get(companyCounts.size() - 1 - i);
+                    datas.add(companyCount.company + " # " + companyCount.money + " # " + companyCount.address + " :" + companyCount.repeatCount);
+                }
+                clearHolder.stopLoad(datas, false);
                 String msg = GsonGetter.getInstance().getGson().toJson(companyCounts);
                 LogUtils.i("zune：", "msg = " + msg);
             }
@@ -888,108 +893,76 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<String>, Integer> observer) {
-        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<String>>() {
+    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<Company>, Integer> observer) {
+        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<Company>>() {
             @Override
-            public List<String> apply(String[] assets) throws Exception {
-                Map<String, List<List<String>>> map = new HashMap<>();
-                for (String asset : assets) {
-                    Map<String, List<List<String>>> temp = null;
-                    File fileName = FileUtil.assetsToFile(MainActivity.this, asset);
-                    if (fileName != null) {
-                        temp = ExcelManager.getInstance().analyzeXls(fileName.getPath());
-                    }
-                    if (temp == null || temp.isEmpty()) {
-                        temp = ExcelManager.getInstance().analyzeXlsx(fileName);
-                    }
-                    if (temp == null || temp.isEmpty()) {
-                        continue;
-                    }
-                    for (String s : temp.keySet()) {
-                        List<List<String>> value = temp.get(s);
-                        if (value != null) {
-                            List<List<String>> sheet = map.get("sheet");
-                            if (sheet == null || sheet.isEmpty()) {
-                                map.put("sheet", value);
-                            } else {
-                                sheet.addAll(value);
-                                map.put("sheet", sheet);
-                            }
-                        }
-                    }
-                }
-                for (String key : map.keySet()) {
-                    List<List<String>> lists = map.get(key);
-                    if (lists == null) {
-                        return new ArrayList<>();
-                    }
-                    List<Company> jsons = new ArrayList<>();
-                    List<String> companyNames = new ArrayList<>();
-                    List<String> companyCounts = new ArrayList<>();
-                    List<String> scales = new ArrayList<>();
-                    List<Integer> smallMoneys = new ArrayList<>();
-                    List<Integer> bigMoneys = new ArrayList<>();
-                    for (int i = 1; i < lists.size(); i++) {
-                        StringBuilder json = new StringBuilder();
-                        for (int j = 0; j < lists.get(i).size(); j++) {
-                            String value = lists.get(i).get(j);
-                            if (value == null) {
-                                value = "";
-                            }
-                            String str = value.replaceAll("\\\\", "\\\\\\\\");
-                            if (j == 0) {
-                                json.append("{\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\",");
-                            } else if (j == lists.get(i).size() - 1) {
-                                json.append("\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\"}");
-                            } else {
-                                json.append("\"").append(lists.get(0).get(j)).append("\":").append("\"").append(str).append("\",");
-                            }
-                        }
-                        Company company = GsonGetter.getInstance().getGson().fromJson(json.toString(), Company.class);
-                        if (company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓") || company.os.contains("app") || company.os.contains("APP")
-                                || company.os.contains("移动") || company.os.contains("flutter") || company.os.contains("Flutter") || company.os.contains("逆向")) {
-                            if (!companyNames.contains(company.company.replaceAll(" ", ""))) {
-                                String[] moneys = company.money.split("[^\\d]");
-                                if (moneys.length > 1) {
-                                    try {
-                                        smallMoneys.add(Integer.parseInt(moneys[0]));
-                                        bigMoneys.add(Integer.parseInt(moneys[1]));
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                jsons.add(company);
-                                scales.add(company.scale);
-                                companyNames.add(company.company.replaceAll("\n", "").replaceAll(" ", ""));
-                                companyCounts.add(company.company.replaceAll(" ", "") + " # " + company.money + " # " + company.os + " :" + 1);
-                            } else {
-                                int index = companyNames.indexOf(company.company.replaceAll(" ", ""));
-                                if (index >= 0 && jsons.size() > index) {
-                                    String temp = companyCounts.get(index);
-                                    String s = temp.split(":")[1];
-                                    companyCounts.set(index, temp.split(":")[0] + ":" + (Integer.parseInt(s) + 1));
-                                }
-                            }
-                        }
-                    }
-                    String small = getTwo(getAverage(smallMoneys));
-                    String big = getTwo(getAverage(bigMoneys));
-                    Log.i("zune: ", "apply: smallAverage = " + small + ", bigAverage = " + big);
-                    statisticsTime(scales);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        companyCounts.sort(new Comparator<String>() {
-                            @Override
-                            public int compare(String o1, String o2) {
-                                return Integer.parseInt(o2.split(":")[1]) - Integer.parseInt(o1.split(":")[1]);
-                            }
-                        });
-                    }
-                    saveToLocal(companyCounts);
-                    return getShowData(companyCounts, small, big);
-                }
-                return new ArrayList<>();
+            public List<Company> apply(String[] assets) throws Exception {
+                Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, assets);
+                List<Company> newData = ExcelManager.getInstance().getData(Company.class, map);
+                List<Company> localData = GsonGetter.getInstance().getGson().fromJson(getJson("lastData.json", MainActivity.this), new TypeToken<List<Company>>() {
+                }.getType());
+                UpdateCompanyBean updateCompanyBean = insertToLocal(newData, localData);
+                String update = "\"" + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + "\":" + GsonGetter.getInstance().getGson().toJson(updateCompanyBean);
+                String localDataJson = GsonGetter.getInstance().getGson().toJson(localData);
+                return localData;
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(observer);
+    }
+
+    private UpdateCompanyBean insertToLocal(List<Company> newData, List<Company> localData) {
+        UpdateCompanyBean bean = new UpdateCompanyBean();
+        for (Company company : newData) {
+            if (!(company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓") || company.os.contains("app") || company.os.contains("APP")
+                    || company.os.contains("移动") || company.os.contains("flutter") || company.os.contains("Flutter") || company.os.contains("逆向"))) {
+                continue;
+            }
+            int index = contains(localData, company);
+            if (index == -1) {
+                Company temp = new Company();
+                temp.os = company.os;
+                temp.address = company.address.split("\\|")[0].trim();
+                String money = company.money;
+                float[] moneys = ExcelManager.getInstance().isMoneyEnable(money);
+                if (moneys == null || moneys.length == 1 || moneys[1] < 11) {
+                    continue;
+                }
+                temp.money = money;
+                temp.company = company.company;
+                temp.minMoney = moneys[0];
+                temp.maxMoney = moneys[1];
+                localData.add(temp);
+                bean.addCount++;
+            } else {
+                Company indexCompany = localData.get(index);
+                String repeatCount = indexCompany.repeatCount;
+                int count = 0;
+                if (!TextUtils.isEmpty(repeatCount)) {
+                    try {
+                        count = Integer.parseInt(repeatCount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                indexCompany.repeatCount = String.valueOf(++count);
+                localData.set(index, indexCompany);
+                bean.repeatCount++;
+            }
+        }
+        bean.timeLimitCount = Math.max(localData.size() - bean.addCount - bean.repeatCount, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            localData.sort((t1, t2) -> (TextUtils.isEmpty(t2.repeatCount) ? 0 : Integer.parseInt(t2.repeatCount)) - (TextUtils.isEmpty(t1.repeatCount) ? 0 : Integer.parseInt(t1.repeatCount)));
+        }
+        return bean;
+    }
+
+    private int contains(List<Company> localData, Company company) {
+        for (int i = 0; i < localData.size(); i++) {
+            Company companyLocal = localData.get(i);
+            if (ObjectUtils.equals(companyLocal.company.trim(), company.company.trim())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private String getTwo(double smallAverage) {
@@ -1008,46 +981,6 @@ public class MainActivity extends AppCompatActivity {
         return sum / smallMoneys.size();
     }
 
-    private List<String> getShowData(List<String> companyCounts, String small, String big) {
-        List<String> showData = new ArrayList<>();
-        List<String> showNew = new ArrayList<>();
-        List<String> showOld = new ArrayList<>();
-        List<String> timeLimit = new ArrayList<>();
-        List<String> localCompany = getLocalCompany();
-        List<String> oldCompanyName = new ArrayList<>();
-        List<String> netCompanyName = new ArrayList<>();
-        for (String s : localCompany) {
-            oldCompanyName.add(s.split("#")[0].trim());
-        }
-        for (String companyCount : companyCounts) {
-            String companayName = companyCount.split("#")[0].trim();
-            netCompanyName.add(companayName);
-            if (!oldCompanyName.contains(companayName)) {
-                showNew.add(companyCount);
-            } else {
-                showOld.add(companyCount);
-            }
-        }
-        Collections.sort(showNew, (o1, o2) -> Integer.parseInt(o2.split(":")[1]) - Integer.parseInt(o1.split(":")[1]));
-        showData.add("新增 " + showNew.size() + "=======================");
-        showData.addAll(showNew);
-        Collections.sort(showOld, (o1, o2) -> Integer.parseInt(o2.split(":")[1]) - Integer.parseInt(o1.split(":")[1]));
-        showData.add("重合 " + showOld.size() + "=======================");
-        showData.addAll(showOld);
-        for (String s : localCompany) {
-            String companayName = s.split("#")[0].trim();
-            if (!netCompanyName.contains(companayName)) {
-                timeLimit.add(s);
-            }
-        }
-        showData.add("过期 " + timeLimit.size() + "=======================");
-        saveToLocal(showNew, showOld, timeLimit);
-        Collections.sort(timeLimit, (o1, o2) -> Integer.parseInt(o2.split(":")[1]) - Integer.parseInt(o1.split(":")[1]));
-        showData.addAll(timeLimit);
-        showData.add(0, "有效总数：" + companyCounts.size() + "/全部总数：" + (showNew.size() + showOld.size() + timeLimit.size()) + ", 薪资：" + small + "K-" + big + "K========");
-        return showData;
-    }
-
     //北京
 //    private final String lastData = "[\"北京独创时代科技有限公司 # 10K-15K # android开发工程师 :727\",\"小米通讯技术有限公司 # 20K-30K # Linux/android相机驱动工程师-小米电视 :725\",\"百度在线网络技术(北京)有限公司 # 15K-20K # 企业智能平台部_android开发工程师 :582\",\"易才集团 # 10K-15K # android开发工程师 :435\",\"深圳市法本信息技术股份有限公司 # 13K-16K # android开发工程师 :297\",\"深圳市腾讯计算机系统有限公司 # 薪资面议 # 26699- 智慧零售android 开发工程师 :293\",\"京东方科技集团 # 20K-30K # android应用资深开发工程师(J23618) :291\",\"江苏润和软件股份有限公司 # 15K-20K # android开发工程师 :290\",\"联想集团 # 薪资面议 # android 多媒体开发工程师 :290\",\"柯锐特互动(北京)科技有限公司 # 15K-20K # android开发工程师 :290\",\"苍穹数码技术股份有限公司 # 15K-30K # 高级android开发工程师 :290\",\"北京巨榴莲科技有限公司 # 20K-30K # android开发工程师 :290\",\"北京腾信软创科技股份有限公司 # 10K-15K # android :290\",\"中信网络科技股份有限公司 # 10K-15K # 中级android开发工程师 :290\",\"北京红棉小冰科技有限公司 # 20K-30K # android SDK开发工程师 :290\",\"中软国际科技服务有限公司 # 薪资面议 # android开发工程师 :150\",\"北京汉克时代科技有限公司 # 10K-15K # android开发工程师 :148\",\"诚迈科技(南京)股份有限公司 # 11K-22K # android开发工程师 :147\",\"北京捷通华声科技股份有限公司 # 15K-25K # android开发工程师 :146\",\"中移雄安信息通信科技有限公司 # 薪资面议 # android 开发工程师 :145\",\"北京金色华勤数据服务有限公司 # 15K-25K # android高级开发工程师 :145\",\"北京恒天财富投资管理有限公司 # 15K-30K # android高级开发工程师 :145\",\"智联RPO # 薪资面议 # android开发工程师 :145\",\"人民网股份有限公司 # 18K-23K # android开发工程师 :145\",\"北京联合盈鑫信息技术有限公司 # 15K-25K # android开发工程师 :145\",\"聚民惠贸易有限公司 # 10K-16K # android开发工程师 :145\",\"中国电子系统技术有限公司 # 15K-30K # android开发工程师 :145\",\"鸿合科技股份有限公司 # 15K-20K # android系统开发工程师 :145\",\"汽车之家 # 20K-30K # android开发工程师 :145\",\"北京狸米科技有限公司 # 25K-35K # android高级开发工程师 :145\",\"北京品高辉煌科技有限责任公司 # 10K-15K # 安卓（android）开发工程师-中级 :145\",\"中科创达软件股份有限公司 # 15K-20K # android Modem开发工程师 :145\",\"纬创软件(北京) # 10K-15K # android开发工程师 :145\",\"完美世界(北京)软件有限公司 # 15K-25K # android开发工程师 :145\",\"比亚迪股份有限公司 # 13K-26K # android升级包制作工程师 :145\",\"东华软件 # 薪资面议 # 中级android开发工程师 :145\",\"北京同仁堂健康药业股份有限公司 # 20K-30K # android开发高级工程师 :145\",\"北京中油瑞飞信息技术有限责任公司 # 15K-20K # 软件开发工程师（android移动开发） :145\",\"大唐移动通信设备有限公司 # 薪资面议 # android开发工程师 :145\",\"创维集团有限公司 # 薪资面议 # android应用开发工程师 :145\",\"敦煌网 # 12K-20K # 高级android工程师-互联网电商 :145\",\"北京石头世纪科技股份有限公司 # 15K-30K # android 开发工程师 :145\",\"厦门唐普信息技术有限公司 # 15K-20K # android开发工程师 :145\",\"象蚁(北京)科技有限公司 # 12K-15K # android开发工程师 :145\",\"徐州英普瑞斯文化传媒有限公司 # 15K-20K # android开发工程师 :145\",\"北京琥珀创想科技有限公司 # 6K-8K # android开发实习生 :145\",\"北京酷得少年科技有限公司 # 20K-40K # android开发工程师 :145\",\"维恩贝特科技有限公司 # 8K-15K # android客户端开发工程师 :145\",\"广州碧软信息科技有限公司 # 10K-20K # android开发工程师 :145\",\"北京智汇盈科信息工程有限公司 # 10K-15K # android软件工程师 :145\",\"北京海创高科科技有限公司 # 10K-20K # android开发工程师 :145\",\"北京朗视仪器有限公司 # 10K-15K # android开发工程师（兼职） :145\",\"北京中园搏望科技发展有限公司 # 10K-20K # 高级android开发工程师 :145\",\"戴姆勒大中华区投资有限公司 # 薪资面议 # android and Linux System Engineer 安卓和Linux系统工程师 :145\",\"北京天龟教育科技有限公司 # 10K-15K # android开发工程师 :145\",\"易车公司 # 20K-40K # android高级研发工程师（数据采集方向）(J10954) :145\",\"北京晋辉科技有限公司 # 10K-15K # android开发工程师 :145\",\"天信达信息技术有限公司 # 8K-12K # android开发工程师 :145\",\"北京趣加科技有限公司 # 23K-40K # android（APP/SDK）工程师 :145\",\"北方天途航空技术发展(北京)有限公司 # 8K-15K # android开发工程师 :145\",\"北京金控数据技术股份有限公司 # 10K-15K # android开发工程师 :145\",\"北京古德兆伯咨询有限公司 # 15K-20K # android开发工程师 :145\",\"北京永生鼎立信息技术有限公司 # 15K-20K # android开发工程师 :145\",\"北京中科建友科技股份有限公司 # 10K-15K # android开发工程师    lmx :145\",\"贝塔智能科技(北京)有限公司 # 15K-25K # 高级android开发工程师 :145\",\"北京合胜易达科技有限公司 # 10K-15K # 软件android开发工程师（中、高级） :145\",\"北京字节跳动科技有限公司 # 25K-50K # android研发工程师 — 抖音/抖音火山版/直播 :23\",\"软通动力信息技术(集团)有限公司 # 15K-20K # android高级研发工程师 :14\",\"北京瑞友科技股份有限公司 # 10K-15K # android开发工程师 :10\",\"美团点评（中国大陆地区） # 薪资面议 # 美团搜索_android高级开发工程师 :5\",\"上海华钦信息科技股份有限公司 # 15K-20K # android开发工程师 :5\",\"天宇正清科技有限公司 # 10K-15K # android开发 :3\",\"阿里巴巴集团 # 薪资面议 # 创新事业群融媒体发展事业部-android开发专家.Y-北京 :2\",\"北京聚点艺盛文化传播有限责任公司 # 10K-15K # 初中级android工程师 :2\",\"北京奇客创想科技股份有限公司 # 12K-18K # iOS\\u0026android开发工程师 :2\",\"深圳市拓保软件有限公司 # 10K-15K # android开发工程师 :2\",\"乐普(北京)医疗器械股份有限公司 # 10K-20K # 高级android工程师 :2\",\"中科软科技股份有限公司 # 6K-10K # android工程师 :2\",\"北京奥鹏远程教育中心有限公司 # 2K-4K # android教学实习生 :2\",\"浩鲸新智能科技股份有限公司 # 30K-50K # 阿里巴巴前端专家(android、iOS、H5) :2\",\"北京视游互动科技有限公司 # 15K-25K # android开发工程师（教育） :2\",\"北京牧家科技有限公司 # 15K-25K # android开发工程师 :1\",\"北京搜房互联网信息服务有限公司/北京搜房网络技术有限公司／北京搜房科技发展有限公司 # 10K-15K # android高级研发工程师 :1\",\"北京六智信息技术股份有限公司 # 10K-12K # android安卓开发工程师 :1\",\"山东康威通信技术股份有限公司 # 10K-15K # android开发工程师 :1\",\"北京立诚拓业科技有限公司 # 10K-15K # android 工程师 :1\",\"中图云创智能科技(北京)有限公司 # 15K-25K # android开发工程师 :1\",\"中航材导航技术(北京)有限公司 # 15K-20K # android高级开发工程师 :1\",\"北京风行在线技术有限公司 # 20K-25K # android开发工程师 :1\",\"北京亿彩众邦科技有限公司 # 10K-15K # android开发工程师 :1\",\"广东一一五科技股份有限公司 # 12K-18K # android中级开发工程师 :1\",\"山东新北洋信息技术股份有限公司北京分公司 # 20K-30K # android工程师 :1\",\"纳恩博(北京)科技有限公司 # 20K-35K # android开发工程师 :1\",\"北京通泰信诚科技有限公司 # 10K-20K # android开发工程师 :1\",\"国科政信科技(北京)股份有限公司 # 15K-18K # android 工程师 :1\",\"北京平治东方科技股份有限公司 # 10K-15K # android开发工程师 :1\",\"北京讯通安添通讯科技有限公司 # 15K-20K # android系统多媒体模块开发 :1\",\"北京天酷信诚网络科技有限公司 # 8K-10K # android开发工程师 :1\",\"北京微美云息软件有限公司 # 8K-10K # android开发工程师 :1\",\"聚信互联（北京）科技有限公司 # 11K-20K # android开发工程师 :1\",\"北京多闻有道文化传媒有限公司 # 15K-20K # android开发工程师 :1\",\"北京诵读文化发展有限公司 # 10K-15K # android工程师 :1\",\"北京翔云在线数据技术有限公司 # 10K-15K # android开发工程师 :1\",\"北京指南科技有限公司 # 15K-25K # android开发工程师 :1\",\"北京明策智数科技有限公司 # 10K-18K # android中级开发工程师 :1\",\"北软互联(北京)科技有限公司 # 10K-15K # android安卓开发工程师-北京-00017 :1\",\"北京金榜苑科技有限公司 # 15K-30K # android开发工程师 :1\",\"心韵恒安医疗科技(北京)有限公司 # 10K-15K # android研发工程师 :1\",\"上海赛连信息科技有限公司 # 15K-25K # android app开发工程师-北京 :1\",\"北京地拓科技发展有限公司 # 10K-15K # android开发工程师 :1\",\"北京三信时代信息公司 # 10K-20K # android即时通信开发工程师 :1\",\"浙江瑞华康源科技有限公司北京分公司 # 15K-20K # android BSP开发工程师 :1\",\"北京大医云慈医疗科技有限公司 # 10K-20K # android开发工程师 :1\",\"北京众成天极信息技术有限责任公司 # 14K-15K # android开发工程师 :1\",\"大唐半导体科技有限公司 # 15K-20K # android/Linux系统工程师 :1\",\"北京百家互联科技有限公司 # 10K-20K # android开发工程师-校招职位 :1\",\"北京中公教育科技有限公司 # 15K-30K # IT培训讲师（android） :1\",\"北京雍禾医疗投资管理有限公司 # 10K-15K # android开发工程师 :1\",\"苏州方位通讯科技有限公司北京分公司 # 9K-18K # android软件开发工程师 :1\",\"创而新(北京)教育科技有限公司 # 10K-16K # android应用开发 :1\",\"北京世纪超星信息技术发展有限责任公司 # 8K-15K # android客户端开发（JAVA） :1\",\"维豪集团 # 18K-28K # android开发工程师 :1\",\"北京凤凰学易科技有限公司 # 15K-25K # android开发工程师（全栈） :1\",\"北京环球国广媒体科技有限公司 # 15K-20K # android开发工程师(J10601) :1\",\"纳络维网络技术(北京)有限公司 # 80K-130K # android开发工程师 :1\",\"华晨宝马汽车有限公司 # 薪资面议 # Manager Product Digital PoC MyCar android :1\",\"贝乐英语 # 15K-20K # android开发工程师 :1\",\"广联达科技股份有限公司 # 20K-30K # android高级开发工程师 (MJ003222) :1\",\"北京东大正保科技有限公司 # 15K-25K # android开发工程师-有Flutter开发经验 :1\",\"北京人瑞人力资源服务有限公司 # 8K-10K # android 开发工程师 :1\",\"航天宏图信息技术股份有限公司 # 10K-18K # android初级工程师 :1\",\"青岛青软锐芯电子科技有限公司 # 10K-15K # android开发工程师 :1\",\"华夏银行股份有限公司信用卡中心 # 薪资面议 # android开发 :1\",\"北京鑫美网络科技有限公司 # 8K-10K # android开发工程师 :1\",\"银河互联网电视有限公司 # 15K-25K # 高级android工程师 :1\",\"北京银河创想信息技术有限公司 # 11K-16K # android开发工程师 :1\",\"北京金英杰教育科技有限公司 # 12K-16K # android开发工程师 :1\",\"北京怡生乐居信息服务有限公司 # 15K-20K # android开发工程师 :1\",\"世纪佳缘 # 2K-4K # 客户端开发（android，iOS 和 前端）实习生 :1\",\"文思海辉技术有限公司PacteraTechnologyInternationalLimited # 薪资面议 # android开发工程师 :1\",\"北京达佳互联信息技术有限公司 # 20K-30K # android开发工程师-【快手APP】 :1\",\"北京宇信科技集团股份有限公司 # 10K-15K # android开发工程师 :1\",\"北京鼎普科技股份有限公司 # 15K-20K # android开发工程师 :1\",\"东软云科技有限公司 # 8K-15K # android开发工程师 :1\",\"北京京天威科技发展有限公司 # 10K-15K # 高级android开发工程师 :1\",\"传知(北京)教育科技有限公司 # 70K-100K # android开发工程师 :1\",\"北京仕邦达人力资源服务有限公司上海分公司 # 20K-40K # android开发工程师 :1\",\"北京师范大学 # 10K-15K # android研发工程师 :1\",\"万方数据股份有限公司 # 10K-15K # android中级开发 (MJ000051) :1\",\"北京天鹏恒宇科技发展有限公司 # 8K-15K # android研发工程师 :1\",\"首聘(天津)信息科技有限公司 # 9K-15K # android开发工程师 :1\",\"盈科美辰国际旅行社有限公司 # 15K-25K # android开发工程师 :1\",\"北京芯盾集团有限公司 # 15K-30K # android 开发工程师 :1\",\"神州通誉软件(上海)股份有限公司 # 15K-20K # android开发工程师（外派一线互联网公司） :1\",\"北京电旗通讯技术股份有限公司 # 10K-16K # 中级android工程师 :1\",\"中教未来国际教育科技(北京)有限公司 # 10K-15K # android开发工程师 :1\",\"大连斯锐信息技术有限公司 # 15K-20K # android开发工程师 :1\"]";
 
@@ -1064,28 +997,6 @@ public class MainActivity extends AppCompatActivity {
      * 郑州：8.31 - 12.41
      * **/
 
-    private void saveToLocal(List<String> showNew, List<String> showOld, List<String> timeLimit) {
-        String string = SPUtils.getInstance("UpdateCompanyBean").getString("UpdateCompanyBean");
-        if (TextUtils.isEmpty(string)) {
-            string = getJson("updateCompanyBean.json", this);
-        }
-        Map<String, UpdateCompanyBean> map = null;
-        if (!TextUtils.isEmpty(string)) {
-            map = GsonGetter.getInstance().getGson().fromJson(string, new TypeToken<Map<String, UpdateCompanyBean>>() {
-            }.getType());
-        }
-        if (map == null) {
-            map = new HashMap<>();
-        }
-        UpdateCompanyBean bean = new UpdateCompanyBean();
-        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(System.currentTimeMillis()));
-        bean.addCount = showNew.size();
-        bean.repeatCount = showOld.size();
-        bean.timeLimitCount = timeLimit.size();
-        map.put(date, bean);
-        String json = GsonGetter.getInstance().getGson().toJson(map);
-        SPUtils.getInstance("UpdateCompanyBean").put("UpdateCompanyBean", json);
-    }
 
     private static String getJson(String fileName, Context context) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -1103,57 +1014,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return stringBuilder.toString();
-    }
-
-    private void saveToLocal(List<String> companyCounts) {
-        List<String> localCompany = getLocalCompany();
-        List<String> localCompanyName = new ArrayList<>();
-        for (String s : localCompany) {
-            String name = s.split("#")[0];
-            localCompanyName.add(name);
-        }
-        List<String> temp = new ArrayList<>();
-        for (String companyCount : companyCounts) {
-            String name = companyCount.split("#")[0];
-            if (localCompanyName.contains(name)) {
-                int i = companyCounts.indexOf(companyCount);
-                int j = localCompanyName.indexOf(name);
-                String s = localCompany.get(j);
-                String[] split = s.split(":");
-                String count = split[1];
-                String tempStr = split[0] + ":" + (Integer.parseInt(count) + 1);
-                companyCounts.set(i, tempStr);
-                localCompany.set(j, tempStr);
-                continue;
-            }
-            temp.add(companyCount);
-        }
-        temp.addAll(localCompany);
-        Collections.sort(temp, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                //"郑州龙图环宇科技开发有限公司 # 8K-16K # 安卓开发工程师andriod :266"
-                if (TextUtils.isEmpty(o1) || o1.split(":").length < 2) {
-                    return -1;
-                }
-                if (TextUtils.isEmpty(o2) || o2.split(":").length < 2) {
-                    return 1;
-                }
-                try {
-                    return Integer.parseInt(o2.split(":")[1]) - Integer.parseInt(o1.split(":")[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return -1;
-            }
-        });
-        SPUtils.getInstance("Company").put("localMsg", GsonGetter.getInstance().getGson().toJson(temp));
-    }
-
-    public List<String> getLocalCompany() {
-        List<String> o = GsonGetter.getInstance().getGson().fromJson(getJson("lastData.json", this), new TypeToken<List<String>>() {
-        }.getType());
-        return o == null ? new ArrayList<>() : o;
     }
 
     /*zune: 统计文字出现的次数**/
