@@ -5,8 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.aes.AES;
@@ -31,8 +34,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class ClearHolder {
     public View view;
-    private BaseAdapter mAdapter;
-    private ListView results;
+    private RecyclerView results;
     private View bgResult;
     private WaveView progress;
     private List<String> mDatas = new ArrayList<>();
@@ -42,8 +44,49 @@ public class ClearHolder {
         progress = view.findViewById(R.id.progress);
         bgResult = view.findViewById(R.id.bg_result);
         results = view.findViewById(R.id.results);
-        mAdapter = getAdapter();
-        results.setAdapter(mAdapter);
+        results.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        results.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_item_path, parent, false)) {
+                };
+                viewHolder.itemView.setOnClickListener(v -> {
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onItemClick(mDatas.get((Integer) v.getTag()), (Integer) v.getTag());
+                    }
+                });
+                viewHolder.itemView.findViewById(R.id.path_text).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!withRes) {
+                            ((ViewGroup) view.getParent()).callOnClick();
+                            return;
+                        }
+                        view.setSelected(!view.isSelected());
+                        if (view.isSelected()) {
+                            ((TextView) view).setText(AES.decryptFromBase64(((TextView) view).getText().toString(), s));
+                        } else {
+                            ((TextView) view).setText(AES.encryptToBase64(((TextView) view).getText().toString(), s));
+                        }
+                    }
+                });
+                return viewHolder;
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                holder.itemView.setTag(position);
+                TextView pathText = holder.itemView.findViewById(R.id.path_text);
+                pathText.setText(withRes ? AES.encryptToBase64(mDatas.get(position), s) : mDatas.get(position));
+                pathText.setSelected(false);
+            }
+
+            @Override
+            public int getItemCount() {
+                return mDatas.size();
+            }
+        });
         bgResult.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,11 +112,14 @@ public class ClearHolder {
         progress.setVisibility(View.GONE);
     }
 
-    public ListView getResults() {
+    public RecyclerView getResults() {
         return results;
     }
 
-    public void stopLoad(List<String> datas, boolean withHeader) {
+    private boolean withRes = true;
+
+    public void stopLoad(List<String> datas, boolean withHeader, boolean withRes) {
+        this.withRes = withRes;
         if (datas == null || datas.isEmpty()) {
             datas = new ArrayList<>();
         }
@@ -93,7 +139,13 @@ public class ClearHolder {
         }
         mDatas.addAll(datas);
         mDatas.add("更多");
-        mAdapter.notifyDataSetChanged();
+        if (results.getAdapter() != null) {
+            results.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    public void stopLoad(List<String> datas, boolean withHeader) {
+        stopLoad(datas, withHeader, true);
     }
 
     public void stopLoadContact(List<String> datas) {
@@ -150,7 +202,9 @@ public class ClearHolder {
 
                         @Override
                         public void onNext(Integer integer) {
-                            mAdapter.notifyDataSetChanged();
+                            if (results.getAdapter() != null) {
+                                results.getAdapter().notifyDataSetChanged();
+                            }
                         }
 
                         @Override
@@ -193,29 +247,16 @@ public class ClearHolder {
             }
 
             @Override
-            public View getView(int position, View view, ViewGroup parent) {
+            public View getView(int position, View convertView, ViewGroup parent) {
                 ViewHolder viewHolder;
-                if (view == null) {
+                if (convertView == null) {
                     viewHolder = new ViewHolder();
-                    view = LayoutInflater.from(ClearHolder.this.view.getContext()).inflate(R.layout.layout_item_path, parent, false);
-                    viewHolder.pathText = view.findViewById(R.id.path_text);
-                    view.setTag(viewHolder);
+                    convertView = LayoutInflater.from(ClearHolder.this.view.getContext()).inflate(R.layout.layout_item_path, parent, false);
+                    viewHolder.pathText = convertView.findViewById(R.id.path_text);
+                    convertView.setTag(viewHolder);
                 } else {
-                    viewHolder = (ViewHolder) view.getTag();
+                    viewHolder = (ViewHolder) convertView.getTag();
                 }
-                viewHolder.pathText.setText(AES.encryptToBase64(mDatas.get(position), s));
-                viewHolder.pathText.setSelected(false);
-                viewHolder.pathText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        view.setSelected(!view.isSelected());
-                        if (view.isSelected()) {
-                            ((TextView) view).setText(AES.decryptFromBase64(((TextView) view).getText().toString(), s));
-                        } else {
-                            ((TextView) view).setText(AES.encryptToBase64(((TextView) view).getText().toString(), s));
-                        }
-                    }
-                });
                 return view;
             }
 
@@ -226,4 +267,14 @@ public class ClearHolder {
     }
 
     private String s = "$%^ETDFc)(KL:JD)";//key16位，可自行修改
+
+    private OnItemClickListener onItemClickListener;
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(String data, int position);
+    }
 }

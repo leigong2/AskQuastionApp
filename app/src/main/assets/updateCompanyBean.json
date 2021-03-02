@@ -319,9 +319,14 @@
     "repeatCount": 398,
     "timeLimitCount": 549
   },
-  "2021-03-02": {
+  "2021-03-01": {
     "addCount": 21,
     "repeatCount": 424,
     "timeLimitCount": 692
+  },
+  "2021-03-02": {
+    "addCount": 8,
+    "repeatCount": 314,
+    "timeLimitCount": 97
   }
 }

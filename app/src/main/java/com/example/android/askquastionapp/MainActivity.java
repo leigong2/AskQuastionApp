@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -25,7 +24,6 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -102,7 +100,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -589,10 +586,9 @@ public class MainActivity extends AppCompatActivity {
         datas.add("facecastProduction");
         datas.add("release");
         clearHolder.stopLoad(datas, false);
-        clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String path = (String) clearHolder.getResults().getAdapter().getItem(position);
+            public void onItemClick(String path, int position) {
                 switch (path) {
                     case "facecastDevelop":
                         BrowserUtils.goToBrowser(MainActivity.this, devolop);
@@ -872,17 +868,10 @@ public class MainActivity extends AppCompatActivity {
         String assetsBoss = "「郑州招聘信息」郑州招聘网 - BOSS直聘.xlsx";
         String assetsLiepin = "【郑州招聘信息_郑州招聘_郑州招聘网】-郑州猎聘.xlsx";
         String assets51 = "【郑州,android招聘，求职】-前程无忧.xlsx";
-        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<Company>, Integer>(1, false) {
+        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<String>, Integer>(1, false) {
             @Override
-            public void onNext(List<Company> companyCounts, Integer o2) {
-                List<String> datas = new ArrayList<>();
-                for (int i = 0; i < companyCounts.size(); i++) {
-                    Company companyCount = companyCounts.get(companyCounts.size() - 1 - i);
-                    datas.add(companyCount.company + " # " + companyCount.money + " # " + companyCount.address + " :" + companyCount.repeatCount);
-                }
-                clearHolder.stopLoad(datas, false);
-                String msg = GsonGetter.getInstance().getGson().toJson(companyCounts);
-                LogUtils.i("zune：", "msg = " + msg);
+            public void onNext(List<String> datas, Integer o2) {
+                clearHolder.stopLoad(datas, false, false);
             }
 
             @Override
@@ -893,24 +882,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<Company>, Integer> observer) {
-        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<Company>>() {
+    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<String>, Integer> observer) {
+        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<String>>() {
             @Override
-            public List<Company> apply(String[] assets) throws Exception {
+            public List<String> apply(String[] assets) throws Exception {
                 Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, assets);
                 List<Company> newData = ExcelManager.getInstance().getData(Company.class, map);
-                List<Company> localData = GsonGetter.getInstance().getGson().fromJson(getJson("lastData.json", MainActivity.this), new TypeToken<List<Company>>() {
+                List<Company> localData = GsonGetter.getInstance().getGson().fromJson(ExcelManager.getInstance().getJson("lastData.json", MainActivity.this), new TypeToken<List<Company>>() {
                 }.getType());
                 UpdateCompanyBean updateCompanyBean = insertToLocal(newData, localData);
                 String update = "\"" + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + "\":" + GsonGetter.getInstance().getGson().toJson(updateCompanyBean);
                 String localDataJson = GsonGetter.getInstance().getGson().toJson(localData);
-                return localData;
+                List<String> datas = new ArrayList<>();
+                datas.add("新增:" + updateCompanyBean.addCount + " # 重合:" + updateCompanyBean.repeatCount + " # 过期:" + updateCompanyBean.timeLimitCount);
+                for (int i = 0; i < localData.size(); i++) {
+                    Company companyCount = localData.get(localData.size() - 1 - i);
+                    datas.add(companyCount.company + " # " + companyCount.money + " # "
+                            + (TextUtils.isEmpty(companyCount.address) ? "郑州" : companyCount.address) + " :"
+                            + (TextUtils.isEmpty(companyCount.repeatCount) ? "新" : companyCount.repeatCount));
+                }
+                return datas;
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(observer);
     }
 
     private UpdateCompanyBean insertToLocal(List<Company> newData, List<Company> localData) {
         UpdateCompanyBean bean = new UpdateCompanyBean();
+        int totalCount = localData.size();
         for (Company company : newData) {
             if (!(company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓") || company.os.contains("app") || company.os.contains("APP")
                     || company.os.contains("移动") || company.os.contains("flutter") || company.os.contains("Flutter") || company.os.contains("逆向"))) {
@@ -933,6 +931,7 @@ public class MainActivity extends AppCompatActivity {
                 localData.add(temp);
                 bean.addCount++;
             } else {
+                totalCount--;
                 Company indexCompany = localData.get(index);
                 String repeatCount = indexCompany.repeatCount;
                 int count = 0;
@@ -948,7 +947,7 @@ public class MainActivity extends AppCompatActivity {
                 bean.repeatCount++;
             }
         }
-        bean.timeLimitCount = Math.max(localData.size() - bean.addCount - bean.repeatCount, 0);
+        bean.timeLimitCount = Math.max(totalCount, 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             localData.sort((t1, t2) -> (TextUtils.isEmpty(t2.repeatCount) ? 0 : Integer.parseInt(t2.repeatCount)) - (TextUtils.isEmpty(t1.repeatCount) ? 0 : Integer.parseInt(t1.repeatCount)));
         }
@@ -996,25 +995,6 @@ public class MainActivity extends AppCompatActivity {
      * 武汉：10.24 - 16.53
      * 郑州：8.31 - 12.41
      * **/
-
-
-    private static String getJson(String fileName, Context context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            //获取assets资源管理器
-            AssetManager assetManager = context.getAssets();
-            //通过管理器打开文件并读取
-            BufferedReader bf = new BufferedReader(new InputStreamReader(
-                    assetManager.open(fileName)));
-            String line;
-            while ((line = bf.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stringBuilder.toString();
-    }
 
     /*zune: 统计文字出现的次数**/
     private void statisticsTime(List<String> companyCounts) {
@@ -1538,21 +1518,20 @@ public class MainActivity extends AppCompatActivity {
             clearHolder = new ClearHolder(findViewById(R.id.clear_root));
         }
         clearHolder.stopLoad(new ArrayList<>(), true);
-        clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int index, long id) {
+            public void onItemClick(String data, int position) {
                 clearHolder.dismiss();
-                if (index == 0) {
-                    String path = (String) clearHolder.getResults().getAdapter().getItem(index);
-                    List<ContactBean> contactBeans = startParseXsl(path);
+                if (position == 0) {
+                    List<ContactBean> contactBeans = startParseXsl(data);
                     List<String> contacts = new ArrayList<>();
                     for (ContactBean contactBean : contactBeans) {
                         contacts.add(contactBean.name + " : " + contactBean.phone);
                     }
                     clearHolder.stopLoad(contacts, false);
-                    clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
                         @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int index, long id) {
+                        public void onItemClick(String data, int position) {
                             clearHolder.dismiss();
                         }
                     });
@@ -1685,16 +1664,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         clearHolder.stopLoad(paths, true);
-        clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int index, long id) {
-                if (index == clearHolder.getResults().getAdapter().getCount() - 1) {
+            public void onItemClick(String data, int index) {
+                if (clearHolder.getResults().getAdapter() == null) {
+                    return;
+                }
+                if (index == clearHolder.getResults().getAdapter().getItemCount() - 1) {
                     startFileChoose();
                 } else if (index >= 2) {
                     ReadTxtActivity.start(MainActivity.this, saveBean, index - 2);
                 } else {
-                    String item = (String) clearHolder.getResults().getAdapter().getItem(index);
-                    ReadTxtActivity.start(MainActivity.this, item);
+                    ReadTxtActivity.start(MainActivity.this, data);
                 }
                 clearHolder.dismiss();
             }
@@ -1736,9 +1717,9 @@ public class MainActivity extends AppCompatActivity {
                     contacts.add(contactBean.name + " : " + contactBean.phone);
                 }
                 clearHolder.stopLoad(contacts, false);
-                clearHolder.getResults().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int index, long id) {
+                    public void onItemClick(String data, int position) {
                         clearHolder.dismiss();
                     }
                 });
