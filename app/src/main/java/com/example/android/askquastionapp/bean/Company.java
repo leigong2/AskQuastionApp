@@ -1,6 +1,8 @@
 package com.example.android.askquastionapp.bean;
 
-public class Company {
+import com.example.android.askquastionapp.views.ListDialog;
+
+public class Company extends ListDialog.BaseData {
     public String company;
     public String country;
     public String hr;
@@ -19,4 +21,5 @@ public class Company {
     public String repeatCount;
     public float minMoney;
     public float maxMoney;
+    public boolean timeLimit = true;
 }

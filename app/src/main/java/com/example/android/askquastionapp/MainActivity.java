@@ -81,6 +81,7 @@ import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.VideoTurnGifActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.views.ClearHolder;
+import com.example.android.askquastionapp.views.ListDialog;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
@@ -100,6 +101,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -860,18 +862,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readXls() {
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
+        ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, true);
         String assetsZhilian = "企业最新招聘信息_求职信息_找工作上智联招聘.xlsx";
         String assetsBoss = "「郑州招聘信息」郑州招聘网 - BOSS直聘.xlsx";
         String assetsLiepin = "【郑州招聘信息_郑州招聘_郑州招聘网】-郑州猎聘.xlsx";
         String assets51 = "【郑州,android招聘，求职】-前程无忧.xlsx";
-        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<String>, Integer>(1, false) {
+        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
             @Override
-            public void onNext(List<String> datas, Integer o2) {
-                clearHolder.stopLoad(datas, false, false);
+            public void onNext(List<ListDialog.BaseData> datas, ListDialog<ListDialog.BaseData> listDialog) {
+                listDialog.showWithData(datas, false);
             }
 
             @Override
@@ -882,33 +881,64 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<String>, Integer> observer) {
-        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<String>>() {
+    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>> observer) {
+        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<ListDialog.BaseData>>() {
             @Override
-            public List<String> apply(String[] assets) throws Exception {
+            public List<ListDialog.BaseData> apply(String[] assets) throws Exception {
                 Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, assets);
                 List<Company> newData = ExcelManager.getInstance().getData(Company.class, map);
+                statisticsTime(newData);
                 List<Company> localData = GsonGetter.getInstance().getGson().fromJson(ExcelManager.getInstance().getJson("lastData.json", MainActivity.this), new TypeToken<List<Company>>() {
                 }.getType());
                 UpdateCompanyBean updateCompanyBean = insertToLocal(newData, localData);
                 String update = "\"" + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + "\":" + GsonGetter.getInstance().getGson().toJson(updateCompanyBean);
+                writeToPrivate(update, "update.txt");
                 String localDataJson = GsonGetter.getInstance().getGson().toJson(localData);
-                List<String> datas = new ArrayList<>();
-                datas.add("新增:" + updateCompanyBean.addCount + " # 重合:" + updateCompanyBean.repeatCount + " # 过期:" + updateCompanyBean.timeLimitCount);
+                writeToPrivate(localDataJson, "localDataJson.txt");
+                List<ListDialog.BaseData> datas = new ArrayList<>();
+                ListDialog.BaseData data = new ListDialog.BaseData("新增:" + updateCompanyBean.addCount + " # 重合:"
+                        + updateCompanyBean.repeatCount + " # 过期:" + updateCompanyBean.timeLimitCount
+                        + " # min:" + updateCompanyBean.minMoney + " # max:" + updateCompanyBean.maxMoney);
+                datas.add(data);
                 for (int i = 0; i < localData.size(); i++) {
                     Company companyCount = localData.get(localData.size() - 1 - i);
-                    datas.add(companyCount.company + " # " + companyCount.money + " # "
+                    companyCount.text = companyCount.company + " # " + companyCount.money + " # "
                             + (TextUtils.isEmpty(companyCount.address) ? "郑州" : companyCount.address) + " :"
-                            + (TextUtils.isEmpty(companyCount.repeatCount) ? "新" : companyCount.repeatCount));
+                            + (TextUtils.isEmpty(companyCount.repeatCount) ? "新" : companyCount.repeatCount);
+                    datas.add(companyCount);
                 }
                 return datas;
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(observer);
     }
 
+    private void writeToPrivate(String text, String path) {
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    File file = new File(getCacheDir(), path);
+                    if (!file.exists()) {
+                        file.createNewFile();
+                    }
+                    FileOutputStream fos = new FileOutputStream(file);
+                    OutputStreamWriter osw = new OutputStreamWriter(fos);
+                    osw.write(text);
+                    osw.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
     private UpdateCompanyBean insertToLocal(List<Company> newData, List<Company> localData) {
         UpdateCompanyBean bean = new UpdateCompanyBean();
         int totalCount = localData.size();
+        int moneyCount = 0;
+        float minMoney = 0;
+        float maxMoney = 0;
         for (Company company : newData) {
             if (!(company.os.contains("Android") || company.os.contains("android") || company.os.contains("安卓") || company.os.contains("app") || company.os.contains("APP")
                     || company.os.contains("移动") || company.os.contains("flutter") || company.os.contains("Flutter") || company.os.contains("逆向"))) {
@@ -928,8 +958,12 @@ public class MainActivity extends AppCompatActivity {
                 temp.company = company.company;
                 temp.minMoney = moneys[0];
                 temp.maxMoney = moneys[1];
+                temp.timeLimit = false;
                 localData.add(temp);
                 bean.addCount++;
+                moneyCount++;
+                minMoney += temp.minMoney;
+                maxMoney += temp.maxMoney;
             } else {
                 totalCount--;
                 Company indexCompany = localData.get(index);
@@ -943,14 +977,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 indexCompany.repeatCount = String.valueOf(++count);
+                indexCompany.timeLimit = false;
                 localData.set(index, indexCompany);
                 bean.repeatCount++;
+                moneyCount++;
+                minMoney += indexCompany.minMoney;
+                maxMoney += indexCompany.maxMoney;
             }
         }
         bean.timeLimitCount = Math.max(totalCount, 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             localData.sort((t1, t2) -> (TextUtils.isEmpty(t2.repeatCount) ? 0 : Integer.parseInt(t2.repeatCount)) - (TextUtils.isEmpty(t1.repeatCount) ? 0 : Integer.parseInt(t1.repeatCount)));
         }
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        bean.minMoney = decimalFormat.format(minMoney / moneyCount);
+        bean.maxMoney = decimalFormat.format(maxMoney / moneyCount);
         return bean;
     }
 
@@ -962,22 +1003,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return -1;
-    }
-
-    private String getTwo(double smallAverage) {
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        return decimalFormat.format(smallAverage);
-    }
-
-    private double getAverage(List<Integer> smallMoneys) {
-        if (smallMoneys.isEmpty()) {
-            return 0;
-        }
-        double sum = 0;
-        for (Integer smallMoney : smallMoneys) {
-            sum += smallMoney;
-        }
-        return sum / smallMoneys.size();
     }
 
     //北京
@@ -997,10 +1022,10 @@ public class MainActivity extends AppCompatActivity {
      * **/
 
     /*zune: 统计文字出现的次数**/
-    private void statisticsTime(List<String> companyCounts) {
-        Disposable subscribe = Observable.just(companyCounts).map(new Function<List<String>, Map<String, Integer>>() {
+    private void statisticsTime(List<Company> companyCounts) {
+        Observable.just(companyCounts).map(new Function<List<Company>, Map<String, Integer>>() {
             @Override
-            public Map<String, Integer> apply(List<String> strings) throws Exception {
+            public Map<String, Integer> apply(List<Company> strings) throws Exception {
                 long time = System.currentTimeMillis();
                 Map<String, Integer> temp = new HashMap<>();
                 temp.put("flutter", 0);
@@ -1029,10 +1054,10 @@ public class MainActivity extends AppCompatActivity {
                 temp.put("性能", 0);
                 temp.put("组件", 0);
                 temp.put("插件", 0);
-                for (String string : strings) {
+                for (Company string : strings) {
                     Set<Map.Entry<String, Integer>> entries = temp.entrySet();
                     for (Map.Entry<String, Integer> entry : entries) {
-                        if (string.toLowerCase().contains(entry.getKey().toLowerCase())) {
+                        if (string.scale != null && string.scale.contains(entry.getKey().toLowerCase())) {
                             Integer value = temp.get(entry.getKey());
                             if (value == null) {
                                 value = 0;
@@ -1042,29 +1067,27 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 Log.i("zune", "time = " + (System.currentTimeMillis() - time));
+                List<KeyWords> keyWords = new ArrayList<>();
+                for (String s : temp.keySet()) {
+                    if (temp.get(s) == null || temp.get(s) < 5) {
+                        continue;
+                    }
+                    KeyWords keyWord = new KeyWords();
+                    keyWord.keyWord = s;
+                    keyWord.time = temp.get(s);
+                    keyWords.add(keyWord);
+                }
+                Collections.sort(keyWords, new Comparator<KeyWords>() {
+                    @Override
+                    public int compare(KeyWords o1, KeyWords o2) {
+                        return o2.time - o1.time;
+                    }
+                });
+                String s = GsonGetter.getInstance().getGson().toJson(keyWords);
+                Log.i("zune", s);
                 return temp;
             }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(stringIntegerMap -> {
-                    List<KeyWords> keyWords = new ArrayList<>();
-                    for (String s : stringIntegerMap.keySet()) {
-                        if (stringIntegerMap.get(s) == null || stringIntegerMap.get(s) < 5) {
-                            continue;
-                        }
-                        KeyWords keyWord = new KeyWords();
-                        keyWord.keyWord = s;
-                        keyWord.time = stringIntegerMap.get(s);
-                        keyWords.add(keyWord);
-                    }
-                    Collections.sort(keyWords, new Comparator<KeyWords>() {
-                        @Override
-                        public int compare(KeyWords o1, KeyWords o2) {
-                            return o2.time - o1.time;
-                        }
-                    });
-                    String s = GsonGetter.getInstance().getGson().toJson(keyWords);
-                    Log.i("zune", s);
-                });
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe();
     }
 
     private void testSelenium() {
