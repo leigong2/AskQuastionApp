@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.example.android.askquastionapp.views.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,5 +10,16 @@
         android:layout_height="match_parent"
         android:layout_margin="1dp"
         android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/play_icon"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="#33000000"
+        android:scaleType="centerInside"
+        android:src="@drawable/exo_icon_play"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </com.example.android.askquastionapp.views.SquareFrameLayout>

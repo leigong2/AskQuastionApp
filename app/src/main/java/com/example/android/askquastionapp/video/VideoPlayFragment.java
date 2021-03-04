@@ -17,12 +17,9 @@ public class VideoPlayFragment extends Fragment {
 
     private SurfaceVideoView videoView;
     private SurfaceControllerView videoController;
-    private WatchVideoActivity.MediaData mediaData;
 
-    public static VideoPlayFragment getInstance(WatchVideoActivity.MediaData mediaData) {
-        VideoPlayFragment fragment = new VideoPlayFragment();
-        MemoryCache.getInstance().put("mediaData", mediaData);
-        return fragment;
+    public static VideoPlayFragment getInstance() {
+        return new VideoPlayFragment();
     }
 
     @Override
@@ -33,14 +30,11 @@ public class VideoPlayFragment extends Fragment {
     }
 
     protected void initView(View view) {
-        Log.i("zune: ", "initView" + this);
-        mediaData = MemoryCache.getInstance().remove("mediaData");
         videoView = view.findViewById(R.id.video_view);
         videoController = view.findViewById(R.id.video_controller);
     }
 
     public void play(@NonNull WatchVideoActivity.MediaData mediaData) {
-        Log.i("zune: ", "play" + this);
         SurfaceVideoPlayer.getInstance().bindSurfaceController(videoController);
         SurfaceVideoPlayer.getInstance().bindSurfaceVideo(videoView);
         SurfaceVideoPlayer.getInstance().bindMedia(mediaData);

@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +35,7 @@ import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -59,6 +61,16 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     private PhotoImageView mBitImageView;
     private View close;
     private int mClickPosition;
+    private int mediaType;  //0-all  1-video  2-image
+
+    public static PhotoSheetDialog show(FragmentManager fragmentManager) {
+        PhotoSheetDialog dialog = new PhotoSheetDialog();
+        Bundle bundle = new Bundle();
+        bundle.putInt("mediaType", 1);
+        dialog.setArguments(bundle);
+        dialog.show(fragmentManager, PhotoSheetDialog.class.getSimpleName());
+        return dialog;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -162,6 +174,9 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     private List<PictureCheckManager.MediaData> mDataList = new ArrayList<>();
 
     private void initView() {
+        if (getArguments() != null) {
+            mediaType = getArguments().getInt("mediaType", 0);
+        }
         GridLayoutManager manager = new GridLayoutManager(getContext(), 4, LinearLayoutManager.VERTICAL, false);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -231,6 +246,10 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     return;
                 }
                 ImageView imageView = holder.itemView.findViewById(R.id.image_view);
+                ImageView playIcon = holder.itemView.findViewById(R.id.play_icon);
+                if (mediaType == 1) {
+                    playIcon.setVisibility(View.VISIBLE);
+                }
                 PictureCheckManager.MediaData mediaData = mDataList.get(position);
                 Glide.with(imageView.getContext())
                         .load(mediaData.path)
@@ -247,6 +266,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         Observable.just(1).map(new Function<Integer, Map<String, List<PictureCheckManager.MediaData>>>() {
             @Override
             public Map<String, List<PictureCheckManager.MediaData>> apply(Integer integer) throws Exception {
+                if (mediaType == 0) {
+                    return PictureCheckManager.getInstance().getNormalPictures();
+                } else if (mediaType == 1) {
+                    return PictureCheckManager.getInstance().getNormalVideos();
+                }
                 return PictureCheckManager.getInstance().getNormalPictures();
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
@@ -259,11 +283,30 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     }
 
     private void itemClick(int position) {
-        mBitImageView.dismiss();
-        mBitImageView.setVisibility(View.VISIBLE);
-        close.setVisibility(View.VISIBLE);
-        File file = new File(mDataList.get(position).path);
-        mBitImageView.setFile(file);
+        PictureCheckManager.MediaData mediaData = mDataList.get(position);
+        if (mediaData.mediaType == 0) {
+            mBitImageView.dismiss();
+            mBitImageView.setVisibility(View.VISIBLE);
+            close.setVisibility(View.VISIBLE);
+            File file = new File(mediaData.path);
+            mBitImageView.setFile(file);
+        } else {
+            List<WatchVideoActivity.MediaData> datas = new ArrayList<>();
+            int index = 0;
+            for (PictureCheckManager.MediaData data : mDataList) {
+                if (data.path == null || data.folder == null || !mediaData.folder.equalsIgnoreCase(data.folder)) {
+                    continue;
+                }
+                if (data.path.equalsIgnoreCase(mediaData.path)) {
+                    index = datas.size();
+                }
+                WatchVideoActivity.MediaData temp = new WatchVideoActivity.MediaData(data.path, data.path, String.valueOf(mediaType), null);
+                datas.add(temp);
+            }
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(datas, index);
+            }
+        }
     }
 
     public void setData(Map<String, List<PictureCheckManager.MediaData>> datas) {
@@ -325,5 +368,15 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             float baseline = rectF.centerY() + distance;
             c.drawText((String) viewHolder.itemView.getTag(), DensityUtil.dp2px(5), baseline, textPaint);
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(List<WatchVideoActivity.MediaData> datas, int index);
+    }
+
+    private OnItemClickListener onItemClickListener;
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
     }
 }

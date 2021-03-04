@@ -123,7 +123,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
             @NonNull
             @Override
             public Fragment createFragment(int position) {
-                return VideoPlayFragment.getInstance(mediaData.get(position));
+                return VideoPlayFragment.getInstance();
             }
 
             @Override
@@ -138,6 +138,18 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
         childAt.setItemViewCacheSize(0);
         recyclerView.registerOnPageChangeCallback(callback);
+        recyclerView.setCurrentItem(position);
+        if (position > 0) {
+            BaseApplication.getInstance().getHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
+                    if (fragment instanceof VideoPlayFragment) {
+                        ((VideoPlayFragment) fragment).play(mediaData.get(position));
+                    }
+                }
+            }, 500);
+        }
     }
 
     ViewPager2.OnPageChangeCallback callback = new ViewPager2.OnPageChangeCallback() {

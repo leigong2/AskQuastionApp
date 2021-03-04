@@ -59,6 +59,37 @@ public class PictureCheckManager {
         return allPictures;
     }
 
+    public Map<String, List<MediaData>> getNormalVideos() {
+        File dir = Environment.getExternalStorageDirectory();
+        Map<String, List<MediaData>> resultMap = new HashMap<>();
+        if (dir.listFiles() == null) {
+            return resultMap;
+        }
+        for (File file : dir.listFiles()) {
+            String pathName = file.getPath().replaceAll(dir.getPath(), "");
+            if (pathName.startsWith("/.")) {
+                continue;
+            }
+            if (file.isDirectory()) {
+                if (file.listFiles().length > 0) {
+                    resultMap.putAll(getAllVideos(file));
+                }
+            } else if (file.length() > 1024 * 100 && isVideoFile(file)) {
+                MediaData mediaData = new MediaData();
+                mediaData.path = file.getPath();
+                mediaData.mediaType = 1;
+                String parent = file.getParent();
+                List<MediaData> group = resultMap.get(parent);
+                if (group == null) {
+                    group = new ArrayList<>();
+                }
+                group.add(mediaData);
+                resultMap.put(parent, group);
+            }
+        }
+        return resultMap;
+    }
+
     public Map<String, List<MediaData>> getNormalPictures() {
         File dir = Environment.getExternalStorageDirectory();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
@@ -117,11 +148,46 @@ public class PictureCheckManager {
         return resultMap;
     }
 
+    private Map<String, List<MediaData>> getAllVideos(File dir) {
+        Map<String, List<MediaData>> resultMap = new HashMap<>();
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                if (file.listFiles().length > 0) {
+                    resultMap.putAll(getAllVideos(file));
+                }
+            } else if (file.length() > 1024 * 100 && isVideoFile(file)) {
+                MediaData mediaData = new MediaData();
+                mediaData.path = file.getPath();
+                mediaData.mediaType = 1;
+                String parent = file.getParent();
+                List<MediaData> group = resultMap.get(parent);
+                if (group == null) {
+                    group = new ArrayList<>();
+                }
+                group.add(mediaData);
+                resultMap.put(parent, group);
+            }
+        }
+        return resultMap;
+    }
+
     private boolean isImageFile(File file) {
         String name = file.getName();
         //获取拓展名
         String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
         return fileEnd.equals("jpg") || fileEnd.equals("png") || fileEnd.equals("gif") || fileEnd.equals("jpeg") || fileEnd.equals("bmp");
+    }
+
+    private boolean isVideoFile(File file) {
+        String name = file.getName();
+        //获取拓展名
+        String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+        return fileEnd.equalsIgnoreCase("mp4") || fileEnd.equalsIgnoreCase("MOV")
+                || fileEnd.equalsIgnoreCase("MPEG4") || fileEnd.equalsIgnoreCase("avi")
+                || fileEnd.equalsIgnoreCase("WMV") || fileEnd.equalsIgnoreCase("avi")
+                || fileEnd.equalsIgnoreCase("ts") || fileEnd.equalsIgnoreCase("FLV")
+                || fileEnd.equalsIgnoreCase("F4V") || fileEnd.equalsIgnoreCase("RM")
+                || fileEnd.equalsIgnoreCase("RMVB") || fileEnd.equalsIgnoreCase("3GP");
     }
 
     public List<MediaData> getPrivatePictures() {
@@ -153,7 +219,7 @@ public class PictureCheckManager {
         public String path;
         public long size;
         public String type;
-        public int mediaType;
+        public int mediaType;//0-图片，1-视频
         public String folder;
     }
 }

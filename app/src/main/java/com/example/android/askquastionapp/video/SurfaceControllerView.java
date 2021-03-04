@@ -4,15 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.FloatRange;
 import androidx.annotation.Nullable;
 
 import com.example.android.askquastionapp.R;
@@ -63,8 +60,6 @@ public class SurfaceControllerView extends FrameLayout {
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.i("zune", "onProgressChanged : " + seekBar.getProgress() + "........" + seekBar.getMax() + "......."
-                        + SurfaceVideoPlayer.getInstance().getCurrentPosition() + ".........." + SurfaceVideoPlayer.getInstance().getDuration());
             }
 
             @Override
@@ -74,8 +69,6 @@ public class SurfaceControllerView extends FrameLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 SurfaceVideoPlayer.getInstance().seek(seekBar.getProgress() * 1f / SurfaceVideoPlayer.getInstance().getDuration());
-                Log.i("zune", "onProgressChanged : " + seekBar.getProgress() + "........" + seekBar.getMax() + "......."
-                        + SurfaceVideoPlayer.getInstance().getCurrentPosition() + ".........." + SurfaceVideoPlayer.getInstance().getDuration());
                 mHandler.removeCallbacksAndMessages(null);
                 startPlay();
                 refreshPlayIcon();
