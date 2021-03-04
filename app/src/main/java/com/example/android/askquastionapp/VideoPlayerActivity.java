@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 import android.widget.VideoView;
@@ -16,20 +15,24 @@ import android.widget.VideoView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SnapHelper;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.utils.MemoryCache;
+import com.example.android.askquastionapp.video.SurfaceVideoPlayer;
+import com.example.android.askquastionapp.video.VideoPlayFragment;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
-import com.example.android.askquastionapp.video.exo.ExoVideoHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static androidx.viewpager2.widget.ViewPager2.ORIENTATION_VERTICAL;
+import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_DRAGGING;
+import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_IDLE;
+import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_SETTLING;
 
 public class VideoPlayerActivity extends AppCompatActivity {
 
@@ -40,8 +43,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private static final String DIALOG_TITILE = "加载中，请稍后…";
     private ProgressDialog progressDialog;
     private String url;
-    private RecyclerView recyclerView;
-    private PagerSnapHelper mSnapHelper;
+    private ViewPager2 recyclerView;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
@@ -108,9 +110,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
     private void resetVideosPlayer() {
         recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mSnapHelper = new PagerSnapHelper();
-        mSnapHelper.attachToRecyclerView(recyclerView);
         mediaData = MemoryCache.getInstance().remove("mediaData");
         position = MemoryCache.getInstance().remove("position");
         if (mediaData == null) {
@@ -119,18 +118,12 @@ public class VideoPlayerActivity extends AppCompatActivity {
         if (position >= mediaData.size()) {
             position = 0;
         }
-        recyclerView.setAdapter(new RecyclerView.Adapter() {
+        recyclerView.setOrientation(ORIENTATION_VERTICAL);
+        recyclerView.setAdapter(new FragmentStateAdapter(this) {
             @NonNull
             @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                return new ExoVideoHolder(parent);
-            }
-
-            @Override
-            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-                if (holder instanceof ExoVideoHolder) {
-                    ((ExoVideoHolder) holder).onSetValue(mediaData.get(position));
-                }
+            public Fragment createFragment(int position) {
+                return VideoPlayFragment.getInstance(mediaData.get(position));
             }
 
             @Override
@@ -138,14 +131,40 @@ public class VideoPlayerActivity extends AppCompatActivity {
                 return mediaData.size();
             }
         });
-//        mSnapHelper.
-//        recyclerView.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-//            @Override
-//            public void onPageSelected(int position) {
-//                super.onPageSelected(position);
-//            }
-//        });
+        recyclerView.setOffscreenPageLimit(1);
+        RecyclerView childAt = (RecyclerView) recyclerView.getChildAt(0);
+        if (childAt.getLayoutManager() != null) {
+            childAt.getLayoutManager().setItemPrefetchEnabled(false);
+        }
+        childAt.setItemViewCacheSize(0);
+        recyclerView.registerOnPageChangeCallback(callback);
     }
+
+    ViewPager2.OnPageChangeCallback callback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
+            if (fragment instanceof VideoPlayFragment) {
+                ((VideoPlayFragment) fragment).play(mediaData.get(position));
+            }
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            super.onPageScrollStateChanged(state);
+            switch (state) {
+                case SCROLL_STATE_IDLE:  //空闲状态
+                    break;
+                case SCROLL_STATE_DRAGGING: //滑动状态
+                    break;
+                case SCROLL_STATE_SETTLING:  //滑动后自然沉降的状态
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     private void initDialog() {
         progressDialog = new ProgressDialog(this);
@@ -160,6 +179,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+        recyclerView.unregisterOnPageChangeCallback(callback);
+        SurfaceVideoPlayer.getInstance().release();
         super.onBackPressed();
     }
 

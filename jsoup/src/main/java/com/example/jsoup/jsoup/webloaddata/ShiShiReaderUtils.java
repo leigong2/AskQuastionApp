@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.FileWriter;
 
+/*zune：基础url：https://www.24novel.com/modules/article/articlelist.php?class=11&page=**/
 public class ShiShiReaderUtils extends BaseWebLoadUtils {
 
     public static void load(String url) {

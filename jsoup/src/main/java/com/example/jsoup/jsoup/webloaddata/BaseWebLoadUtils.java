@@ -200,16 +200,26 @@ public class BaseWebLoadUtils {
 
     public abstract static class BaseRunnable implements Runnable {
         private HrefData hrefData;
+        private String url;
 
         public BaseRunnable(HrefData hrefData) {
             this.hrefData = hrefData;
         }
 
-        public abstract void run(HrefData hrefData);
+        public BaseRunnable(String url) {
+            this.url = url;
+        }
+
+        public void run(HrefData hrefData) {
+        };
+
+        public void run(String url) {
+        };
 
         @Override
         public void run() {
             run(hrefData);
+            run(url);
         }
     }
 }

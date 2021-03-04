@@ -1,6 +1,7 @@
 package com.example.android.askquastionapp.video;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,20 +33,18 @@ public class VideoPlayFragment extends Fragment {
     }
 
     protected void initView(View view) {
+        Log.i("zune: ", "initView" + this);
         mediaData = MemoryCache.getInstance().remove("mediaData");
         videoView = view.findViewById(R.id.video_view);
         videoController = view.findViewById(R.id.video_controller);
-        bind();
-    }
-
-    private void bind() {
-        SurfaceVideoPlayer.getInstance().bindSurfaceVideo(videoView);
-        SurfaceVideoPlayer.getInstance().bindSurfaceController(videoController);
     }
 
     public void play(@NonNull WatchVideoActivity.MediaData mediaData) {
-        String url = mediaData.url;
-        videoView.setDataSource(url);
+        Log.i("zune: ", "play" + this);
+        SurfaceVideoPlayer.getInstance().bindSurfaceController(videoController);
+        SurfaceVideoPlayer.getInstance().bindSurfaceVideo(videoView);
+        SurfaceVideoPlayer.getInstance().bindMedia(mediaData);
+        SurfaceVideoPlayer.getInstance().play();
     }
 
     public int getLayoutId() {

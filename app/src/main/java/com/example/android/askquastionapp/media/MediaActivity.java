@@ -3,6 +3,7 @@ package com.example.android.askquastionapp.media;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,6 +11,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.video.WatchVideoActivity;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MediaActivity extends AppCompatActivity {
     public static void start(Context context) {
@@ -52,7 +62,20 @@ public class MediaActivity extends AppCompatActivity {
     }
 
     private void playVideo() {
-
+        List<WatchVideoActivity.MediaData> mediaDatas = new ArrayList<>();
+        File dir = new File(Environment.getExternalStorageDirectory(), "Telegram/Telegram Video");
+        if (!dir.exists() || dir.listFiles() == null || dir.listFiles().length == 0) {
+            return;
+        }
+        for (File file : dir.listFiles()) {
+            if (!file.getName().endsWith(".mp4") && !file.getName().endsWith(".MOV") && !file.getName().endsWith(".MP4")) {
+                continue;
+            }
+            WatchVideoActivity.MediaData mediaData = new WatchVideoActivity.MediaData(file.getName(), file.getPath(), ""
+                    , new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(file.lastModified())));
+            mediaDatas.add(mediaData);
+        }
+        VideoPlayerActivity.start(this, mediaDatas, 0);
     }
 
     @Override

@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.example.jsoup.jsoup.Content.userAgents;
 import static com.example.jsoup.jsoup.HttpsUrlValidator.trustAllHttpsCertificates;
 import static com.example.jsoup.jsoup.JsoupUtils.writeToTxt;
 
@@ -304,6 +303,17 @@ public class DownloadPictureUtils extends BaseWebLoadUtils {
 
     public interface OnResultListener {
         void onResult(String url);
+    }
+    
+    /*zune：https://588ku.com/ycpng/13031081.html**/
+    public static void loadImg(String url) {
+        sPool.execute(new BaseRunnable(url) {
+            @Override
+            public void run(String url) {
+                Document read = read(url);
+                System.out.println(read);
+            }
+        });
     }
 
 }

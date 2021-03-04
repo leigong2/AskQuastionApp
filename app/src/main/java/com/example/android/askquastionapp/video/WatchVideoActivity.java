@@ -442,6 +442,16 @@ public class WatchVideoActivity extends AppCompatActivity {
             this.type = type;
             this.addTime = addTime;
         }
+
+        @Override
+        public String toString() {
+            return "MediaData{" +
+                    "name='" + name + '\'' +
+                    ", url='" + url + '\'' +
+                    ", type='" + type + '\'' +
+                    ", addTime='" + addTime + '\'' +
+                    '}';
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

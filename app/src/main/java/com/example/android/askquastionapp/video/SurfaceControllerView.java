@@ -1,6 +1,8 @@
 package com.example.android.askquastionapp.video;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +15,6 @@ import android.widget.TextView;
 import androidx.annotation.FloatRange;
 import androidx.annotation.Nullable;
 
-import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 
 public class SurfaceControllerView extends FrameLayout {
@@ -24,7 +25,7 @@ public class SurfaceControllerView extends FrameLayout {
     private TextView mTvProgress;
     private TextView mTvTotal;
     private SeekBar mSeekBar;
-    private int mDuration = 100;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     public SurfaceControllerView(Context context) {
         super(context);
@@ -49,129 +50,114 @@ public class SurfaceControllerView extends FrameLayout {
         mTvProgress = findViewById(R.id.tv_progress_time);
         mTvTotal = findViewById(R.id.tv_total_time);
         mSeekBar = findViewById(R.id.seek_bar);
-        mPreBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SurfaceVideoPlayer.getInstance().playPre();
+        mPreBtn.setOnClickListener(v -> SurfaceVideoPlayer.getInstance().playPre());
+        mNextBtn.setOnClickListener(v -> SurfaceVideoPlayer.getInstance().playNext());
+        mPlayBtn.setOnClickListener(v -> {
+            if (SurfaceVideoPlayer.getInstance().isPlaying()) {
+                SurfaceVideoPlayer.getInstance().parse();
+            } else {
+                SurfaceVideoPlayer.getInstance().start();
             }
-        });
-        mNextBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SurfaceVideoPlayer.getInstance().playNext();
-            }
-        });
-        mPlayBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (SurfaceVideoPlayer.getInstance().isPlaying()) {
-                    SurfaceVideoPlayer.getInstance().parse();
-                } else {
-                    SurfaceVideoPlayer.getInstance().start();
-                }
-                refreshPlayIcon();
-            }
+            refreshPlayIcon();
         });
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.i("zune: ", "onProgressChanged: " + progress);
+                Log.i("zune", "onProgressChanged : " + seekBar.getProgress() + "........" + seekBar.getMax() + "......."
+                        + SurfaceVideoPlayer.getInstance().getCurrentPosition() + ".........." + SurfaceVideoPlayer.getInstance().getDuration());
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                Log.i("zune: ", "onStartTrackingTouch: ");
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.i("zune: ", "onStopTrackingTouch: ");
-                int progress = seekBar.getProgress();
-                SurfaceVideoPlayer.getInstance().seek(progress * 1f / mDuration);
+                SurfaceVideoPlayer.getInstance().seek(seekBar.getProgress() * 1f / SurfaceVideoPlayer.getInstance().getDuration());
+                Log.i("zune", "onProgressChanged : " + seekBar.getProgress() + "........" + seekBar.getMax() + "......."
+                        + SurfaceVideoPlayer.getInstance().getCurrentPosition() + ".........." + SurfaceVideoPlayer.getInstance().getDuration());
+                mHandler.removeCallbacksAndMessages(null);
+                startPlay();
+                refreshPlayIcon();
             }
         });
     }
 
-    /**
-     * Sets duration.
-     *
-     * @param duration the duration 毫秒
-     */
-    public void setDuration(int duration) {
-        this.mDuration = duration;
-        mTvTotal.setText(getTotalUsTime(mDuration));
-    }
-
-    public void setSeekPosition(@FloatRange(from = 0f, to = 1f) float position) {
-        if (position == 1) {
-            mSeekBar.setProgress(mDuration);
-            return;
-        }
-        int progress = (int) (position * mDuration);
-        mSeekBar.setProgress(progress);
-    }
+    private boolean isPlayingIcon;
 
     private void refreshPlayIcon() {
-        if (SurfaceVideoPlayer.getInstance().isPlaying()) {
-            mPlayBtn.setImageResource(android.R.drawable.ic_media_play);
+        if (!SurfaceVideoPlayer.getInstance().isPlaying()) {
+            if (!isPlayingIcon) {
+                isPlayingIcon = true;
+                mPlayBtn.setImageResource(android.R.drawable.ic_media_play);
+            }
         } else {
-            mPlayBtn.setImageResource(android.R.drawable.ic_media_pause);
+            if (isPlayingIcon) {
+                isPlayingIcon = false;
+                mPlayBtn.setImageResource(android.R.drawable.ic_media_pause);
+            }
         }
-    }
-
-    private int mCurPosition;
-    private boolean isReleased;
-
-    public void setReleased(boolean released) {
-        isReleased = released;
     }
 
     public void startPlay() {
-        BaseApplication.getInstance().getHandler().postDelayed(new Runnable() {
+        if (mHandler == null) {
+            return;
+        }
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (SurfaceVideoPlayer.getInstance().isPlaying() && !isReleased) {
-                    mCurPosition++;
+                if (SurfaceVideoPlayer.getInstance().isPlaying()) {
                     startPlay();
-                    mTvProgress.setText(getTotalUsTime(mCurPosition * 1000L));
-                    setSeekPosition(mCurPosition * 1f / mDuration);
+                    mTvProgress.setText(getTotalUsTime(SurfaceVideoPlayer.getInstance().getCurrentPosition(), false));
+                    mSeekBar.setProgress(SurfaceVideoPlayer.getInstance().getCurrentPosition());
+                } else {
+                    mTvProgress.setText("00:00");
+                    mSeekBar.setProgress(0);
+                    refreshPlayIcon();
                 }
             }
         }, 1000);
+        mTvTotal.setText(getTotalUsTime(SurfaceVideoPlayer.getInstance().getDuration(), true));
+        mSeekBar.setMax(SurfaceVideoPlayer.getInstance().getDuration());
     }
 
-    public static String getTotalUsTime(long mill) {
+    public static String getTotalUsTime(long mill, boolean roundDown) {
         if (mill <= 0) {
             return "00:00";
         }
-        long second = mill / 1000;
+        long second = mill / 1000 + (roundDown ? 0 : 1);
         long minute = second / 60;
         long hour = minute / 60;
         if (hour == 0) {
             if (minute < 10 && second % 60 < 10) {
                 return String.format("0%s:0%s", minute, second % 60);
-            } else if (minute < 10 && second % 60 >= 10) {
+            } else if (minute < 10) {
                 return String.format("0%s:%s", minute, second % 60);
-            } else if (minute >= 10 && second % 60 < 10) {
+            } else if (second % 60 < 10) {
                 return String.format("%s:0%s", minute, second % 60);
-            } else if (minute >= 10 && second % 60 >= 10) {
+            } else {
                 return String.format("%s:%s", minute, second % 60);
             }
         } else {
             if (minute % 60 < 10 && second % 60 < 10) {
                 return String.format("%s:0%s:0%s", hour, minute % 60, second % 60);
-            } else if (minute % 60 < 10 && second % 60 >= 10) {
+            } else if (minute % 60 < 10) {
                 return String.format("%s:0%s:%s", hour, minute % 60, second % 60);
-            } else if (minute % 60 >= 10 && second % 60 < 10) {
+            } else if (second % 60 < 10) {
                 return String.format("%s:%s:0%s", hour, minute % 60, second % 60);
-            } else if (minute % 60 >= 10 && second % 60 >= 10) {
+            } else {
                 return String.format("%s:%s:%s", hour, minute % 60, second % 60);
             }
         }
-        return "00:00";
     }
 
     public void release() {
-        isReleased = true;
+        if (mSeekBar != null) {
+            mSeekBar.setProgress(0);
+            mSeekBar.setOnSeekBarChangeListener(null);
+        }
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
     }
 }

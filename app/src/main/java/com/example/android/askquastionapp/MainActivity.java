@@ -888,13 +888,13 @@ public class MainActivity extends AppCompatActivity {
                 Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, assets);
                 List<Company> newData = ExcelManager.getInstance().getData(Company.class, map);
                 statisticsTime(newData);
-                List<Company> localData = GsonGetter.getInstance().getGson().fromJson(ExcelManager.getInstance().getJson("lastData.json", MainActivity.this), new TypeToken<List<Company>>() {
+                List<Company> localData = GsonGetter.getInstance().getGson().fromJson(ExcelManager.getInstance().getJson("localData.json", MainActivity.this), new TypeToken<List<Company>>() {
                 }.getType());
                 UpdateCompanyBean updateCompanyBean = insertToLocal(newData, localData);
                 String update = "\"" + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + "\":" + GsonGetter.getInstance().getGson().toJson(updateCompanyBean);
-                writeToPrivate(update, "update.txt");
+                writeToPrivate(update, "updateCompanyBean.txt");
                 String localDataJson = GsonGetter.getInstance().getGson().toJson(localData);
-                writeToPrivate(localDataJson, "localDataJson.txt");
+                writeToPrivate(localDataJson, "localData.txt");
                 List<ListDialog.BaseData> datas = new ArrayList<>();
                 ListDialog.BaseData data = new ListDialog.BaseData("新增:" + updateCompanyBean.addCount + " # 重合:"
                         + updateCompanyBean.repeatCount + " # 过期:" + updateCompanyBean.timeLimitCount
