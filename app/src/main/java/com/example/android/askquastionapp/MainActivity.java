@@ -87,18 +87,14 @@ import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.KeyWords;
-import com.example.jsoup.bean.LanguageWords;
 import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -128,7 +124,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import maximsblog.blogspot.com.jlatexmath.FromHelloWorld;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -290,7 +285,6 @@ public class MainActivity extends AppCompatActivity {
         added.add("通讯录");
         added.add("分享");
         added.add("解析excel");
-        added.add("爬虫测试");
         added.add("电影");
         added.add("视频");
         added.add("歌曲");
@@ -304,11 +298,9 @@ public class MainActivity extends AppCompatActivity {
         added.add("sd卡");
         added.add("selenium测试");
         added.add("八爪鱼");
-        added.add("翻译文案");
         added.add("下载app");
         added.add("设置ip");
         added.add("展开文本");
-        added.add("测试");
         added.add("测试@#");
         added.add("应用题");
         added.add("超大图加载");
@@ -357,9 +349,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "解析excel": //解析excel");
                 parseXsl();
-                break;
-            case "爬虫测试": //爬虫测试");
-                parseUrl();
                 break;
             case "电影": //电影");
                 if (new File(movieFile).exists()) {
@@ -419,9 +408,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 readXls();
                 break;
-            case "翻译文案": //翻译文案");
-                startTranslate();
-                break;
             case "下载app": //下载app");
                 showDownload();
                 break;
@@ -443,14 +429,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "测试@#":
                 PushActivity.start(this);
-                break;
-            case "测试": //测试");
-//                String test = "http://192.168.200.60/img0/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]/%E6%97%A5%E6%9C%AC%E7%86%9F%E5%A6%87NatsukoShunga%E5%B0%8F%E5%A5%97%E5%9B%BE-2[20P]19.jpeg";
-////                String test = "http://192.168.200.60/img0/0689%E6%9D%BE%E4%BA%95%E5%9C%A3%E5%A5%8828%E6%AD%B3%5B30P%5D/0689%E6%9D%BE%E4%BA%95%E5%9C%A3%E5%A5%8828%E6%AD%B3%5B30P%5D1.jpg";
-//                GlideUtils.getInstance().loadUrl(test, findViewById(R.id.title), true, false);
-//                File localCache = GlideUtils.getInstance().getLocalCache(this, test);
-                Intent intent = new Intent(this, FromHelloWorld.class);
-                startActivity(intent);
                 break;
             case "应用题":
                 WebWordProblemActivity.start(this);
@@ -578,20 +556,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDownload() {
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        ArrayList<String> datas = new ArrayList<>();
-        datas.add("facecastDevelop");
-        datas.add("facecastPreProducation");
-        datas.add("facecastProduction_blue");
-        datas.add("facecastProduction");
-        datas.add("release");
-        clearHolder.stopLoad(datas, false);
-        clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
+        ArrayList<ListDialog.BaseData> datas = new ArrayList<>();
+        datas.add(new ListDialog.BaseData("facecastDevelop"));
+        datas.add(new ListDialog.BaseData("facecastPreProducation"));
+        datas.add(new ListDialog.BaseData("facecastProduction_blue"));
+        datas.add(new ListDialog.BaseData("facecastProduction"));
+        datas.add(new ListDialog.BaseData("release"));
+        datas.add(new ListDialog.BaseData("self"));
+        ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, datas, false);
+        listDialog.setOnItemClickListener(new ListDialog.OnItemClickListener() {
             @Override
-            public void onItemClick(String path, int position) {
-                switch (path) {
+            public <T extends ListDialog.BaseData> void onItemClick(T data, int position) {
+                switch (data.text) {
                     case "facecastDevelop":
                         BrowserUtils.goToBrowser(MainActivity.this, devolop);
                         break;
@@ -607,250 +583,14 @@ public class MainActivity extends AppCompatActivity {
                     case "release":
                         BrowserUtils.goToBrowser(MainActivity.this, release);
                         break;
+                    case "self":
                     default:
                         BrowserUtils.goToBrowser(MainActivity.this, self);
                         break;
                 }
-                clearHolder.dismiss();
+                listDialog.dismiss();
             }
         });
-    }
-
-    private void startTranslate() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE);
-            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
-                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return;
-            }
-        }
-        File fileName = FileUtil.assetsToFile(this, "待翻译文案.xls");
-        Map<String, List<List<String>>> map = null;
-        if (fileName != null) {
-            map = ExcelManager.getInstance().analyzeXls(fileName.getPath());
-        }
-        if (map == null || map.isEmpty()) {
-            map = ExcelManager.getInstance().analyzeXlsx(fileName);
-        }
-//        [{xxx:"xxx", "xx":xx}, {yyy:"yyy", yy:"yy"}]
-//        {xxx:"xxx", xxx:"xxx"}
-        for (String key : map.keySet()) {
-            List<List<String>> lists = map.get(key);
-            if (lists == null) {
-                return;
-            }
-            List<LanguageWords> languageWords = new ArrayList<>();
-            for (int i = 1; i < lists.size(); i++) {
-                List<String> strings = lists.get(i);
-                LanguageWords languageWord = new LanguageWords();
-                for (int j = 2; j < strings.size(); j++) {
-                    LanguageWords.KeyWord keyWord = new LanguageWords.KeyWord();
-                    keyWord.key = strings.get(0);
-                    keyWord.word = strings.get(j);
-                    switch (j) {
-                        case 2:
-                            languageWord.rCN = keyWord;
-                            break;
-                        case 3:
-                            languageWord.en = keyWord;
-                            break;
-                        case 4:
-                            languageWord.ar = keyWord;
-                            break;
-                        case 5:
-                            languageWord.de = keyWord;
-                            break;
-                        case 6:
-                            languageWord.es = keyWord;
-                            break;
-                        case 7:
-                            languageWord.fr = keyWord;
-                            break;
-                        case 8:
-                            languageWord.hi = keyWord;
-                            break;
-                        case 9:
-                            languageWord.in = keyWord;
-                            break;
-                        case 10:
-                            languageWord.it = keyWord;
-                            break;
-                        case 11:
-                            languageWord.ja = keyWord;
-                            break;
-                        case 12:
-                            languageWord.ko = keyWord;
-                            break;
-                        case 13:
-                            languageWord.pt = keyWord;
-                            break;
-                        case 14:
-                            languageWord.ru = keyWord;
-                            break;
-                        case 15:
-                            languageWord.th = keyWord;
-                            break;
-                        case 16:
-                            languageWord.vi = keyWord;
-                            break;
-                        case 17:
-                            languageWord.rHK = keyWord;
-                            break;
-                    }
-                }
-                languageWords.add(languageWord);
-            }
-            new Thread() {
-                @Override
-                public void run() {
-                    super.run();
-                    appendXml(languageWords);
-                    BaseApplication.getInstance().getHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            clearHolder.stopLoad(new ArrayList<>(), false);
-                        }
-                    });
-                }
-            }.start();
-            if (clearHolder == null) {
-                clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-                clearHolder.startLoad();
-            }
-        }
-    }
-
-    private void appendXml(List<LanguageWords> languageWords) {
-        try {
-            for (LanguageWords languageWord : languageWords) {
-                for (int i = 2; i < 18; i++) {
-                    switch (i) {
-                        case 2:
-                            startWrite(languageWord.rCN, "values-zh-rCN");
-                            break;
-                        case 3:
-                            startWrite(languageWord.en, "values");
-                            break;
-                        case 4:
-                            startWrite(languageWord.ar, "values-ar");
-                            break;
-                        case 5:
-                            startWrite(languageWord.de, "values-de");
-                            break;
-                        case 6:
-                            startWrite(languageWord.es, "values-es");
-                            break;
-                        case 7:
-                            startWrite(languageWord.fr, "values-fr");
-                            break;
-                        case 8:
-                            startWrite(languageWord.hi, "values-hi");
-                            break;
-                        case 9:
-                            startWrite(languageWord.in, "values-in");
-                            break;
-                        case 10:
-                            startWrite(languageWord.it, "values-it");
-                            break;
-                        case 11:
-                            startWrite(languageWord.ja, "values-ja");
-                            break;
-                        case 12:
-                            startWrite(languageWord.ko, "values-ko");
-                            break;
-                        case 13:
-                            startWrite(languageWord.pt, "values-pt");
-                            break;
-                        case 14:
-                            startWrite(languageWord.ru, "values-ru");
-                            break;
-                        case 15:
-                            startWrite(languageWord.th, "values-th");
-                            break;
-                        case 16:
-                            startWrite(languageWord.vi, "values-vi");
-                            break;
-                        case 17:
-                            startWrite(languageWord.rHK, "values-zh-rHK");
-                            break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void startWrite(LanguageWords.KeyWord keyWord, String country) throws IOException {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/words/" + country + "/strings.xml");
-        BufferedReader fileReader = new BufferedReader(new FileReader(file));
-        StringBuilder temp = new StringBuilder();
-        while (true) {
-            String s = fileReader.readLine();
-            if (s == null) {
-                break;
-            }
-            temp.append(s).append("\n");
-        }
-        temp = new StringBuilder(temp.toString().trim());
-        int index = temp.toString().lastIndexOf("\n");
-        String normal = temp.toString().substring(0, index);
-        String last = temp.toString().substring(index, temp.length());
-        FileWriter fos = new FileWriter(file, false);
-        String key = keyWord.key;
-        String value = resetWord(keyWord.word);
-        String string = String.format("    <string name=\"%s\">%s</string>", key, value);
-        String[] split = normal.split("\n");
-        for (String s : split) {
-            fos.write(s);
-            fos.write("\n");
-        }
-        fos.write(string);
-        fos.write(last);
-        fileReader.close();
-        fos.close();
-    }
-
-    private String resetWord(String word) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < word.length(); i++) {
-            if (word.charAt(i) == '\'') {
-                sb.append("\\");
-            }
-            sb.append(word.charAt(i));
-        }
-        return sb.toString().replaceAll("XXX", "%s");
-    }
-
-    private void startDownload() {
-        if (new File(movieFile).exists()
-                && new File(musicFile).exists()
-                && new File(avFile).exists()) {
-            return;
-        }
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                File file = new File(baseDir);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-                startDownload(musicUrl, musicFile, () -> startDownload(movieUrl, movieFile, () -> startDownload(avUrl, avFile, () -> {
-                    Disposable subscribe = Observable.just(1).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(integer -> clearHolder.dismiss());
-                })));
-            }
-        }.start();
     }
 
     private void startDownload(String url, String file, CallBack callBack) {
@@ -1506,24 +1246,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void parseUrl() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE);
-            if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
-                        , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return;
-            }
-        }
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
-    }
-
     private void parseXsl() {
         externalClick = EXTERNAL_XSL_CHOOSE;
         if (Build.VERSION.SDK_INT >= 23) {
@@ -1677,30 +1399,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         SaveUtils.SaveBean saveBean = SaveUtils.get();
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        List<String> paths = new ArrayList<>();
+        List<ListDialog.BaseData> paths = new ArrayList<>();
         if (saveBean != null && saveBean.saves != null && !saveBean.saves.isEmpty()) {
             for (SaveUtils.SaveBean.Save save : saveBean.saves) {
-                paths.add(save.path);
+                paths.add(new ListDialog.BaseData(save.path));
             }
         }
-        clearHolder.stopLoad(paths, true);
-        clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
+        File file = FileUtil.assetsToFile(this, "白马啸西风.txt");
+        if (file != null) {
+            paths.add(new ListDialog.BaseData(file.getPath()));
+        }
+        paths.add(new ListDialog.BaseData("更多"));
+        ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(this, paths, false);
+        listDialog.setOnItemClickListener(new ListDialog.OnItemClickListener() {
             @Override
-            public void onItemClick(String data, int index) {
-                if (clearHolder.getResults().getAdapter() == null) {
-                    return;
-                }
-                if (index == clearHolder.getResults().getAdapter().getItemCount() - 1) {
+            public <T extends ListDialog.BaseData> void onItemClick(T data, int index) {
+                if (index == paths.size() - 1) {
                     startFileChoose();
                 } else if (index >= 2) {
                     ReadTxtActivity.start(MainActivity.this, saveBean, index - 2);
                 } else {
-                    ReadTxtActivity.start(MainActivity.this, data);
+                    ReadTxtActivity.start(MainActivity.this, data.text);
                 }
-                clearHolder.dismiss();
+                listDialog.dismiss();
             }
         });
     }
@@ -1769,28 +1490,18 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
-        ClearUtils.getInstance().delete(Environment.getExternalStorageDirectory().getPath(), new Observer<List<String>>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-            }
 
+        ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, true);
+        ClearUtils.getInstance().delete(Environment.getExternalStorageDirectory().getPath(), new SimpleObserver<List<String>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
             @Override
-            public void onNext(List<String> integer) {
+            public void onNext(List<String> strings, ListDialog<ListDialog.BaseData> listDialog) {
+                List<ListDialog.BaseData> datas = new ArrayList<>();
+                for (String s : strings) {
+                    ListDialog.BaseData data = new ListDialog.BaseData(s);
+                    datas.add(data);
+                }
                 ToastUtils.showShort("删除完成");
-                clearHolder.stopLoad(integer, false);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                ToastUtils.showShort("刪除失败");
-            }
-
-            @Override
-            public void onComplete() {
+                listDialog.showWithData(datas, false);
             }
         });
     }

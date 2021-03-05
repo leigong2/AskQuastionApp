@@ -70,6 +70,12 @@ public class PictureCheckManager {
             if (pathName.startsWith("/.")) {
                 continue;
             }
+            if (pathName.startsWith("/Android")) {
+                continue;
+            }
+            if (pathName.startsWith("/tencent")) {
+                continue;
+            }
             if (file.isDirectory()) {
                 if (file.listFiles().length > 0) {
                     resultMap.putAll(getAllVideos(file));

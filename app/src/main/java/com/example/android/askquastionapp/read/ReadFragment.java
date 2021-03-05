@@ -92,7 +92,7 @@ public class ReadFragment extends Fragment {
                         if (isClick && onReadListener != null) {
                             float curX = event.getX();
                             float curY = event.getY();
-                            if (curX < maxX / 2 && curY > maxY / 2 + 100) {
+                            if (curY > maxY / 2 + 100) {
                                 onReadListener.onNext();
                             } else if (curY < maxY / 2 - 100) {
                                 onReadListener.onPre();

@@ -140,17 +140,19 @@ public class VideoPlayerActivity extends AppCompatActivity {
         recyclerView.registerOnPageChangeCallback(callback);
         recyclerView.setCurrentItem(position);
         if (position > 0) {
-            BaseApplication.getInstance().getHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
-                    if (fragment instanceof VideoPlayFragment) {
-                        ((VideoPlayFragment) fragment).play(mediaData.get(position));
-                    }
+            BaseApplication.getInstance().getHandler().postDelayed(() -> {
+                if (isPlayed) {
+                    return;
+                }
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
+                if (fragment instanceof VideoPlayFragment) {
+                    ((VideoPlayFragment) fragment).play(mediaData.get(position));
                 }
             }, 500);
         }
     }
+
+    private boolean isPlayed;
 
     ViewPager2.OnPageChangeCallback callback = new ViewPager2.OnPageChangeCallback() {
         @Override
@@ -159,6 +161,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
             Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
             if (fragment instanceof VideoPlayFragment) {
                 ((VideoPlayFragment) fragment).play(mediaData.get(position));
+                isPlayed = true;
             }
         }
 

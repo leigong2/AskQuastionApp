@@ -22,7 +22,6 @@ public class SurfaceVideoView extends SurfaceView implements SurfaceHolder.Callb
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        SurfaceVideoPlayer.getInstance().play();
     }
 
     @Override

@@ -84,12 +84,14 @@ public class SurfaceVideoPlayer {
     }
 
     public void seek(@FloatRange(from = 0f, to = 1f) float position) {
-        int duration = mCurMediaPlayer.getDuration();
+        int duration = getDuration();
         Log.i("zune: ", "position: " + position + ", duration = " + duration);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mCurMediaPlayer.seekTo((long) (position * duration), SEEK_CLOSEST);
-        } else {
-            mCurMediaPlayer.seekTo((int) (position * duration));
+        if (prepared) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mCurMediaPlayer.seekTo((long) (position * duration), SEEK_CLOSEST);
+            } else {
+                mCurMediaPlayer.seekTo((int) (position * duration));
+            }
         }
     }
 
@@ -103,44 +105,52 @@ public class SurfaceVideoPlayer {
         return mCurMediaPlayer != null && mCurMediaPlayer.isPlaying();
     }
 
+    private boolean prepared = false;
+
     public void play() {
         if (mCurMediaPlayer != null) {
             mCurMediaPlayer.reset();
         }
+        prepared = false;
         mCurMediaPlayer = new MediaPlayer();
         mCurMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                prepared = true;
                 startPlay(mCurMediaPlayer);
             }
         });
         mCurMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mCurMediaPlayer.seekTo(1);
+                if (prepared) {
+                    mCurMediaPlayer.seekTo(1);
+                }
             }
         });
         mCurMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                mCurMediaPlayer.seekTo(0);
+                if (prepared) {
+                    mCurMediaPlayer.seekTo(0);
+                }
                 return false;
             }
         });
         try {
             mCurMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mCurMediaPlayer.setDataSource(mediaData.url);
-            mCurMediaPlayer.prepareAsync();
+            mCurMediaPlayer.prepare();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public int getCurrentPosition() {
-        return mCurMediaPlayer == null ? 0 : mCurMediaPlayer.getCurrentPosition();
+        return mCurMediaPlayer == null || !prepared ? 0 : mCurMediaPlayer.getCurrentPosition();
     }
 
     public int getDuration() {
-        return mCurMediaPlayer == null ? 100 : mCurMediaPlayer.getDuration();
+        return mCurMediaPlayer == null || !prepared ? 100 : mCurMediaPlayer.getDuration();
     }
 }

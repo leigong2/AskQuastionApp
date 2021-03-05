@@ -12,6 +12,7 @@
 
     <com.example.android.askquastionapp.video.SurfaceControllerView
         android:id="@+id/video_controller"
+        android:visibility="gone"
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

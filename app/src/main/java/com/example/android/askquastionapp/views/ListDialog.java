@@ -89,8 +89,8 @@ public class ListDialog<T extends ListDialog.BaseData> extends DialogFragment {
         if (withAes != null) {
             this.withAes = withAes;
         }
-        boolean progress = MemoryCache.getInstance().remove("progress");
-        if (progress) {
+        Boolean progress = MemoryCache.getInstance().remove("progress");
+        if (progress != null && progress) {
             this.progress.setVisibility(View.VISIBLE);
         }
         results.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -156,7 +156,7 @@ public class ListDialog<T extends ListDialog.BaseData> extends DialogFragment {
     }
 
     public interface OnItemClickListener {
-        <T> void onItemClick(T data, int position);
+        <T extends BaseData> void onItemClick(T data, int position);
     }
 
     public static class BaseData {
