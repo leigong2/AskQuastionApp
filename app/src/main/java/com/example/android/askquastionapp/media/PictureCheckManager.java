@@ -71,6 +71,8 @@ public class PictureCheckManager {
                 continue;
             }
             if (pathName.startsWith("/Android")) {
+                resultMap.putAll(getAllVideos(new File(dir, "/Android/data/com.xunlei.downloadprovider/files/ThunderDownload")));
+                resultMap.putAll(getAllVideos(new File(dir, "/Android/data/com.tencent.mm/MicroMsg/a7b426e55418f94695aa9f4c039faf7e/video")));
                 continue;
             }
             if (pathName.startsWith("/tencent")) {
@@ -105,6 +107,7 @@ public class PictureCheckManager {
         for (File file : dir.listFiles()) {
             String pathName = file.getPath().replaceAll(dir.getPath(), "");
             if (pathName.startsWith("/Android")) {
+                resultMap.putAll(getAllPictures(new File(dir, "/Android/data/org.telegram.messenger/cache")));
                 continue;
             }
             if (pathName.startsWith("/tencent")) {
@@ -181,7 +184,7 @@ public class PictureCheckManager {
         String name = file.getName();
         //获取拓展名
         String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
-        return fileEnd.equals("jpg") || fileEnd.equals("png") || fileEnd.equals("gif") || fileEnd.equals("jpeg") || fileEnd.equals("bmp");
+        return fileEnd.equals("jpg") || fileEnd.equals("png") || fileEnd.equals("gif") || fileEnd.equals("jpeg") || fileEnd.equals("bmp") || fileEnd.equals("webp");
     }
 
     private boolean isVideoFile(File file) {

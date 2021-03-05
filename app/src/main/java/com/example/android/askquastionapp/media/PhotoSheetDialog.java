@@ -46,6 +46,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -316,6 +318,12 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 if (collection == null) {
                     continue;
                 }
+                Collections.sort(collection, new Comparator<PictureCheckManager.MediaData>() {
+                    @Override
+                    public int compare(PictureCheckManager.MediaData o1, PictureCheckManager.MediaData o2) {
+                        return (int) (new File(o2.path).length() - new File(o1.path).length());
+                    }
+                });
                 PictureCheckManager.MediaData mediaData = new PictureCheckManager.MediaData();
                 mediaData.folder = s;
                 mDataList.add(mediaData);

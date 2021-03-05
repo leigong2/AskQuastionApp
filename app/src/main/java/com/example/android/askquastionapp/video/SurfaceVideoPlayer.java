@@ -87,10 +87,13 @@ public class SurfaceVideoPlayer {
         int duration = getDuration();
         Log.i("zune: ", "position: " + position + ", duration = " + duration);
         if (prepared) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                mCurMediaPlayer.seekTo((long) (position * duration), SEEK_CLOSEST);
-            } else {
-                mCurMediaPlayer.seekTo((int) (position * duration));
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mCurMediaPlayer.seekTo((long) (position * duration), SEEK_CLOSEST);
+                } else {
+                    mCurMediaPlayer.seekTo((int) (position * duration));
+                }
+            } catch (Throwable ignore) {
             }
         }
     }

@@ -7,6 +7,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.MediaController;
@@ -44,6 +46,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private String url;
     private ViewPager2 recyclerView;
+    public Handler mHandler = new Handler(Looper.getMainLooper());
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
