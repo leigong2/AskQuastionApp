@@ -23,6 +23,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.media.PhotoSheetDialog;
 import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.video.SurfaceVideoPlayer;
 import com.example.android.askquastionapp.video.VideoPlayFragment;
@@ -47,6 +48,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private String url;
     private ViewPager2 recyclerView;
     public Handler mHandler = new Handler(Looper.getMainLooper());
+    public PhotoSheetDialog dialog;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
@@ -61,6 +63,16 @@ public class VideoPlayerActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
+    public static void start(PhotoSheetDialog dialog, List<WatchVideoActivity.MediaData> mediaData, int position) {
+        if (dialog.getContext() == null) {
+            return;
+        }
+        Intent intent = new Intent(dialog.getContext(), VideoPlayerActivity.class);
+        MemoryCache.getInstance().put("mediaData", mediaData);
+        MemoryCache.getInstance().put("position", position);
+        MemoryCache.getInstance().put("PhotoSheetDialog", dialog);
+        dialog.getContext().startActivity(intent);
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +127,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view);
         mediaData = MemoryCache.getInstance().remove("mediaData");
         position = MemoryCache.getInstance().remove("position");
+        dialog = MemoryCache.getInstance().remove("PhotoSheetDialog");
         if (mediaData == null) {
             mediaData = new ArrayList<>();
         }

@@ -13,7 +13,8 @@
         android:id="@+id/anim_lay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+        android:layout_gravity="bottom"
+        android:layout_margin="10dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
@@ -27,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_gravity="bottom"
-            android:background="@color/white"
+            android:background="@drawable/bg_bottom_pop"
             android:gravity="center"
             android:padding="10dp"
             android:text="取消"

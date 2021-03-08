@@ -52,7 +52,7 @@ public class BottomPop extends BasePopup {
                     public void onClick(View v) {
                         int position = (int) v.getTag();
                         if (onItemClickListener != null) {
-                            onItemClickListener.onItemClick(position);
+                            onItemClickListener.onItemClick(BottomPop.this, position);
                         }
                     }
                 });
@@ -71,15 +71,9 @@ public class BottomPop extends BasePopup {
                 return mDatas.size();
             }
         });
-    }
-
-    @Override
-    public void show(Activity context) {
-        super.show(context);
-        animLay.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        animLay.post(new Runnable() {
             @Override
-            public void onGlobalLayout() {
-                animLay.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            public void run() {
                 int height = animLay.getHeight();
                 ObjectAnimator oa = ObjectAnimator.ofFloat(animLay, "translationY", height, 0f);
                 oa.setDuration(300);
@@ -100,7 +94,7 @@ public class BottomPop extends BasePopup {
         });
     }
 
-    public void setItemText(String text) {
+    public void addItemText(String text) {
         mDatas.add(text);
         if (recyclerView.getAdapter() != null) {
             recyclerView.getAdapter().notifyDataSetChanged();
@@ -112,7 +106,7 @@ public class BottomPop extends BasePopup {
     }
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(BottomPop bottomPop, int position);
     }
 
     private OnItemClickListener onItemClickListener;

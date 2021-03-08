@@ -108,14 +108,14 @@ public class ListenMusicActivity extends AppCompatActivity {
             public void onClick(View v) {
                 BottomPop current = BottomPop.getCurrent(ListenMusicActivity.this);
                 for (String s : mIconExa) {
-                    current.setItemText(s);
+                    current.addItemText(s);
                 }
                 current.show(ListenMusicActivity.this);
                 current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
                     @Override
-                    public void onItemClick(int position) {
+                    public void onItemClick(BottomPop bottomPop, int position) {
                         dispatchIconClick(position);
-                        current.dismiss();
+                        bottomPop.dismiss();
                         mMode.setText(mIconExa[position]);
                     }
                 });
@@ -236,12 +236,12 @@ public class ListenMusicActivity extends AppCompatActivity {
                             int i = (int) v.getTag();
                             BottomPop current = BottomPop.getCurrent(ListenMusicActivity.this);
                             for (String s : mLongExa) {
-                                current.setItemText(s);
+                                current.addItemText(s);
                             }
                             current.show(ListenMusicActivity.this);
                             current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
                                 @Override
-                                public void onItemClick(int position) {
+                                public void onItemClick(BottomPop bottomPop, int position) {
                                     MediaData mediaData = mDatas.get(i);
                                     switch (position) {
                                         case 0:
@@ -275,7 +275,7 @@ public class ListenMusicActivity extends AppCompatActivity {
                                             ToastUtils.showShort("文件删除成功");
                                             break;
                                     }
-                                    current.dismiss();
+                                    bottomPop.dismiss();
                                 }
                             });
                             return false;

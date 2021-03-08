@@ -2,20 +2,19 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="50dp">
 
     <TextView
         android:id="@+id/text_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center"
-        android:padding="10dp"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="14sp"
         tools:text="我是第一条" />
 
     <View
-        android:background="@color/colorPrimaryDark"
+        android:background="#3300574B"
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"/>

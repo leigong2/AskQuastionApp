@@ -53,7 +53,7 @@ public class MediaActivity extends AppCompatActivity {
     }
 
     private void playVideo() {
-        PhotoSheetDialog.show(getSupportFragmentManager()).setOnItemClickListener((datas, index) -> VideoPlayerActivity.start(MediaActivity.this, datas, index));
+        PhotoSheetDialog.show(getSupportFragmentManager());
     }
 
     @Override

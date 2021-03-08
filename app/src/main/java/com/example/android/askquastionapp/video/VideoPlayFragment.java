@@ -7,8 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,11 +17,12 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.views.BottomPop;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import static android.os.Build.VERSION_CODES.N;
 
@@ -47,17 +46,44 @@ public class VideoPlayFragment extends Fragment {
     }
 
     private boolean onLongClick() {
-        Intent shareIntent = new Intent();
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        shareIntent.setType("*/*");
-        Uri currentUri = getCurrentUri();
-        if (currentUri == null) {
-            return false;
-        }
-        shareIntent.putExtra(Intent.EXTRA_STREAM, currentUri);
-        startActivity(Intent.createChooser(shareIntent, "Here is the title of video"));
+        BottomPop current = BottomPop.getCurrent(getActivity());
+        current.addItemText("删除");
+        current.addItemText("分享");
+        current.show(getActivity());
+        current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
+            @Override
+            public void onItemClick(BottomPop bottomPop, int position) {
+                bottomPop.dismiss();
+                switch (position) {
+                    case 0:
+                        String filePath = mediaData.url;
+                        File file = new File(filePath);
+                        boolean delete = file.delete();
+                        ToastUtils.showShort(delete ? "删除成功" : "删除失败");
+                        if (getActivity() instanceof VideoPlayerActivity) {
+                            if (((VideoPlayerActivity) getActivity()).dialog != null) {
+                                ((VideoPlayerActivity) getActivity()).dialog.remove(mediaData);
+                            }
+                            getActivity().finish();
+                        }
+                        break;
+                    case 1:
+                    default:
+                        Intent shareIntent = new Intent();
+                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        shareIntent.setType("video/*");
+                        Uri currentUri = getCurrentUri();
+                        if (currentUri == null) {
+                            return;
+                        }
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, currentUri);
+                        startActivity(Intent.createChooser(shareIntent, "Here is the title of video"));
+                        break;
+                }
+            }
+        });
         return false;
     }
 

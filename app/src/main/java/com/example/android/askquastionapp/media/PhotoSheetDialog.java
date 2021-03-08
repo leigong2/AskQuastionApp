@@ -3,15 +3,21 @@ package com.example.android.askquastionapp.media;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.TextPaint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,11 +38,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.VideoPlayerActivity;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.views.BottomPop;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -56,6 +65,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
+import static android.os.Build.VERSION_CODES.N;
+
 public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
     private RecyclerView mRecyclerView;
@@ -74,10 +85,13 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         return dialog;
     }
 
+    private View mView;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
         View view = View.inflate(getContext(), getLayoutId(), null);
+        mView = view;
         dialog.setContentView(view);
         mRecyclerView = view.findViewById(R.id.photo_data);
         mBitImageView = view.findViewById(R.id.big_image_view);
@@ -183,7 +197,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (mDataList.get(position).path == null) {
+                if (mDataList.size() > position && mDataList.get(position).path == null) {
                     return 4;
                 } else {
                     return 1;
@@ -220,6 +234,53 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     public void onClick(View view) {
                         mClickPosition = (int) view.getTag();
                         itemClick(mClickPosition);
+                    }
+                });
+                imageView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        if (mView == null) {
+                            return false;
+                        }
+                        int position = (int) view.getTag();
+                        PictureCheckManager.MediaData mediaData = mDataList.get(position);
+                        BottomPop current = BottomPop.getCurrent(getActivity());
+                        current.addItemText("删除");
+                        current.addItemText("分享");
+                        current.show(mView);
+                        current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(BottomPop bottomPop, int position) {
+                                bottomPop.dismiss();
+                                switch (position) {
+                                    case 0:
+                                        String filePath = mediaData.path;
+                                        File file = new File(filePath);
+                                        boolean delete = file.delete();
+                                        mDataList.remove(mediaData);
+                                        if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
+                                            mRecyclerView.getAdapter().notifyDataSetChanged();
+                                        }
+                                        ToastUtils.showShort(delete ? "删除成功" : "删除失败");
+                                        break;
+                                    case 1:
+                                    default:
+                                        Intent shareIntent = new Intent();
+                                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                        shareIntent.setAction(Intent.ACTION_SEND);
+                                        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        shareIntent.setType("video/*");
+                                        Uri currentUri = getCurrentUri(mediaData.path);
+                                        if (currentUri == null) {
+                                            return;
+                                        }
+                                        shareIntent.putExtra(Intent.EXTRA_STREAM, currentUri);
+                                        startActivity(Intent.createChooser(shareIntent, "Here is the title of video"));
+                                        break;
+                                }
+                            }
+                        });
+                        return false;
                     }
                 });
                 return viewHolder;
@@ -265,6 +326,10 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 return mDataList.size();
             }
         });
+        loadData();
+    }
+
+    public void loadData() {
         Observable.just(1).map(new Function<Integer, Map<String, List<PictureCheckManager.MediaData>>>() {
             @Override
             public Map<String, List<PictureCheckManager.MediaData>> apply(Integer integer) throws Exception {
@@ -305,9 +370,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 WatchVideoActivity.MediaData temp = new WatchVideoActivity.MediaData(data.path, data.path, String.valueOf(mediaType), null);
                 datas.add(temp);
             }
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(datas, index);
-            }
+            VideoPlayerActivity.start(this, datas, index);
         }
     }
 
@@ -331,6 +394,18 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     data.folder = s;
                 }
                 mDataList.addAll(collection);
+            }
+        }
+        if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
+            mRecyclerView.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    public void remove(WatchVideoActivity.MediaData mediaData) {
+        for (PictureCheckManager.MediaData data : mDataList) {
+            if (data.path != null && data.path.equalsIgnoreCase(mediaData.url)) {
+                mDataList.remove(data);
+                break;
             }
         }
         if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
@@ -378,13 +453,32 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         }
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(List<WatchVideoActivity.MediaData> datas, int index);
-    }
-
-    private OnItemClickListener onItemClickListener;
-
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
+    private Uri getCurrentUri(String filePath) {
+        if (getActivity() == null) {
+            return null;
+        }
+        File file = new File(filePath);
+        if (Build.VERSION.SDK_INT < N) {
+            return Uri.fromFile(file);
+        } else if (Build.VERSION.SDK_INT < 29) {
+            return FileProvider.getUriForFile(getActivity(), getActivity().getPackageName() + ".FileProvider", file);
+        } else {
+            Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
+                    new String[]{filePath}, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+                Uri baseUri = Uri.parse("content://media/external/images/media");
+                return Uri.withAppendedPath(baseUri, "" + id);
+            } else {
+                if (file.exists()) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.DATA, filePath);
+                    return getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                } else {
+                    return null;
+                }
+            }
+        }
     }
 }

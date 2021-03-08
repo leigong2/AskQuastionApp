@@ -66,6 +66,9 @@ public class PictureCheckManager {
             return resultMap;
         }
         for (File file : dir.listFiles()) {
+            if (file == null) {
+                continue;
+            }
             String pathName = file.getPath().replaceAll(dir.getPath(), "");
             if (pathName.startsWith("/.")) {
                 continue;
@@ -78,11 +81,11 @@ public class PictureCheckManager {
             if (pathName.startsWith("/tencent")) {
                 continue;
             }
-            if (file.isDirectory()) {
+            if (file.isDirectory() && file.listFiles() != null) {
                 if (file.listFiles().length > 0) {
                     resultMap.putAll(getAllVideos(file));
                 }
-            } else if (file.length() > 1024 * 100 && isVideoFile(file)) {
+            } else if (!file.isDirectory() && file.length() > 1024 * 100 && isVideoFile(file)) {
                 MediaData mediaData = new MediaData();
                 mediaData.path = file.getPath();
                 mediaData.mediaType = 1;
@@ -159,9 +162,12 @@ public class PictureCheckManager {
 
     private Map<String, List<MediaData>> getAllVideos(File dir) {
         Map<String, List<MediaData>> resultMap = new HashMap<>();
+        if (dir.listFiles() == null) {
+            return resultMap;
+        }
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
-                if (file.listFiles().length > 0) {
+                if (file.listFiles() != null && file.listFiles().length > 0) {
                     resultMap.putAll(getAllVideos(file));
                 }
             } else if (file.length() > 1024 * 100 && isVideoFile(file)) {
