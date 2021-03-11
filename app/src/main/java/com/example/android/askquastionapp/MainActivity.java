@@ -62,6 +62,7 @@ import com.example.android.askquastionapp.picture.BigTestPictureActivity;
 import com.example.android.askquastionapp.picture.ImageViewActivity;
 import com.example.android.askquastionapp.picture.PictureActivity;
 import com.example.android.askquastionapp.pollnumber.PollNumberActivity;
+import com.example.android.askquastionapp.qqdrag.QQDragActivity;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.scan.CaptureActivity;
@@ -314,6 +315,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("动态9patch");
         added.add("扫一扫");
         added.add("生成二维码");
+        added.add("qq拖动特效");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -545,6 +547,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 QCodeDialog.showDialog(this);
+                break;
+            case "qq拖动特效":
+                QQDragActivity.start(this);
                 break;
         }
     }

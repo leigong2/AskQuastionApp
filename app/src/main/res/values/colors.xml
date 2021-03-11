@@ -10,4 +10,5 @@
     <color name="button_color_normal">#3b000000</color>
 
     <color name="red_dark">@color/colorAccent</color>
+    <color name="color_ugc_app_tips">#f94a8c</color>
 </resources>
