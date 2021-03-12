@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextPaint;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +63,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -104,11 +105,30 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         mBitImageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                if (view instanceof PhotoImageView) {
-                    Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
-                    ToastUtils.showShort("已捕获，正在扫描");
-                    scanBitmap(bitmap);
+                if (mView == null) {
+                    return false;
                 }
+                BottomPop current = BottomPop.getCurrent(getActivity());
+                current.addItemText("扫描");
+                current.show(mView);
+                current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomPop bottomPop, int position) {
+                        String tag = bottomPop.getPosition(position);
+                        switch (tag) {
+                            case "扫描":
+                                bottomPop.dismiss();
+                                if (view instanceof PhotoImageView) {
+                                    Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
+                                    ToastUtils.showShort("已捕获，正在扫描");
+                                    scanBitmap(bitmap);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
                 return false;
             }
         });
@@ -163,6 +183,16 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         initView();
         mBehavior = BottomSheetBehavior.from((View) view.getParent());
         mBehavior.setPeekHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
+        dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent keyEvent) {
+                if (keyCode == KeyEvent.KEYCODE_BACK && mBitImageView.getVisibility() == View.VISIBLE) {
+                    close.callOnClick();
+                    return true;
+                }
+                return false;
+            }
+        });
         return dialog;
     }
 
@@ -431,12 +461,6 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 if (collection == null) {
                     continue;
                 }
-                Collections.sort(collection, new Comparator<PictureCheckManager.MediaData>() {
-                    @Override
-                    public int compare(PictureCheckManager.MediaData o1, PictureCheckManager.MediaData o2) {
-                        return (int) (new File(o2.path).length() - new File(o1.path).length());
-                    }
-                });
                 PictureCheckManager.MediaData mediaData = new PictureCheckManager.MediaData();
                 mediaData.folder = s;
                 mDataList.add(mediaData);

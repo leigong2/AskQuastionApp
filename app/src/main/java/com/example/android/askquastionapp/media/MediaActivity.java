@@ -3,6 +3,7 @@ package com.example.android.askquastionapp.media;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,7 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.video.ListenMusicActivity;
+
+import static java.io.File.separator;
 
 public class MediaActivity extends AppCompatActivity {
     public static void start(Context context) {
@@ -41,7 +44,7 @@ public class MediaActivity extends AppCompatActivity {
     }
 
     private void playMusic() {
-
+        ListenMusicActivity.start(MediaActivity.this, Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "music_db.db");
     }
 
     private void preVideo() {

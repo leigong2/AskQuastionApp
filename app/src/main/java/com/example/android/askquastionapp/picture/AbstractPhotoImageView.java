@@ -26,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 
@@ -492,6 +493,10 @@ abstract class AbstractPhotoImageView extends View {
         if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0 || mFile == null) {
             return null;
         }
+        Bitmap bitmap = getLayoutCache();
+        if (bitmap != null) {
+            return bitmap;
+        }
         try {
             // 从指定路径下读取图片，并获取其EXIF信息
             InputStream inputStream = new FileInputStream(mFile);
@@ -528,12 +533,23 @@ abstract class AbstractPhotoImageView extends View {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             options.inSampleSize = (int) (1f * Math.max(mImageWidth, mImageHeight) / Math.max(measuredWidth, measuredHeight));
-            Bitmap bitmap = mDecoder.decodeRegion(rect, options);
-            return rotate(bitmap, degree);
+            return rotate(mDecoder.decodeRegion(rect, options), degree);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private Bitmap getLayoutCache() {
+        ViewGroup v = (ViewGroup) getParent();
+        if (v.getWidth() <= 0 || v.getHeight() <= 0) {
+            return null;
+        }
+        Bitmap b = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.RGB_565);
+        Canvas c = new Canvas(b);
+        v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+        v.draw(c);
+        return b;
     }
 
     private Bitmap rotate(Bitmap bitmap, int degree) {
