@@ -467,6 +467,12 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 for (PictureCheckManager.MediaData data : collection) {
                     data.folder = s;
                 }
+                Collections.sort(collection, new Comparator<PictureCheckManager.MediaData>() {
+                    @Override
+                    public int compare(PictureCheckManager.MediaData o1, PictureCheckManager.MediaData o2) {
+                        return (int) (new File(o2.path).lastModified() - new File(o1.path).lastModified());
+                    }
+                });
                 mDataList.addAll(collection);
             }
         }
