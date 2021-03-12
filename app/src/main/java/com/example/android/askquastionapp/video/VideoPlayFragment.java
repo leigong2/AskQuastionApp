@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
@@ -123,14 +124,10 @@ public class VideoPlayFragment extends Fragment {
         videoController.setOnOrientationChangeListener(new SurfaceControllerView.OnOrientationChangeListener() {
             @Override
             public void onOrientationChange(int orientation) {
-                float scale;
-                if (orientation == LinearLayout.HORIZONTAL) {
-                    scale = videoController.getWidth() * 1f / videoController.getHeight();
-                    videoController.setRotation(90);
-                } else {
-                    scale = 1;
-                    videoController.setRotation(0);
+                if (getActivity() instanceof VideoPlayerActivity) {
+                    ((VideoPlayerActivity) getActivity()).mOrientation = orientation;
                 }
+                videoView.onOrientationChange(orientation);
             }
         });
     }

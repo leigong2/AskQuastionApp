@@ -123,10 +123,12 @@ public class SurfaceControllerView extends FrameLayout {
                 case LinearLayout.HORIZONTAL:
                     mTopLay.setTranslationY(mBigLength - mSmallLength);
                     getLayoutParams().width = mBigLength;
+                    setRotation(90);
                     break;
                 case LinearLayout.VERTICAL:
                     mTopLay.setTranslationY(0);
                     getLayoutParams().width = mSmallLength;
+                    setRotation(0);
                 default:
                     break;
             }

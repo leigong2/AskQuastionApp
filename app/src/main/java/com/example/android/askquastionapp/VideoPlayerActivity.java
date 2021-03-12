@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
@@ -46,6 +47,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private String url;
     private ViewPager2 recyclerView;
     public PhotoSheetDialog dialog;
+    public int mOrientation = LinearLayout.VERTICAL;
 
     public static void start(Context context, String url) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);

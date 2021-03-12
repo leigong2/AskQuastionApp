@@ -4,11 +4,15 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.FloatRange;
 
 import com.blankj.utilcode.util.ScreenUtils;
+import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.VideoPlayerActivity;
 
 import static android.media.MediaPlayer.SEEK_CLOSEST;
 
@@ -19,16 +23,22 @@ public class SurfaceVideoPlayer {
     private SurfaceVideoPlayer() {
     }
 
-    private void startPlay(MediaPlayer mediaPlayer) {
+    public void startPlay(MediaPlayer mediaPlayer) {
+        if (mSurfaceVideoView.getSurfaceTexture() == null || !prepared) {
+            return;
+        }
         int videoHeight = mediaPlayer.getVideoHeight();
         int videoWidth = mediaPlayer.getVideoWidth();
         int surfaceWidth = mSurfaceVideoView.getWidth() == 0 ? ScreenUtils.getScreenWidth() : mSurfaceVideoView.getWidth();
         mSurfaceVideoView.getLayoutParams().width = surfaceWidth;
         mSurfaceVideoView.getLayoutParams().height = (int) (videoHeight * 1f / videoWidth * surfaceWidth);
         mSurfaceVideoView.setVisibility(View.VISIBLE);
-        mediaPlayer.setDisplay(mSurfaceVideoView.getHolder());
+        mediaPlayer.setSurface(new Surface(mSurfaceVideoView.getSurfaceTexture()));
         mediaPlayer.start();
         mSurfaceVideoController.startPlay();
+        if (mSurfaceVideoView.getContext() instanceof VideoPlayerActivity && ((VideoPlayerActivity) mSurfaceVideoView.getContext()).mOrientation == LinearLayout.HORIZONTAL) {
+            mSurfaceVideoController.findViewById(R.id.change_orientation).callOnClick();
+        }
     }
 
     public static SurfaceVideoPlayer getInstance() {

@@ -1,12 +1,14 @@
 package com.example.android.askquastionapp.video;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
+import android.widget.LinearLayout;
 
-public class SurfaceVideoView extends SurfaceView implements SurfaceHolder.Callback {
+import com.blankj.utilcode.util.ScreenUtils;
+
+public class SurfaceVideoView extends TextureView implements TextureView.SurfaceTextureListener {
 
     public SurfaceVideoView(Context context) {
         super(context);
@@ -20,20 +22,52 @@ public class SurfaceVideoView extends SurfaceView implements SurfaceHolder.Callb
         super(context, attrs, defStyleAttr);
     }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        getHolder().removeCallback(this);
-    }
-
     public void addCallBack() {
-        getHolder().addCallback(this);
+        setSurfaceTextureListener(this);
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+        SurfaceVideoPlayer.getInstance().startPlay(SurfaceVideoPlayer.getInstance().getCurMediaPlayer());
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+    }
+
+    public void onOrientationChange(int orientation) {
+        int videoWidth = SurfaceVideoPlayer.getInstance().getCurMediaPlayer().getVideoWidth();
+        int videoHeight = SurfaceVideoPlayer.getInstance().getCurMediaPlayer().getVideoHeight();
+        if (orientation == LinearLayout.HORIZONTAL) {
+            setRotation(90);
+            boolean isHorizontal = videoWidth * 1f / videoHeight > ScreenUtils.getScreenHeight() * 1f / ScreenUtils.getScreenWidth();
+            if (isHorizontal) {
+                getLayoutParams().width = ScreenUtils.getScreenHeight();
+                getLayoutParams().height = (int) (1f * getLayoutParams().width * videoHeight / videoWidth);
+            } else {
+                getLayoutParams().height = ScreenUtils.getScreenWidth();
+                getLayoutParams().width = (int) (1f * getLayoutParams().height * videoWidth / videoHeight);
+            }
+        } else {
+            setRotation(0);
+            boolean isHorizontal = videoWidth * 1f / videoHeight > ScreenUtils.getScreenWidth() * 1f / ScreenUtils.getScreenHeight();
+            if (isHorizontal) {
+                getLayoutParams().width = ScreenUtils.getScreenWidth();
+                getLayoutParams().height = (int) (1f * getLayoutParams().width * videoHeight / videoWidth);
+            } else {
+                getLayoutParams().height = ScreenUtils.getScreenHeight();
+                getLayoutParams().width = (int) (1f * getLayoutParams().height * videoWidth / videoHeight);
+            }
+        }
     }
 }
