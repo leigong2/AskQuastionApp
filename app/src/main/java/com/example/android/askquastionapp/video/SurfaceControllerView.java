@@ -105,7 +105,7 @@ public class SurfaceControllerView extends FrameLayout {
         dismissControllerDelay();
     }
 
-    private int mOrientation = LinearLayout.VERTICAL;
+    public int mOrientation = LinearLayout.VERTICAL;
 
     private void changeOrientation(View v) {
         if (mBigLength == 0) {

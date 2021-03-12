@@ -36,7 +36,7 @@ public class SurfaceVideoPlayer {
         mediaPlayer.setSurface(new Surface(mSurfaceVideoView.getSurfaceTexture()));
         mediaPlayer.start();
         mSurfaceVideoController.startPlay();
-        if (mSurfaceVideoView.getContext() instanceof VideoPlayerActivity && ((VideoPlayerActivity) mSurfaceVideoView.getContext()).mOrientation == LinearLayout.HORIZONTAL) {
+        if (mSurfaceVideoView.getContext() instanceof VideoPlayerActivity && ((VideoPlayerActivity) mSurfaceVideoView.getContext()).mOrientation != mSurfaceVideoController.mOrientation) {
             mSurfaceVideoController.findViewById(R.id.change_orientation).callOnClick();
         }
     }
