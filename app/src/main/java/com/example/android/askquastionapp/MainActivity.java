@@ -635,6 +635,9 @@ public class MainActivity extends AppCompatActivity {
                 statisticsTime(newData);
                 List<Company> localData = GsonGetter.getInstance().getGson().fromJson(ExcelManager.getInstance().getJson("localData.json", MainActivity.this), new TypeToken<List<Company>>() {
                 }.getType());
+                for (Company localDatum : localData) {
+                    localDatum.timeLimit = true;
+                }
                 UpdateCompanyBean updateCompanyBean = insertToLocal(newData, localData);
                 String update = "\"" + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis())) + "\":" + GsonGetter.getInstance().getGson().toJson(updateCompanyBean);
                 writeToPrivate(update, "updateCompanyBean.txt");
