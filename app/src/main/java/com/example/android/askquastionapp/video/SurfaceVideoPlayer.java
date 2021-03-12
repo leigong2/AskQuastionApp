@@ -156,4 +156,8 @@ public class SurfaceVideoPlayer {
     public int getDuration() {
         return mCurMediaPlayer == null || !prepared ? 100 : mCurMediaPlayer.getDuration();
     }
+
+    public MediaPlayer getCurMediaPlayer() {
+        return mCurMediaPlayer;
+    }
 }

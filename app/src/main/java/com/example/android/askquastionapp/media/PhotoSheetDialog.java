@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -53,7 +54,6 @@ import com.scwang.smartrefresh.layout.util.DensityUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -104,27 +105,9 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             @Override
             public boolean onLongClick(View view) {
                 if (view instanceof PhotoImageView) {
-                    ToastUtils.showShort("已捕获，正在扫描");
                     Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
-                    CapturePictureUtil.parseQCodeInBitmap(bitmap, new CapturePictureUtil.OnResultListener() {
-                        @Override
-                        public void onResult(String s) {
-                            if (s == null) {
-                                ToastUtils.showShort("扫描失败");
-                                return;
-                            } else {
-                                ToastUtils.showShort("扫描成功，扫描结果已返回剪切板");
-                            }
-                            ClipboardManager clipboardManager = (ClipboardManager) BaseApplication.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
-                            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, s));
-                            if (clipboardManager.getPrimaryClip() != null && clipboardManager.hasPrimaryClip()) {
-                                clipboardManager.getPrimaryClip().getItemAt(0).getText();
-                            }
-                            if (s.startsWith("http")) {
-                                BrowserUtils.goToBrowser(getContext(), s);
-                            }
-                        }
-                    });
+                    ToastUtils.showShort("已捕获，正在扫描");
+                    scanBitmap(bitmap);
                 }
                 return false;
             }
@@ -181,6 +164,28 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         mBehavior = BottomSheetBehavior.from((View) view.getParent());
         mBehavior.setPeekHeight((int) (ScreenUtils.getScreenHeight() * 0.618f));
         return dialog;
+    }
+
+    private void scanBitmap(Bitmap bitmap) {
+        CapturePictureUtil.parseQCodeInBitmap(bitmap, new CapturePictureUtil.OnResultListener() {
+            @Override
+            public void onResult(String s) {
+                if (s == null) {
+                    ToastUtils.showShort("扫描失败");
+                    return;
+                } else {
+                    ToastUtils.showShort("扫描成功，扫描结果已返回剪切板");
+                }
+                ClipboardManager clipboardManager = (ClipboardManager) BaseApplication.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
+                clipboardManager.setPrimaryClip(ClipData.newPlainText(null, s));
+                if (clipboardManager.getPrimaryClip() != null && clipboardManager.hasPrimaryClip()) {
+                    clipboardManager.getPrimaryClip().getItemAt(0).getText();
+                }
+                if (s.startsWith("http")) {
+                    BrowserUtils.goToBrowser(getContext(), s);
+                }
+            }
+        });
     }
 
     public int getLayoutId() {
@@ -245,17 +250,35 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         int position = (int) view.getTag();
                         PictureCheckManager.MediaData mediaData = mDataList.get(position);
                         BottomPop current = BottomPop.getCurrent(getActivity());
+                        current.addItemText("复制");
                         current.addItemText("删除");
                         current.addItemText("分享");
+                        if (mediaData.mediaType == 0) {
+                            current.addItemText("扫描");
+                        }
                         current.show(mView);
                         current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
                             @Override
                             public void onItemClick(BottomPop bottomPop, int position) {
+                                String tag = bottomPop.getPosition(position);
                                 bottomPop.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        String filePath = mediaData.path;
-                                        File file = new File(filePath);
+                                String filePath = mediaData.path;
+                                File file = new File(filePath);
+                                switch (tag) {
+                                    case "复制":
+                                        if (getActivity() == null) {
+                                            return;
+                                        }
+                                        ClipboardManager clipboardmanager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                                        if (clipboardmanager == null) {
+                                            return;
+                                        }
+                                        Uri copyUri = Uri.parse(filePath);
+                                        ClipData clip = ClipData.newUri(getActivity().getContentResolver(), "URI", copyUri);
+                                        clipboardmanager.setPrimaryClip(clip);
+                                        ToastUtils.showShort("文件已复制到剪贴板");
+                                        break;
+                                    case "删除":
                                         boolean delete = file.delete();
                                         mDataList.remove(mediaData);
                                         if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
@@ -263,19 +286,46 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                                         }
                                         ToastUtils.showShort(delete ? "删除成功" : "删除失败");
                                         break;
-                                    case 1:
-                                    default:
+                                    case "分享":
                                         Intent shareIntent = new Intent();
                                         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                                         shareIntent.setAction(Intent.ACTION_SEND);
                                         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         shareIntent.setType("video/*");
-                                        Uri currentUri = getCurrentUri(mediaData.path);
+                                        Uri currentUri = getCurrentUri(filePath);
                                         if (currentUri == null) {
                                             return;
                                         }
                                         shareIntent.putExtra(Intent.EXTRA_STREAM, currentUri);
                                         startActivity(Intent.createChooser(shareIntent, "Here is the title of video"));
+                                        break;
+                                    case "扫描":
+                                        ToastUtils.showShort("正在捕获图片");
+                                        Observable.just(filePath).map(new Function<String, Bitmap>() {
+                                            @Override
+                                            public Bitmap apply(String s) throws Exception {
+                                                BitmapFactory.Options options = new BitmapFactory.Options();
+                                                options.inJustDecodeBounds = true;
+                                                BitmapFactory.decodeFile(s, options);
+                                                int bitmapWidth = options.outWidth;
+                                                int bitmapHeight = options.outHeight;
+                                                int screenWidth = ScreenUtils.getScreenWidth();
+                                                int screenHeight = ScreenUtils.getScreenHeight();
+                                                float inSampleSize = Math.max(1f * bitmapWidth / screenWidth, 1f * bitmapHeight / screenHeight);
+                                                options.inSampleSize = (int) Math.ceil(inSampleSize);
+                                                options.inJustDecodeBounds = false;
+                                                return BitmapFactory.decodeFile(s, options);
+                                            }
+                                        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(new SimpleObserver<Bitmap, Integer>(1, false) {
+                                                    @Override
+                                                    public void onNext(Bitmap bitmap, Integer integer) {
+                                                        ToastUtils.showShort("已捕获，正在扫描");
+                                                        scanBitmap(bitmap);
+                                                    }
+                                                });
+                                        break;
+                                    default:
                                         break;
                                 }
                             }

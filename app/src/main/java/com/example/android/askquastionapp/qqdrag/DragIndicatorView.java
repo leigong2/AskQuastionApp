@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.OvershootInterpolator;
+import android.widget.ImageView;
 
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.content.ContextCompat;
@@ -244,32 +246,32 @@ public class DragIndicatorView extends AppCompatTextView {
     }
 
     protected void killView(final float x, final float y) {
-//        final ImageView imageView = new ImageView(getContext());
-//        imageView.setImageResource(R.drawable.clean_anim);
-//        mRootView.addView(imageView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT));
-//        imageView.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                imageView.setX(x - (imageView.getMeasuredWidth() >> 1));
-//                imageView.setY(y - (imageView.getMeasuredHeight() >> 1));
-//            }
-//        });
-//
-//        AnimationDrawable animationDrawable = (AnimationDrawable) imageView.getDrawable();
-//        int totalDuring = 0;
-//        for (int i = 0, len = animationDrawable.getNumberOfFrames(); i < len; i++) {
-//            totalDuring += animationDrawable.getDuration(i);
-//        }
-//        animationDrawable.start();
-//
-//        //动画播放结束后 移除ImageView
-//        postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                mRootView.removeView(imageView);
-//            }
-//        }, totalDuring + 20);
+        final ImageView imageView = new ImageView(getContext());
+        imageView.setImageResource(R.drawable.clean_anim);
+        mRootView.addView(imageView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                imageView.setX(x - (imageView.getMeasuredWidth() >> 1));
+                imageView.setY(y - (imageView.getMeasuredHeight() >> 1));
+            }
+        });
+
+        AnimationDrawable animationDrawable = (AnimationDrawable) imageView.getDrawable();
+        int totalDuring = 0;
+        for (int i = 0, len = animationDrawable.getNumberOfFrames(); i < len; i++) {
+            totalDuring += animationDrawable.getDuration(i);
+        }
+        animationDrawable.start();
+
+        //动画播放结束后 移除ImageView
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mRootView.removeView(imageView);
+            }
+        }, totalDuring + 20);
 
         if (mOnDismissAction != null) {
             mOnDismissAction.OnDismiss(this);

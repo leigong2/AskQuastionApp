@@ -1,16 +1,18 @@
 package com.example.android.askquastionapp.video;
 
-import android.animation.ObjectAnimator;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,9 +41,7 @@ public class VideoPlayFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(getLayoutId(), container, false);
         initView(view);
-        view.setOnClickListener(v -> changeController());
         view.setOnLongClickListener(v -> onLongClick());
-        dismissControllerDelay();
         return view;
     }
 
@@ -117,37 +117,22 @@ public class VideoPlayFragment extends Fragment {
         }
     }
 
-    private void dismissControllerDelay() {
-        if (getActivity() instanceof VideoPlayerActivity) {
-            ((VideoPlayerActivity) getActivity()).mHandler.postDelayed(this::changeController, 5000);
-        }
-    }
-
-    private boolean isControllerHide;
-
-    private void changeController() {
-        if (isDetached() || getActivity() == null || getActivity().isDestroyed() || getActivity().isFinishing() || videoController == null) {
-            return;
-        }
-        if (getActivity() instanceof VideoPlayerActivity) {
-            ((VideoPlayerActivity) getActivity()).mHandler.removeCallbacksAndMessages(null);
-        }
-        if (!isControllerHide) {
-            ObjectAnimator.ofFloat(videoController, "translationY", 0, videoController.getMeasuredHeight())
-                    .setDuration(300)
-                    .start();
-        } else {
-            dismissControllerDelay();
-            ObjectAnimator.ofFloat(videoController, "translationY", videoController.getMeasuredHeight(), 0)
-                    .setDuration(300)
-                    .start();
-        }
-        isControllerHide = !isControllerHide;
-    }
-
     protected void initView(View view) {
         videoView = view.findViewById(R.id.video_view);
         videoController = view.findViewById(R.id.video_controller);
+        videoController.setOnOrientationChangeListener(new SurfaceControllerView.OnOrientationChangeListener() {
+            @Override
+            public void onOrientationChange(int orientation) {
+                float scale;
+                if (orientation == LinearLayout.HORIZONTAL) {
+                    scale = videoController.getWidth() * 1f / videoController.getHeight();
+                    videoController.setRotation(90);
+                } else {
+                    scale = 1;
+                    videoController.setRotation(0);
+                }
+            }
+        });
     }
 
     private WatchVideoActivity.MediaData mediaData;
@@ -159,8 +144,17 @@ public class VideoPlayFragment extends Fragment {
         SurfaceVideoPlayer.getInstance().bindSurfaceVideo(videoView);
         SurfaceVideoPlayer.getInstance().bindMedia(mediaData);
         SurfaceVideoPlayer.getInstance().play();
-        if (isControllerHide) {
-            changeController();
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(mediaData.url);
+        String title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        if (!TextUtils.isEmpty(title)) {
+            videoController.setTitle(title);
+        } else if (!TextUtils.isEmpty(mediaData.name)) {
+            String[] split = mediaData.name.split(File.separator);
+            videoController.setTitle(split[split.length - 1]);
+        }
+        if (videoController.isControllerHide) {
+            videoController.changeController();
         }
     }
 

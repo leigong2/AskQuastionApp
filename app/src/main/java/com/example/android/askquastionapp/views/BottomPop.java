@@ -105,6 +105,10 @@ public class BottomPop extends BasePopup {
         return R.layout.layout_pop_up;
     }
 
+    public String getPosition(int position) {
+        return mDatas.size() > position ? mDatas.get(position) : "";
+    }
+
     public interface OnItemClickListener {
         void onItemClick(BottomPop bottomPop, int position);
     }
