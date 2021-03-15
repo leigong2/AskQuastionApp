@@ -74,6 +74,7 @@ public class SurfaceControllerView extends FrameLayout {
         ((MarginLayoutParams) mTopLay.getLayoutParams()).topMargin = BarUtils.getStatusBarHeight();
         mBottomLay = findViewById(R.id.bottom_lay);
         findViewById(R.id.bg_view).setOnClickListener(v -> changeController());
+        findViewById(R.id.bg_view).setOnLongClickListener(this::onLongClick);
         mPreBtn.setOnClickListener(v -> SurfaceVideoPlayer.getInstance().playPre());
         mNextBtn.setOnClickListener(v -> SurfaceVideoPlayer.getInstance().playNext());
         mPlayBtn.setOnClickListener(v -> {
@@ -105,6 +106,13 @@ public class SurfaceControllerView extends FrameLayout {
         dismissControllerDelay();
     }
 
+    private boolean onLongClick(View v) {
+        if (onOrientationChangeListener != null) {
+            onOrientationChangeListener.onRootViewLongClick();
+        }
+        return false;
+    }
+
     public int mOrientation = LinearLayout.VERTICAL;
 
     private void changeOrientation(View v) {
@@ -121,7 +129,7 @@ public class SurfaceControllerView extends FrameLayout {
         if (onOrientationChangeListener != null) {
             switch (mOrientation) {
                 case LinearLayout.HORIZONTAL:
-                    mTopLay.setTranslationY(mBigLength - mSmallLength);
+                    mTopLay.setTranslationY(mBigLength - mSmallLength - BarUtils.getStatusBarHeight());
                     getLayoutParams().width = mBigLength;
                     setRotation(90);
                     break;
@@ -255,15 +263,21 @@ public class SurfaceControllerView extends FrameLayout {
             return;
         }
         mChangeHandler.removeCallbacksAndMessages(null);
-        int topHeight = -mTopLay.getMeasuredHeight() - BarUtils.getStatusBarHeight();
+        int topHeight = -mTopLay.getMeasuredHeight();
         if (mOrientation == LinearLayout.HORIZONTAL) {
+            if (mBigLength == 0) {
+                mBigLength = Math.max(getWidth(), getHeight());
+            }
+            if (mSmallLength == 0) {
+                mSmallLength = Math.min(getWidth(), getHeight());
+            }
             topHeight -= (mBigLength - mSmallLength);
         }
         if (!isControllerHide) {
             ObjectAnimator.ofFloat(mBottomLay, "translationY", 0, mBottomLay.getMeasuredHeight())
                     .setDuration(300)
                     .start();
-            ObjectAnimator.ofFloat(mTopLay, "translationY", mOrientation == LinearLayout.HORIZONTAL ? mBigLength - mSmallLength : 0, topHeight)
+            ObjectAnimator.ofFloat(mTopLay, "translationY", mOrientation == LinearLayout.HORIZONTAL ? mBigLength - mSmallLength - BarUtils.getStatusBarHeight() : 0, topHeight)
                     .setDuration(300)
                     .start();
         } else {
@@ -271,7 +285,7 @@ public class SurfaceControllerView extends FrameLayout {
             ObjectAnimator.ofFloat(mBottomLay, "translationY", mBottomLay.getMeasuredHeight(), 0)
                     .setDuration(300)
                     .start();
-            ObjectAnimator.ofFloat(mTopLay, "translationY", topHeight, mOrientation == LinearLayout.HORIZONTAL ? mBigLength - mSmallLength : 0)
+            ObjectAnimator.ofFloat(mTopLay, "translationY", topHeight, mOrientation == LinearLayout.HORIZONTAL ? mBigLength - mSmallLength - BarUtils.getStatusBarHeight() : 0)
                     .setDuration(300)
                     .start();
         }
@@ -280,6 +294,7 @@ public class SurfaceControllerView extends FrameLayout {
 
     public interface OnOrientationChangeListener {
         void onOrientationChange(int orientation);
+        void onRootViewLongClick();
     }
 
     private OnOrientationChangeListener onOrientationChangeListener;

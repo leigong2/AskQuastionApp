@@ -19,6 +19,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextPaint;
 import android.view.KeyEvent;
@@ -57,10 +60,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -409,24 +409,39 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         loadData();
     }
 
-    public void loadData() {
-        Observable.just(1).map(new Function<Integer, Map<String, List<PictureCheckManager.MediaData>>>() {
-            @Override
-            public Map<String, List<PictureCheckManager.MediaData>> apply(Integer integer) throws Exception {
-                if (mediaType == 0) {
-                    return PictureCheckManager.getInstance().getNormalPictures();
-                } else if (mediaType == 1) {
-                    return PictureCheckManager.getInstance().getNormalVideos();
-                }
-                return PictureCheckManager.getInstance().getNormalPictures();
-            }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SimpleObserver<Map<String, List<PictureCheckManager.MediaData>>, Integer>(1, false) {
-                    @Override
-                    public void onNext(Map<String, List<PictureCheckManager.MediaData>> stringListMap, Integer integer) {
-                        setData(stringListMap);
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 0:
+                case 1:
+                    Object obj = msg.obj;
+                    if (obj instanceof PictureCheckManager.MediaData) {
+                        mDataList.add((PictureCheckManager.MediaData) obj);
+                        if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
+                            mRecyclerView.getAdapter().notifyDataSetChanged();
+                        }
                     }
-                });
+                    break;
+            }
+        }
+    };
+
+    public void loadData() {
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                if (mediaType == 0) {
+                    PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                } else if (mediaType == 1) {
+                    PictureCheckManager.getInstance().getNormalVideos(mHandler, mediaType);
+                } else {
+                    PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                }
+            }
+        }.start();
     }
 
     private void itemClick(int position) {
@@ -451,33 +466,6 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 datas.add(temp);
             }
             VideoPlayerActivity.start(this, datas, index);
-        }
-    }
-
-    public void setData(Map<String, List<PictureCheckManager.MediaData>> datas) {
-        if (datas != null) {
-            for (String s : datas.keySet()) {
-                List<PictureCheckManager.MediaData> collection = datas.get(s);
-                if (collection == null) {
-                    continue;
-                }
-                PictureCheckManager.MediaData mediaData = new PictureCheckManager.MediaData();
-                mediaData.folder = s;
-                mDataList.add(mediaData);
-                for (PictureCheckManager.MediaData data : collection) {
-                    data.folder = s;
-                }
-                Collections.sort(collection, new Comparator<PictureCheckManager.MediaData>() {
-                    @Override
-                    public int compare(PictureCheckManager.MediaData o1, PictureCheckManager.MediaData o2) {
-                        return (int) (new File(o2.path).lastModified() - new File(o1.path).lastModified());
-                    }
-                });
-                mDataList.addAll(collection);
-            }
-        }
-        if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
-            mRecyclerView.getAdapter().notifyDataSetChanged();
         }
     }
 
@@ -559,6 +547,14 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     return null;
                 }
             }
+        }
+    }
+
+    @Override
+    public void dismissAllowingStateLoss() {
+        super.dismissAllowingStateLoss();
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
         }
     }
 }

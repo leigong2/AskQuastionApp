@@ -3,6 +3,8 @@ package com.example.android.askquastionapp.media;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 
 import com.blankj.utilcode.util.LogUtils;
@@ -10,6 +12,9 @@ import com.blankj.utilcode.util.ToastUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,25 +52,44 @@ public class PictureCheckManager {
         cursor.close();
         LogUtils.i("zune: ", "cursor count = " + result.size() + ", time = " + (System.currentTimeMillis() - startTime));
 
-        getAllPictures();
+        getAllPictures(null, 0);
         return result;
     }
 
-    public Map<String, List<MediaData>> getAllPictures() {
+    public Map<String, List<MediaData>> getAllPictures(Handler handler, int mediaType) {
         long startTime = System.currentTimeMillis();
-        Map<String, List<MediaData>> allPictures = getAllPictures(Environment.getExternalStorageDirectory());
+        Map<String, List<MediaData>> allPictures = getAllPictures(handler, Environment.getExternalStorageDirectory(), mediaType);
         LogUtils.i("zune: ", "allPictures count = " + allPictures.size() + ", time = " + (System.currentTimeMillis() - startTime));
         ToastUtils.showLong("allPictures count = " + allPictures.size() + ", time = " + (System.currentTimeMillis() - startTime));
         return allPictures;
     }
 
-    public Map<String, List<MediaData>> getNormalVideos() {
+    public Map<String, List<MediaData>> getNormalVideos(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         if (dir.listFiles() == null) {
             return resultMap;
         }
-        for (File file : dir.listFiles()) {
+        List<File> arrayList = Arrays.asList(dir.listFiles());
+        Collections.sort(arrayList, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                if (!f1.isDirectory()) {
+                    return -1;
+                }
+                if (!f2.isDirectory()) {
+                    return 1;
+                }
+                if (f1.listFiles() == null) {
+                    return -1;
+                }
+                if (f2.listFiles() == null) {
+                    return 1;
+                }
+                return f1.listFiles().length - f2.listFiles().length;
+            }
+        });
+        for (File file : arrayList) {
             if (file == null) {
                 continue;
             }
@@ -74,8 +98,8 @@ public class PictureCheckManager {
                 continue;
             }
             if (pathName.startsWith("/Android")) {
-                resultMap.putAll(getAllVideos(new File(dir, "/Android/data/com.xunlei.downloadprovider/files/ThunderDownload")));
-                resultMap.putAll(getAllVideos(new File(dir, "/Android/data/com.tencent.mm/MicroMsg/a7b426e55418f94695aa9f4c039faf7e/video")));
+                resultMap.putAll(getAllVideos(handler, new File(dir, "/Android/data/com.xunlei.downloadprovider/files/ThunderDownload"), mediaType));
+                resultMap.putAll(getAllVideos(handler, new File(dir, "/Android/data/com.tencent.mm/MicroMsg/a7b426e55418f94695aa9f4c039faf7e/video"), mediaType));
                 continue;
             }
             if (pathName.startsWith("/tencent")) {
@@ -83,7 +107,7 @@ public class PictureCheckManager {
             }
             if (file.isDirectory() && file.listFiles() != null) {
                 if (file.listFiles().length > 0) {
-                    resultMap.putAll(getAllVideos(file));
+                    resultMap.putAll(getAllVideos(handler, file, mediaType));
                 }
             } else if (!file.isDirectory() && file.length() > 1024 * 100 && isVideoFile(file)) {
                 MediaData mediaData = new MediaData();
@@ -95,22 +119,56 @@ public class PictureCheckManager {
                     group = new ArrayList<>();
                 }
                 group.add(mediaData);
+                if (!resultMap.containsKey(parent)) {
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
+                    parentMedia.folder = parent;
+                    msg.obj = parentMedia;
+                    handler.sendMessage(msg);
+                }
+                resultMap.put(parent, group);
+                Message msg = new Message();
+                msg.what = mediaType;
+                mediaData.folder = parent;
+                msg.obj = mediaData;
+                handler.sendMessage(msg);
                 resultMap.put(parent, group);
             }
         }
         return resultMap;
     }
 
-    public Map<String, List<MediaData>> getNormalPictures() {
+    public Map<String, List<MediaData>> getNormalPictures(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         if (dir.listFiles() == null) {
             return resultMap;
         }
-        for (File file : dir.listFiles()) {
+        List<File> arrayList = Arrays.asList(dir.listFiles());
+        Collections.sort(arrayList, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                if (!f1.isDirectory()) {
+                    return -1;
+                }
+                if (!f2.isDirectory()) {
+                    return 1;
+                }
+                if (f1.listFiles() == null) {
+                    return -1;
+                }
+                if (f2.listFiles() == null) {
+                    return 1;
+                }
+                return f1.listFiles().length - f2.listFiles().length;
+            }
+        });
+        for (File file : arrayList) {
             String pathName = file.getPath().replaceAll(dir.getPath(), "");
             if (pathName.startsWith("/Android")) {
-                resultMap.putAll(getAllPictures(new File(dir, "/Android/data/org.telegram.messenger/cache")));
+                resultMap.putAll(getAllPictures(handler, new File(dir, "/Android/data/org.telegram.messenger/cache"), mediaType));
                 continue;
             }
             if (pathName.startsWith("/tencent")) {
@@ -121,7 +179,7 @@ public class PictureCheckManager {
             }
             if (file.isDirectory()) {
                 if (file.listFiles().length > 0) {
-                    resultMap.putAll(getAllPictures(file));
+                    resultMap.putAll(getAllPictures(handler, file, mediaType));
                 }
             } else if (file.length() > 1024 * 100 && isImageFile(file)) {
                 MediaData mediaData = new MediaData();
@@ -132,18 +190,32 @@ public class PictureCheckManager {
                     group = new ArrayList<>();
                 }
                 group.add(mediaData);
+                if (!resultMap.containsKey(parent)) {
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
+                    parentMedia.folder = parent;
+                    msg.obj = parentMedia;
+                    handler.sendMessage(msg);
+                }
                 resultMap.put(parent, group);
+                Message msg = new Message();
+                msg.what = mediaType;
+                mediaData.folder = parent;
+                msg.obj = mediaData;
+                handler.sendMessage(msg);
             }
         }
         return resultMap;
     }
 
-    private Map<String, List<MediaData>> getAllPictures(File dir) {
+    private Map<String, List<MediaData>> getAllPictures(Handler handler, File dir, int mediaType) {
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
                 if (file.listFiles().length > 0) {
-                    resultMap.putAll(getAllPictures(file));
+                    resultMap.putAll(getAllPictures(handler, file, mediaType));
                 }
             } else if (file.length() > 1024 * 100 && isImageFile(file)) {
                 MediaData mediaData = new MediaData();
@@ -153,14 +225,28 @@ public class PictureCheckManager {
                 if (group == null) {
                     group = new ArrayList<>();
                 }
+                if (!resultMap.containsKey(parent)) {
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
+                    parentMedia.folder = parent;
+                    msg.obj = parentMedia;
+                    handler.sendMessage(msg);
+                }
                 group.add(mediaData);
+                Message msg = new Message();
+                msg.what = mediaType;
+                mediaData.folder = parent;
+                msg.obj = mediaData;
+                handler.sendMessage(msg);
                 resultMap.put(parent, group);
             }
         }
         return resultMap;
     }
 
-    private Map<String, List<MediaData>> getAllVideos(File dir) {
+    private Map<String, List<MediaData>> getAllVideos(Handler handler, File dir, int mediaType) {
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         if (dir.listFiles() == null) {
             return resultMap;
@@ -168,7 +254,7 @@ public class PictureCheckManager {
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
                 if (file.listFiles() != null && file.listFiles().length > 0) {
-                    resultMap.putAll(getAllVideos(file));
+                    resultMap.putAll(getAllVideos(handler, file, mediaType));
                 }
             } else if (file.length() > 1024 * 100 && isVideoFile(file)) {
                 MediaData mediaData = new MediaData();
@@ -180,6 +266,21 @@ public class PictureCheckManager {
                     group = new ArrayList<>();
                 }
                 group.add(mediaData);
+                if (!resultMap.containsKey(parent)) {
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
+                    parentMedia.folder = parent;
+                    msg.obj = parentMedia;
+                    handler.sendMessage(msg);
+                }
+                resultMap.put(parent, group);
+                Message msg = new Message();
+                msg.what = mediaType;
+                mediaData.folder = parent;
+                msg.obj = mediaData;
+                handler.sendMessage(msg);
                 resultMap.put(parent, group);
             }
         }

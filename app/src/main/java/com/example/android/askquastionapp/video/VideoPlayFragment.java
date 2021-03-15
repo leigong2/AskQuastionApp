@@ -129,6 +129,11 @@ public class VideoPlayFragment extends Fragment {
                 }
                 videoView.onOrientationChange(orientation);
             }
+
+            @Override
+            public void onRootViewLongClick() {
+                onLongClick();
+            }
         });
     }
 
