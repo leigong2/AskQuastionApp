@@ -99,8 +99,9 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--腾讯配置 end =========================================-->
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:excludeFromRecents="true"
+            android:theme="@style/splash_style"
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -109,6 +110,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity"/>
         <activity
             android:name="com.example.android.askquastionapp.wxapi.WXEntryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

@@ -19,9 +19,14 @@ import maximsblog.blogspot.com.jlatexmath.core.AjLatexMath;
 public class BaseApplication extends Application {
     private static BaseApplication application;
     private static Handler sHandler;
+    private static long sTime;
 
     public Handler getHandler() {
         return sHandler;
+    }
+
+    public long getTime() {
+        return sTime;
     }
 
     public static BaseApplication getInstance() {
@@ -31,10 +36,17 @@ public class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        sTime = System.currentTimeMillis();
         application = this;
         sHandler = new Handler();
-        handleSSLHandshake();
-        AjLatexMath.init(this);
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                handleSSLHandshake();
+                AjLatexMath.init(BaseApplication.this);
+            }
+        }.start();
     }
 
     public static void handleSSLHandshake() {
