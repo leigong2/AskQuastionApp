@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -29,10 +30,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
-import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import com.example.android.askquastionapp.BaseApplication;
 import com.example.jsoup.GsonGetter;
 
 import java.io.File;
@@ -361,7 +360,7 @@ public class CameraV2Manager {
                 Image image = reader.acquireLatestImage();
                 // 开启线程异步保存图片
                 if (image == null) {
-                    LogUtils.i("zune: ", "image = " + null);
+                    Log.i("zune: ", "image = " + null);
                     return;
                 }
                 saveImage(image);
@@ -456,7 +455,7 @@ public class CameraV2Manager {
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-            LogUtils.i("zune: ", "onSurfaceTextureAvailable = " + surfaceTexture);
+            Log.i("zune: ", "onSurfaceTextureAvailable = " + surfaceTexture);
             if (onLogListener != null) {
                 onLogListener.writeLog("onSurfaceTextureAvailable = " + surfaceTexture);
             }
@@ -465,7 +464,7 @@ public class CameraV2Manager {
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
-            LogUtils.i("zune: ", "改变大小 width = " + width + ", height = " + height);
+            Log.i("zune: ", "改变大小 width = " + width + ", height = " + height);
             if (onLogListener != null) {
                 onLogListener.writeLog("改变大小 width = " + width + ", height = " + height);
             }
@@ -473,7 +472,7 @@ public class CameraV2Manager {
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-            LogUtils.i("zune: ", "onSurfaceTextureDestroyed");
+            Log.i("zune: ", "onSurfaceTextureDestroyed");
             if (onLogListener != null) {
                 onLogListener.writeLog("onSurfaceTextureDestroyed");
             }
@@ -482,7 +481,7 @@ public class CameraV2Manager {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
-            LogUtils.i("zune: ", "onSurfaceTextureUpdated");
+            Log.i("zune: ", "onSurfaceTextureUpdated");
         }
     };
 
@@ -534,7 +533,7 @@ public class CameraV2Manager {
         @Override
         public void onConfigured(CameraCaptureSession session) {
             mSession = session;
-            LogUtils.i("zune: ", "相机创建成功");
+            Log.i("zune: ", "相机创建成功");
             if (onLogListener != null) {
                 onLogListener.writeLog("相机创建成功");
             }
@@ -542,7 +541,7 @@ public class CameraV2Manager {
                 mSession.setRepeatingRequest(mPreviewBuilder.build(), mSessionCaptureCallback, mHandler);//返回结果
             } catch (CameraAccessException e) {
                 e.printStackTrace();
-                LogUtils.i("zune: ", "CameraAccessException = " + GsonGetter.getInstance().getGson().toJson(e));
+                Log.i("zune: ", "CameraAccessException = " + GsonGetter.getInstance().getGson().toJson(e));
                 if (onLogListener != null) {
                     onLogListener.writeLog("CameraAccessException = " + GsonGetter.getInstance().getGson().toJson(e));
                 }
@@ -551,7 +550,7 @@ public class CameraV2Manager {
 
         @Override
         public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-            LogUtils.i("zune: ", "onConfigureFailed = " + GsonGetter.getInstance().getGson().toJson(session));
+            Log.i("zune: ", "onConfigureFailed = " + GsonGetter.getInstance().getGson().toJson(session));
         }
     };
 
@@ -560,12 +559,12 @@ public class CameraV2Manager {
 
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            LogUtils.i("zune: ", "onCaptureCompleted, CaptureRequest = " + GsonGetter.getInstance().getGson().toJson(request));
+            Log.i("zune: ", "onCaptureCompleted, CaptureRequest = " + GsonGetter.getInstance().getGson().toJson(request));
         }
 
         @Override
         public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-            LogUtils.i("zune: ", "onCaptureProgressed, CaptureRequest = " + GsonGetter.getInstance().getGson().toJson(request));
+            Log.i("zune: ", "onCaptureProgressed, CaptureRequest = " + GsonGetter.getInstance().getGson().toJson(request));
         }
     };
 

@@ -70,26 +70,7 @@ public class PictureCheckManager {
         if (dir.listFiles() == null) {
             return resultMap;
         }
-        List<File> arrayList = Arrays.asList(dir.listFiles());
-        Collections.sort(arrayList, new Comparator<File>() {
-            @Override
-            public int compare(File f1, File f2) {
-                if (!f1.isDirectory()) {
-                    return -1;
-                }
-                if (!f2.isDirectory()) {
-                    return 1;
-                }
-                if (f1.listFiles() == null) {
-                    return -1;
-                }
-                if (f2.listFiles() == null) {
-                    return 1;
-                }
-                return f1.listFiles().length - f2.listFiles().length;
-            }
-        });
-        for (File file : arrayList) {
+        for (File file : dir.listFiles()) {
             if (file == null) {
                 continue;
             }
@@ -146,26 +127,7 @@ public class PictureCheckManager {
         if (dir.listFiles() == null) {
             return resultMap;
         }
-        List<File> arrayList = Arrays.asList(dir.listFiles());
-        Collections.sort(arrayList, new Comparator<File>() {
-            @Override
-            public int compare(File f1, File f2) {
-                if (!f1.isDirectory()) {
-                    return -1;
-                }
-                if (!f2.isDirectory()) {
-                    return 1;
-                }
-                if (f1.listFiles() == null) {
-                    return -1;
-                }
-                if (f2.listFiles() == null) {
-                    return 1;
-                }
-                return f1.listFiles().length - f2.listFiles().length;
-            }
-        });
-        for (File file : arrayList) {
+        for (File file : dir.listFiles()) {
             String pathName = file.getPath().replaceAll(dir.getPath(), "");
             if (pathName.startsWith("/Android")) {
                 resultMap.putAll(getAllPictures(handler, new File(dir, "/Android/data/org.telegram.messenger/cache"), mediaType));

@@ -88,9 +88,13 @@ public class SurfaceVideoPlayer {
     }
 
     public void release() {
-        mCurMediaPlayer.release();
+        if (mCurMediaPlayer != null) {
+            mCurMediaPlayer.release();
+        }
         mCurMediaPlayer = null;
-        mSurfaceVideoController.release();
+        if (mSurfaceVideoController != null) {
+            mSurfaceVideoController.release();
+        }
     }
 
     public void seek(@FloatRange(from = 0f, to = 1f) float position) {
@@ -153,7 +157,7 @@ public class SurfaceVideoPlayer {
         try {
             mCurMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mCurMediaPlayer.setDataSource(mediaData.url);
-            mCurMediaPlayer.prepare();
+            mCurMediaPlayer.prepareAsync();
         } catch (Exception e) {
             e.printStackTrace();
         }
