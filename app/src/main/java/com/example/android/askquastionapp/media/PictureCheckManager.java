@@ -174,7 +174,20 @@ public class PictureCheckManager {
 
     private Map<String, List<MediaData>> getAllPictures(Handler handler, File dir, int mediaType) {
         Map<String, List<MediaData>> resultMap = new HashMap<>();
-        for (File file : dir.listFiles()) {
+        List<File> files = Arrays.asList(dir.listFiles());
+        Collections.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                if (!f1.isDirectory() || f1.listFiles() == null ) {
+                    return -1;
+                }
+                if (!f2.isDirectory() || f2.listFiles() == null ) {
+                    return 1;
+                }
+                return f1.listFiles().length - f2.listFiles().length;
+            }
+        });
+        for (File file : files) {
             if (file.isDirectory()) {
                 if (file.listFiles().length > 0) {
                     resultMap.putAll(getAllPictures(handler, file, mediaType));

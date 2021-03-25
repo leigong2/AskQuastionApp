@@ -32,7 +32,9 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
+import com.blankj.utilcode.util.LogUtils;
 import com.example.android.askquastionapp.BaseApplication;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
 
@@ -60,7 +62,7 @@ abstract class AbstractPhotoImageView extends View {
     private int measuredWidth;
     private int measuredHeight;
     private BitmapRegionDecoder mDecoder;
-    private static final BitmapFactory.Options options = new BitmapFactory.Options();
+    private final BitmapFactory.Options options = new BitmapFactory.Options();
     private float scaleFactor = 1f;
     private Paint colorPaint;
     private FillingValueAnimator filingAnimator; // 惯性动画
@@ -101,6 +103,7 @@ abstract class AbstractPhotoImageView extends View {
     private ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            getParent().requestDisallowInterceptTouchEvent(true);
             /*zune：这个坐标是相对屏幕的坐标，缩放的时候，注意要转换为相对画布的坐标**/
             float cx = detector.getFocusX();
             float cy = detector.getFocusY();
@@ -437,11 +440,51 @@ abstract class AbstractPhotoImageView extends View {
     });
 
     public void setFile(File file) {
+        mCurRotation = getRotation(file);
+        if (mInputStream != null) {
+            float oldScale = scaleFactor;
+            scaleFactor = 1;
+            updateScaleViewRect(0, 0, oldScale, scaleFactor);
+            postInvalidate();
+        }
         try {
             setImageResource(new FileInputStream(file), file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private int getRotation(File file) {
+        int degree = 0;
+        try {
+            // 从指定路径下读取图片，并获取其EXIF信息
+            InputStream inputStream = BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), file));
+            ExifInterface exifInterface = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                exifInterface = new ExifInterface(inputStream);
+            } else {
+                exifInterface = new ExifInterface(file.getPath());
+            }
+            // 获取图片的旋转信息
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return degree;
     }
 
     public void setImageResource(InputStream inputStream) {
@@ -451,9 +494,6 @@ abstract class AbstractPhotoImageView extends View {
     private InputStream mInputStream;
 
     public void setImageResource(InputStream inputStream, File file) {
-        if (mInputStream == inputStream) {
-            return;
-        }
         release();
         mInputStream = inputStream;
         mFile = file;
@@ -568,6 +608,15 @@ abstract class AbstractPhotoImageView extends View {
         if (imageRequest) {
             return true;
         }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                getParent().requestDisallowInterceptTouchEvent(true);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                getParent().requestDisallowInterceptTouchEvent(false);
+                break;
+        }
         moveGestureDetector.onTouchEvent(event);   //平移
         scaleGestureDetector.onTouchEvent(event);    //双指缩放
         return true;
@@ -657,8 +706,9 @@ abstract class AbstractPhotoImageView extends View {
                         if (orientation == LinearLayout.HORIZONTAL) {
                             if (mImageHeight < measuredHeight) {
                                 /*zune：如果是超宽图，初始化的时候，默认将高度放大到屏幕高度**/
-                                onScale(0, measuredHeight / 2f, 1f * measuredHeight / mImageHeight * mImageWidth / measuredWidth);
-                                return;
+//                                onScale(0, measuredHeight / 2f, 1f * measuredHeight / mImageHeight * mImageWidth / measuredWidth);
+                                /*zune：超宽图不处理了**/
+//                                return;
                             }
                         } else {
                             if (mImageWidth < measuredWidth) {
@@ -962,11 +1012,6 @@ abstract class AbstractPhotoImageView extends View {
         mBitmapRectList.clear();
         mCanvasRectList.clear();
         mDecoder = null;
-        options.inSampleSize = 0;
-        mImageWidth = 0;
-        mImageHeight = 0;
-        measuredWidth = 0;
-        measuredHeight = 0;
         imageRequest = false;
         mInputStream = null;
         for (int i = 0; i < 4; i++) {
@@ -978,8 +1023,14 @@ abstract class AbstractPhotoImageView extends View {
         filingAnimator = null;
         isDismiss = false;
         setBackgroundColor(Color.BLACK);
-        loadingText = null;
         loadingHandler.removeCallbacksAndMessages(null);
+    }
+
+    private int mCurRotation;
+
+    /*zune：Todo **/
+    public void setCurRotation(int rotation) {
+        mCurRotation = rotation;
     }
 
     public static class FillingValueAnimator extends ValueAnimator {

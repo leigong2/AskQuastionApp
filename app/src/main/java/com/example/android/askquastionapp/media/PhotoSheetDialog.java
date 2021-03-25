@@ -102,36 +102,6 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             v.setVisibility(View.GONE);
             mBitImageView.setVisibility(View.GONE);
         });
-        mBitImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (mView == null) {
-                    return false;
-                }
-                BottomPop current = BottomPop.getCurrent(getActivity());
-                current.addItemText("扫描");
-                current.show(mView);
-                current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(BottomPop bottomPop, int position) {
-                        String tag = bottomPop.getPosition(position);
-                        switch (tag) {
-                            case "扫描":
-                                bottomPop.dismiss();
-                                if (view instanceof PhotoImageView) {
-                                    Bitmap bitmap = ((PhotoImageView) view).getImageBitmap();
-                                    ToastUtils.showShort("已捕获，正在扫描");
-                                    scanBitmap(bitmap);
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                });
-                return false;
-            }
-        });
         mBitImageView.setOnDismissCallBack(new PhotoImageView.OnLimitCallBack() {
             long time = System.currentTimeMillis();
 
@@ -420,7 +390,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     if (obj instanceof PictureCheckManager.MediaData) {
                         mDataList.add((PictureCheckManager.MediaData) obj);
                         if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
-                            mRecyclerView.getAdapter().notifyDataSetChanged();
+                            mRecyclerView.getAdapter().notifyItemChanged(mDataList.size());
                         }
                     }
                     break;
@@ -447,11 +417,23 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     private void itemClick(int position) {
         PictureCheckManager.MediaData mediaData = mDataList.get(position);
         if (mediaData.mediaType == 0) {
-            mBitImageView.dismiss();
-            mBitImageView.setVisibility(View.VISIBLE);
-            close.setVisibility(View.VISIBLE);
-            File file = new File(mediaData.path);
-            mBitImageView.setFile(file);
+//            mBitImageView.dismiss();
+//            mBitImageView.setVisibility(View.VISIBLE);
+//            close.setVisibility(View.VISIBLE);
+//            File file = new File(mediaData.path);
+//            mBitImageView.setFile(file);
+            List<PictureCheckManager.MediaData> datas = new ArrayList<>();
+            int index = 0;
+            for (PictureCheckManager.MediaData data : mDataList) {
+                if (data.path == null || data.folder == null || !mediaData.folder.equalsIgnoreCase(data.folder)) {
+                    continue;
+                }
+                if (data.path.equalsIgnoreCase(mediaData.path)) {
+                    index = datas.size();
+                }
+                datas.add(data);
+            }
+            BigPhotoGlanceActivity.start(getContext(), datas, index);
         } else {
             List<WatchVideoActivity.MediaData> datas = new ArrayList<>();
             int index = 0;

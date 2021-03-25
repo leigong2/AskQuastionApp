@@ -101,8 +101,8 @@
         <activity
             android:name=".SplashActivity"
             android:excludeFromRecents="true"
-            android:theme="@style/splash_style"
-            android:taskAffinity="">
+            android:taskAffinity=""
+            android:theme="@style/splash_style">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -110,7 +110,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".MainActivity" />
         <activity
             android:name="com.example.android.askquastionapp.wxapi.WXEntryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -209,6 +209,9 @@
         <activity android:name=".ninepatch.NinePatchActivity" />
         <activity android:name=".scan.CaptureActivity" />
         <activity android:name=".qqdrag.QQDragActivity" />
+        <activity
+            android:name=".media.BigPhotoGlanceActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
 
 </manifest>

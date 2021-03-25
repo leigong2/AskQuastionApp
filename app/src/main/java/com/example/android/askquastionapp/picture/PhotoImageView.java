@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -13,6 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 
 public class PhotoImageView extends AbstractPhotoImageView {
     private ValueAnimator dismissAnimator;  //消失动画
+    private boolean isSimple = true;
 
     public PhotoImageView(Context context) {
         super(context);
@@ -45,6 +47,7 @@ public class PhotoImageView extends AbstractPhotoImageView {
 
     @Override
     public void onGestureScroll(@GestureScrollType int type) {
+        getParent().requestDisallowInterceptTouchEvent(false);
         switch (type) {
             case GESTURE_SCROLL_LEFT:
                 if (onDismissCallBack != null) {
@@ -52,6 +55,9 @@ public class PhotoImageView extends AbstractPhotoImageView {
                 }
                 break;
             case GESTURE_SCROLL_TOP:
+                if (!isSimple) {
+                    return;
+                }
                 if (dismissAnimator == null || !dismissAnimator.isRunning()) {
                     return;
                 }
@@ -95,6 +101,10 @@ public class PhotoImageView extends AbstractPhotoImageView {
 
     public void setOnDismissCallBack(OnLimitCallBack onDismissCallBack) {
         this.onDismissCallBack = onDismissCallBack;
+    }
+
+    public void setSimple(boolean simple) {
+        isSimple = simple;
     }
 
     public static final int GESTURE_SCROLL_LEFT = 1;

@@ -398,5 +398,19 @@
     "minMoney": "9.32",
     "repeatCount": 339,
     "timeLimitCount": 126
+  },
+  "2021-03-24": {
+    "addCount": 1,
+    "maxMoney": "14.74",
+    "minMoney": "9.26",
+    "repeatCount": 337,
+    "timeLimitCount": 131
+  },
+  "2021-03-25": {
+    "addCount": 2,
+    "maxMoney": "14.72",
+    "minMoney": "9.25",
+    "repeatCount": 337,
+    "timeLimitCount": 132
   }
 }
