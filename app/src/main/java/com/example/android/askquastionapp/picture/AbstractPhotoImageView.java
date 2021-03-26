@@ -445,10 +445,10 @@ abstract class AbstractPhotoImageView extends View {
             @Override
             public File apply(File srcFile) throws Exception {
                 File file = null;
-                if (mCurRotation == 0) {
+                if (mCurRotation == 0 && changeSrcFile) {
                     mCurRotation = getRotation(srcFile);
                 }
-                if (mCurRotation == 0) {
+                if (mCurRotation == 0 && changeSrcFile) {
                     return srcFile;
                 }
                 Message msg = new Message();
@@ -456,7 +456,9 @@ abstract class AbstractPhotoImageView extends View {
                 loadingHandler.sendMessage(msg);
                 BitmapFactory.Options newOpts = new BitmapFactory.Options();
                 Bitmap image = BitmapFactory.decodeStream(BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), srcFile)), null, newOpts);
-                image = rotate(image, mCurRotation);
+                if (mCurRotation % 360 != 0) {
+                    image = rotate(image, mCurRotation);
+                }
                 // 把压缩后的数据baos存放到ByteArrayInputStream中
                 BufferedOutputStream bos = null;
                 try {
