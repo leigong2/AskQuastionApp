@@ -79,6 +79,7 @@ dependencies {
     implementation project(path: ':mathJaxLib')
     implementation project(path: ':xphotoview')
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.exifinterface:exifinterface:1.1.0'
     testImplementation 'junit:junit:4.12'
     implementation 'com.github.leigong2:KeepLiveDemo:v0.8.8'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

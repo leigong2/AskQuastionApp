@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.contacts.ContactBean;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder;
 
@@ -60,8 +61,10 @@ public class ContactsUtils {
         return contactsUtils;
     }
 
-    public Observable<List<ContactBean>> getFastContacts(Context context) {
+    public Observable<List<ContactBean>> getFastContacts(Context context, boolean withAddress) {
         return Observable.just(1).map(integer -> {
+            PhoneNumberOfflineGeocoder geocoder = PhoneNumberOfflineGeocoder.getInstance();
+            Phonenumber.PhoneNumber pn = new Phonenumber.PhoneNumber();
             String[] projection = new String[]{
                     ContactsContract.Contacts.DISPLAY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
@@ -83,10 +86,44 @@ public class ContactsUtils {
                         mobileNo = cursor.getString(mobileNoIndex);
                         mobileNormalNo = cursor.getString(mobileNumNoIndex);
                         displayName = cursor.getString(displayNameIndex);
+                        if (mobileNormalNo == null) {
+                            mobileNormalNo = "";
+                        }
+                        if (mobileNo == null) {
+                            mobileNo = "";
+                        }
                         ContactBean temp = new ContactBean();
-                        String s = replacePublicStr(mobileNormalNo.replaceAll(" ", ""), mobileNo.replaceAll(" ", ""));
-                        temp.phone = mobileNo.startsWith("0") || mobileNo.startsWith("+") ? mobileNo : s + " " + mobileNo.replaceAll(" ", "");
+                        String ss = replacePublicStr(mobileNormalNo.replaceAll(" ", ""), mobileNo.replaceAll(" ", ""));
+                        temp.phone = mobileNo.startsWith("0") || mobileNo.startsWith("+") || TextUtils.isEmpty(ss) ? mobileNo : ss + " " + mobileNo.replaceAll(" ", "");
                         temp.name = displayName;
+                        if (withAddress) {
+                            String[] split = temp.phone.split(" ");
+                            if (split.length > 1) {
+                                long phone = 0;
+                                try {
+                                    phone = Long.parseLong(split[1]);
+                                    pn.setCountryCode(Integer.parseInt(split[0].replaceAll("\\+", "")));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                pn.setNationalNumber(phone);
+                                temp.address = geocoder.getDescriptionForNumber(pn, context.getResources().getConfiguration().locale);
+                            } else {
+                                try {
+                                    Phonenumber.PhoneNumber ch = PhoneNumberUtil.getInstance().parse(mobileNormalNo, "CH");
+                                    String format = PhoneNumberUtil.getInstance().format(ch, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+                                    String countryCode = format.split(" ")[0].replaceAll("\\+", "");
+                                    pn.setCountryCode(Integer.parseInt(countryCode));
+                                    pn.setNationalNumber(Long.parseLong(format.replaceAll("\\+", "").replace(countryCode, "").replaceAll(" ", "")));
+                                    temp.phone = format;
+                                    String descriptionForNumber = geocoder.getDescriptionForNumber(pn, context.getResources().getConfiguration().locale);
+                                    temp.address = TextUtils.isEmpty(descriptionForNumber) ? "中国" : descriptionForNumber;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    temp.address = "中国";
+                                }
+                            }
+                        }
                         contacts.add(temp);
                     }
                 }
@@ -94,7 +131,7 @@ public class ContactsUtils {
                 e.printStackTrace();
             } finally {
                 if (cursor != null) {
-                    Log.d("zune: ", "获取所有联系人耗时: " + (System.currentTimeMillis() - currentTimeMillis) + "，共计：" + cursor.getCount());
+                    LogUtils.i("zune: ", "获取所有联系人耗时: " + (System.currentTimeMillis() - currentTimeMillis) + "，共计：" + cursor.getCount());
                     cursor.close();
                 }
             }

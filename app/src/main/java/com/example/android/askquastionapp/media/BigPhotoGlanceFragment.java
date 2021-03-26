@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,7 @@ import java.io.File;
 public class BigPhotoGlanceFragment extends Fragment {
 
     private PhotoImageView bigImageView;
+    private Button rotationView;
 
     public static BigPhotoGlanceFragment getInstance() {
         return new BigPhotoGlanceFragment();
@@ -45,14 +47,16 @@ public class BigPhotoGlanceFragment extends Fragment {
         bigImageView = view.findViewById(R.id.big_image_view);
         bigImageView.setOnLongClickListener(v -> onLongClick());
         bigImageView.setSimple(false);
-        view.findViewById(R.id.remote_image).setOnClickListener(v -> startRemote());
+        rotationView = view.findViewById(R.id.remote_image);
+        rotationView.setOnClickListener(this::startRemote);
     }
 
     private int mCurrentRotation;
 
-    private void startRemote() {
+    private void startRemote(View v) {
         mCurrentRotation = mCurrentRotation % 360 + 90;
         bigImageView.setCurRotation(mCurrentRotation);
+        ((Button)v).setText(String.valueOf(mCurrentRotation));
     }
 
     @Override
@@ -129,9 +133,10 @@ public class BigPhotoGlanceFragment extends Fragment {
         if (mediaData == null || TextUtils.isEmpty(mediaData.path)) {
             return;
         }
+        rotationView.setText("旋转");
         this.mediaData = mediaData;
         File file = new File(mediaData.path);
         bigImageView.setVisibility(View.VISIBLE);
-        bigImageView.setFile(file);
+        bigImageView.setFile(file, true);
     }
 }

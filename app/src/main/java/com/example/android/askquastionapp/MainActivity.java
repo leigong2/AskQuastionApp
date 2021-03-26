@@ -1362,30 +1362,15 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
-        ContactsUtils.getInstance().getFastContacts(this).subscribe(new Observer<List<ContactBean>>() {
+        ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, true);
+        ContactsUtils.getInstance().getFastContacts(this, true).subscribe(new SimpleObserver<List<ContactBean>, Integer>(1, false) {
             @Override
-            public void onSubscribe(Disposable d) {
-            }
-
-            @Override
-            public void onNext(List<ContactBean> contactBeans) {
-                List<String> contacts = new ArrayList<>();
+            public void onNext(List<ContactBean> contactBeans, Integer integer) {
+                List<ListDialog.BaseData> ts = new ArrayList<>();
                 for (ContactBean contactBean : contactBeans) {
-                    contacts.add(contactBean.name + " : " + contactBean.phone);
+                    ts.add(new ListDialog.BaseData(contactBean.name + " : " + contactBean.phone + " : " + contactBean.address));
                 }
-                clearHolder.stopLoadContact(contacts);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-            }
-
-            @Override
-            public void onComplete() {
+                listDialog.showWithData(ts, false);
             }
         });
     }

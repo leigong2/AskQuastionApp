@@ -14,7 +14,6 @@ import android.graphics.PathEffect;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.SensorManager;
-import android.media.ExifInterface;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -31,12 +30,11 @@ import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
+import androidx.exifinterface.media.ExifInterface;
 
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.utils.FileUtil;
-import com.example.android.askquastionapp.utils.LogUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
-import com.example.jsoup.GsonGetter;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
 
 import java.io.BufferedOutputStream;
@@ -71,7 +69,6 @@ abstract class AbstractPhotoImageView extends View {
     private FillingValueAnimator filingAnimator; // 惯性动画
     private int orientation = LinearLayout.HORIZONTAL;
     private TextPaint mTextPaint;  //画文字的画笔
-    private File mFile;
 
     public AbstractPhotoImageView(Context context) {
         super(context);
@@ -442,18 +439,21 @@ abstract class AbstractPhotoImageView extends View {
         }
     });
 
-    public void setFile(File file) {
-        Message msg = new Message();
-        msg.what = 1002;
-        loadingHandler.sendMessage(msg);
+    public void setFile(File file, boolean changeSrcFile) {
+        srcFile = file;
         Observable.just(file).map(new Function<File, File>() {
             @Override
             public File apply(File srcFile) throws Exception {
                 File file = null;
-                mCurRotation = getRotation(srcFile);
+                if (mCurRotation == 0) {
+                    mCurRotation = getRotation(srcFile);
+                }
                 if (mCurRotation == 0) {
                     return srcFile;
                 }
+                Message msg = new Message();
+                msg.what = 1002;
+                loadingHandler.sendMessage(msg);
                 BitmapFactory.Options newOpts = new BitmapFactory.Options();
                 Bitmap image = BitmapFactory.decodeStream(BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), srcFile)), null, newOpts);
                 image = rotate(image, mCurRotation);
@@ -465,8 +465,7 @@ abstract class AbstractPhotoImageView extends View {
                         parentFile.mkdirs();
                     }
                     String[] split = srcFile.getPath().split("\\.");
-                    LogUtils.i("zune: ", GsonGetter.getInstance().getGson().toJson(split));
-                    file = new File(parentFile, "temp." + split[split.length - 1]);
+                    file = new File(getContext().getExternalCacheDir(), "temp." + split[split.length - 1]);
                     file.deleteOnExit();
                     bos = new BufferedOutputStream(new FileOutputStream(file));
                     boolean b = false;
@@ -477,11 +476,9 @@ abstract class AbstractPhotoImageView extends View {
                         b = image.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                     }
                     bos.close();
-                    LogUtils.i("zune: ", "写入成功：" + b);
-                    if (b && split.length > 1 ) {
+                    if (b && split.length > 1 && changeSrcFile) {
                         boolean delete = srcFile.delete();
                         boolean renameTo = file.renameTo(new File(split[0] + "." + split[1]));
-                        LogUtils.i("zune: ", "delete = " + delete + ", rename = " + renameTo);
                     }
                 } catch (Exception ignore) {
                 } finally {
@@ -494,7 +491,7 @@ abstract class AbstractPhotoImageView extends View {
                         image.recycle();
                     }
                 }
-                return srcFile;
+                return changeSrcFile ? srcFile : file;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SimpleObserver<File, Integer>(1, false) {
@@ -557,7 +554,6 @@ abstract class AbstractPhotoImageView extends View {
     public void setImageResource(InputStream inputStream, File file) {
         release();
         mInputStream = inputStream;
-        mFile = file;
         Observable.just(inputStream).map(new Function<InputStream, Integer>() {
             @Override
             public Integer apply(InputStream inputStream) throws Exception {
@@ -591,7 +587,7 @@ abstract class AbstractPhotoImageView extends View {
     }
 
     public Bitmap getImageBitmap() {
-        if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0 || mFile == null) {
+        if (mImageWidth == 0 || mImageHeight == 0 || mDecoder == null || measuredWidth == 0 || measuredHeight == 0 || srcFile == null) {
             return null;
         }
         Bitmap bitmap = getLayoutCache();
@@ -600,12 +596,12 @@ abstract class AbstractPhotoImageView extends View {
         }
         try {
             // 从指定路径下读取图片，并获取其EXIF信息
-            InputStream inputStream = new FileInputStream(mFile);
+            InputStream inputStream = new FileInputStream(srcFile);
             ExifInterface exifInterface = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 exifInterface = new ExifInterface(inputStream);
             } else {
-                exifInterface = new ExifInterface(mFile.getPath());
+                exifInterface = new ExifInterface(srcFile.getPath());
             }
             // 获取图片的旋转信息
             int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
@@ -1059,6 +1055,7 @@ abstract class AbstractPhotoImageView extends View {
     private Map<Integer, Bitmap> realBitmap = new HashMap<>();
 
     public void release() {
+        mCurRotation = 0;
         setAlpha(1);
         setScaleX(1);
         setScaleY(1);
@@ -1091,10 +1088,11 @@ abstract class AbstractPhotoImageView extends View {
     }
 
     private int mCurRotation;
+    private File srcFile;
 
-    /*zune：Todo **/
     public void setCurRotation(int rotation) {
         mCurRotation = rotation;
+        setFile(srcFile, false);
     }
 
     public static class FillingValueAnimator extends ValueAnimator {
