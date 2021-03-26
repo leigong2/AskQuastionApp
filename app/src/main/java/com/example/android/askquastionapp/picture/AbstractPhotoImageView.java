@@ -32,15 +32,18 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import com.blankj.utilcode.util.LogUtils;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.LogUtils;
 import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.example.jsoup.GsonGetter;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -440,18 +443,76 @@ abstract class AbstractPhotoImageView extends View {
     });
 
     public void setFile(File file) {
-        mCurRotation = getRotation(file);
-        if (mInputStream != null) {
-            float oldScale = scaleFactor;
-            scaleFactor = 1;
-            updateScaleViewRect(0, 0, oldScale, scaleFactor);
-            postInvalidate();
-        }
-        try {
-            setImageResource(new FileInputStream(file), file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Message msg = new Message();
+        msg.what = 1002;
+        loadingHandler.sendMessage(msg);
+        Observable.just(file).map(new Function<File, File>() {
+            @Override
+            public File apply(File srcFile) throws Exception {
+                File file = null;
+                mCurRotation = getRotation(srcFile);
+                if (mCurRotation == 0) {
+                    return srcFile;
+                }
+                BitmapFactory.Options newOpts = new BitmapFactory.Options();
+                Bitmap image = BitmapFactory.decodeStream(BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), srcFile)), null, newOpts);
+                image = rotate(image, mCurRotation);
+                // 把压缩后的数据baos存放到ByteArrayInputStream中
+                BufferedOutputStream bos = null;
+                try {
+                    File parentFile = srcFile.getParentFile();
+                    if (!parentFile.exists()) {
+                        parentFile.mkdirs();
+                    }
+                    String[] split = srcFile.getPath().split("\\.");
+                    LogUtils.i("zune: ", GsonGetter.getInstance().getGson().toJson(split));
+                    file = new File(parentFile, "temp." + split[split.length - 1]);
+                    file.deleteOnExit();
+                    bos = new BufferedOutputStream(new FileOutputStream(file));
+                    boolean b = false;
+                    String newPath = file.getPath();
+                    if (newPath.toLowerCase().endsWith(".png")) {
+                        b = image.compress(Bitmap.CompressFormat.PNG, 100, bos);
+                    } else if (newPath.toLowerCase().endsWith(".jpg") || newPath.toLowerCase().endsWith(".jpeg")) {
+                        b = image.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                    }
+                    bos.close();
+                    LogUtils.i("zune: ", "写入成功：" + b);
+                    if (b && split.length > 1 ) {
+                        boolean delete = srcFile.delete();
+                        boolean renameTo = file.renameTo(new File(split[0] + "." + split[1]));
+                        LogUtils.i("zune: ", "delete = " + delete + ", rename = " + renameTo);
+                    }
+                } catch (Exception ignore) {
+                } finally {
+                    try {
+                        bos.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (image != null) {
+                        image.recycle();
+                    }
+                }
+                return srcFile;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<File, Integer>(1, false) {
+                    @Override
+                    public void onNext(File file, Integer integer2) {
+                        if (mInputStream != null) {
+                            float oldScale = scaleFactor;
+                            scaleFactor = 1;
+                            updateScaleViewRect(0, 0, oldScale, scaleFactor);
+                            postInvalidate();
+                        }
+                        try {
+                            setImageResource(new FileInputStream(file), file);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
     }
 
     private int getRotation(File file) {
@@ -849,6 +910,9 @@ abstract class AbstractPhotoImageView extends View {
                 if (progress == 1) {
                     loadingText = null;
                 }
+            } else if (msg.what == 1002) {
+                loadingText = "正在摆正角度";
+                postInvalidate();
             }
         }
     };

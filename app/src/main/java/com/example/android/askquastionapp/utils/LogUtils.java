@@ -12,13 +12,25 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class LogWithWriteUtils {
+public class LogUtils {
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
     public static void i(String tag, String msg) {
         writeLog(msg, tag);
-        Log.i(tag, msg);
-    };
+        Log.i(tag, createMessage(msg));
+    }
+
+    private static String getMethodNames(StackTraceElement[] sElements) {
+        String className = sElements[2].getFileName();
+        String methodName = sElements[2].getMethodName();
+        int lineNumber = sElements[2].getLineNumber();
+        return "(" + className + ":" + lineNumber + ")";
+    }
+
+    private static String createMessage(String msg) {
+        String name = getMethodNames(new Throwable().getStackTrace());
+        return name + msg;
+    }
 
     private static void writeLog(String tag, String msg) {
         BufferedWriter bw = null;
