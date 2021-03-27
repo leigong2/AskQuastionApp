@@ -181,6 +181,13 @@ public class ClearUtils {
                                 }
                             }
                         }
+                        if ("DCIM".equalsIgnoreCase(tempFileName)) {
+                            for (File listFile : tempFile.listFiles()) {
+                                if (listFile.getPath().contains("/.")) {
+                                    delete(listFile.getPath());
+                                }
+                            }
+                        }
                         continue;
                     }
                     deleteAll(tempFile, temp);
