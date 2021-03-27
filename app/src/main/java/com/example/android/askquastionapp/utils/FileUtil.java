@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
+import androidx.annotation.IntRange;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -19,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by DB_BOY on 2019/6/24.</br>
@@ -295,5 +298,115 @@ public class FileUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static List<File> sortFileWithLastModify(File dir, @IntRange(from = 0, to = 2) int sortType) {
+        File[] files = dir.listFiles();
+        List<Long> tempLastModifies = new ArrayList<>();
+        long[] lastModifies = new long[files.length];
+        for (int i = 0; i < files.length; i++) {
+            if (sortType == 1) {
+                lastModifies[i] = files[i].length();
+                tempLastModifies.add(files[i].length());
+            } else {
+                lastModifies[i] = files[i].lastModified();
+                tempLastModifies.add(files[i].lastModified());
+            }
+        }
+        if (sortType > 0) {
+            for (int i = 0; i < lastModifies.length; i++) {
+                for (int j = i + 1; j <= lastModifies.length - 1; j++) {
+                    if (lastModifies[i] > lastModifies[j]) {
+                        long temp = lastModifies[i];
+                        lastModifies[i] = lastModifies[j];
+                        lastModifies[j] = temp;
+                    }
+                }
+            }
+        }
+        List<File> sortFiles = new ArrayList<>();
+        for (int i = 0; i < lastModifies.length; i++) {
+            int firstIndex = tempLastModifies.indexOf(lastModifies[i]);
+            File file = files[firstIndex];
+            while (sortFiles.contains(file)) {
+                firstIndex += (tempLastModifies.subList(firstIndex + 1, tempLastModifies.size()).indexOf(lastModifies[i]) + 1);
+                if (firstIndex == -1 || firstIndex >= files.length) {
+                    break;
+                }
+                file = files[firstIndex];
+            }
+            sortFiles.add(file);
+        }
+        return sortFiles;
+    }
+
+    public static boolean isImageFile(File file) {
+        String name = file.getName();
+        //获取拓展名
+        String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+        String fileHeader = getFileHeader(file.getPath());
+        if (fileEnd.equals("jpg") || fileEnd.equals("png") || fileEnd.equals("gif") || fileEnd.equals("jpeg") || fileEnd.equals("bmp") || fileEnd.equals("webp")) {
+            return true;
+        }
+        if ("FFD8FF".equalsIgnoreCase(fileHeader) || "89504E47".equalsIgnoreCase(fileHeader) || "47494638".equalsIgnoreCase(fileHeader)
+                || "49492A00".equalsIgnoreCase(fileHeader) || "424D".equalsIgnoreCase(fileHeader)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 根据文件路径获取文件头信息
+     *
+     * @param filePath 文件路径
+     * @return 文件头信息
+     */
+    public static String getFileHeader(String filePath) {
+        FileInputStream is = null;
+        String value = null;
+        try {
+            is = new FileInputStream(filePath);
+            byte[] b = new byte[4];
+            /*
+             * int read() 从此输入流中读取一个数据字节。 int read(byte[] b) 从此输入流中将最多 b.length
+             * 个字节的数据读入一个 byte 数组中。 int read(byte[] b, int off, int len)
+             * 从此输入流中将最多 len 个字节的数据读入一个 byte 数组中。
+             */
+            int read = is.read(b, 0, b.length);
+            value = bytesToHexString(b);
+        } catch (Exception ignore) {
+        } finally {
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+        return value;
+    }
+
+    /**
+     * 将要读取文件头信息的文件的byte数组转换成string类型表示
+     *
+     * @param src 要读取文件头信息的文件的byte数组
+     * @return 文件头信息
+     */
+    private static String bytesToHexString(byte[] src) {
+        StringBuilder builder = new StringBuilder();
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        String hv;
+        for (byte b : src) {
+            // 以十六进制（基数 16）无符号整数形式返回一个整数参数的字符串表示形式，并转换为大写
+            hv = Integer.toHexString(b & 0xFF).toUpperCase();
+            if (hv.length() < 2) {
+                builder.append(0);
+            }
+            builder.append(hv);
+        }
+        System.out.println(builder.toString());
+        return builder.toString();
     }
 }

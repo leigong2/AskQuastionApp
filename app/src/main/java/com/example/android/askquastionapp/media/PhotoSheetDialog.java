@@ -250,6 +250,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         int position = (int) view.getTag();
                         PictureCheckManager.MediaData mediaData = mDataList.get(position);
                         BottomPop current = BottomPop.getCurrent(getActivity());
+                        current.addItemText("排序方式");
                         current.addItemText("复制");
                         current.addItemText("删除");
                         current.addItemText("分享");
@@ -276,7 +277,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                                         Uri copyUri = Uri.parse(filePath);
                                         ClipData clip = ClipData.newUri(getActivity().getContentResolver(), "URI", copyUri);
                                         clipboardmanager.setPrimaryClip(clip);
-                                        ToastUtils.showShort("文件已复制到剪贴板");
+                                        ToastUtils.showShort(filePath + "\n已复制到剪贴板");
                                         break;
                                     case "删除":
                                         boolean delete = file.delete();
@@ -324,6 +325,10 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                                                         scanBitmap(bitmap);
                                                     }
                                                 });
+                                        break;
+                                    case "排序方式":
+                                        PictureCheckManager.getInstance().setSortType((PictureCheckManager.getInstance().getSortType() + 1) % 3);
+                                        dismissAllowingStateLoss();
                                         break;
                                     default:
                                         break;
@@ -387,10 +392,22 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 case 0:
                 case 1:
                     Object obj = msg.obj;
+                    int position = 0;
                     if (obj instanceof PictureCheckManager.MediaData) {
-                        mDataList.add((PictureCheckManager.MediaData) obj);
+                        if (((PictureCheckManager.MediaData) obj).path != null) {
+                            for (int i = 0; i < mDataList.size(); i++) {
+                                if (mDataList.get(i).path == null && ((PictureCheckManager.MediaData) obj).folder.equalsIgnoreCase(mDataList.get(i).folder)) {
+                                    mDataList.add(i + 1, (PictureCheckManager.MediaData) obj);
+                                    position = i + 1;
+                                    break;
+                                }
+                            }
+                        } else {
+                            mDataList.add((PictureCheckManager.MediaData) obj);
+                            position = mDataList.size();
+                        }
                         if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
-                            mRecyclerView.getAdapter().notifyItemChanged(mDataList.size());
+                            mRecyclerView.getAdapter().notifyItemChanged(position);
                         }
                     }
                     break;
@@ -399,6 +416,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
     };
 
     public void loadData() {
+        mDataList.clear();
         new Thread() {
             @Override
             public void run() {

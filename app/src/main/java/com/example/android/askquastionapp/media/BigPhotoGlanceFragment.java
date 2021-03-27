@@ -1,8 +1,10 @@
 package com.example.android.askquastionapp.media;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -54,9 +56,26 @@ public class BigPhotoGlanceFragment extends Fragment {
     private int mCurrentRotation;
 
     private void startRemote(View v) {
-        mCurrentRotation = mCurrentRotation % 360 + 90;
-        bigImageView.setCurRotation(mCurrentRotation);
-        ((Button)v).setText(String.valueOf(mCurrentRotation));
+        new AlertDialog.Builder(getContext())
+                .setTitle("顺时针旋转")
+                .setNegativeButton("更改原图", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        mCurrentRotation = mCurrentRotation % 360 + 90;
+                        bigImageView.setCurRotation(mCurrentRotation, true);
+                        ((Button) v).setText(String.valueOf(mCurrentRotation));
+                    }
+                })
+                .setPositiveButton("不更改原图", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        mCurrentRotation = mCurrentRotation % 360 + 90;
+                        bigImageView.setCurRotation(mCurrentRotation, false);
+                        ((Button) v).setText(String.valueOf(mCurrentRotation));
+                    }
+                }).create().show();
     }
 
     @Override

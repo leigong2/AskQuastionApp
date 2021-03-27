@@ -1092,9 +1092,9 @@ abstract class AbstractPhotoImageView extends View {
     private int mCurRotation;
     private File srcFile;
 
-    public void setCurRotation(int rotation) {
+    public void setCurRotation(int rotation, boolean changeSrcFile) {
         mCurRotation = rotation;
-        setFile(srcFile, false);
+        setFile(srcFile, changeSrcFile);
     }
 
     public static class FillingValueAnimator extends ValueAnimator {
