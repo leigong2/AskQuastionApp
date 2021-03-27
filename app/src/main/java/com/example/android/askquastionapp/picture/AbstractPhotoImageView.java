@@ -770,9 +770,10 @@ abstract class AbstractPhotoImageView extends View {
 //                                return;
                             }
                         } else {
-                            if (mImageWidth < measuredWidth) {
+                            float newScale = 1f * measuredWidth / mImageWidth * mImageHeight / measuredHeight;
+                            if (newScale > 1) {
                                 /*zune：如果是超长图，初始化的时候，默认将宽度放大到屏幕宽度**/
-                                onScale(measuredWidth / 2f, 0, 1f * measuredWidth / mImageWidth * mImageHeight / measuredHeight);
+                                onScale(measuredWidth / 2f, 0, newScale);
                                 return;
                             }
                         }
@@ -800,9 +801,7 @@ abstract class AbstractPhotoImageView extends View {
         loadingText = null;
         float newScale = 1f * mImageHeight / mImageWidth / (1f * measuredHeight / measuredWidth);
         if (newScale > 1) {
-            scaleFactor = newScale;
-            updateScaleViewRect(measuredWidth / 2f, 0, 1, newScale);
-            postInvalidate();
+            onScale(measuredWidth / 2f, 0, newScale);
         }
     }
 
