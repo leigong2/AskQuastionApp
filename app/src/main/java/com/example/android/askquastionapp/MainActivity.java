@@ -221,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         ClearUtils.getInstance().getAppProcessName(this);
         resetIp();
-        setTitle("ip = " + baseUrl);
         ToastUtils.setMsgColor(Color.WHITE);
         ToastUtils.setBgResource(R.drawable.bg_toast);
         startScreenBroadcastReceiver();
@@ -243,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
         release = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction/release/app-production-armeabi-v7a-release.apk";
         self = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/other/release/app-release.apk";
         imgs = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/img0";
+        setTitle("ip = " + baseUrl);
     }
 
     /*zune: 将fromPosition，转移到toPosition, 缺位的顺次补上**/

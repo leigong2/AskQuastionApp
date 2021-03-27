@@ -798,6 +798,12 @@ abstract class AbstractPhotoImageView extends View {
         mBitmapRectList.add(rect);
         imageRequest = false;
         loadingText = null;
+        float newScale = 1f * mImageHeight / mImageWidth / (1f * measuredHeight / measuredWidth);
+        if (newScale > 1) {
+            scaleFactor = newScale;
+            updateScaleViewRect(measuredWidth / 2f, 0, 1, newScale);
+            postInvalidate();
+        }
     }
 
     private boolean canvasResetting;
