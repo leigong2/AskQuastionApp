@@ -44,4 +44,19 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:background">@mipmap/icon_splash</item>
     </style>
+
+    <style name="commonDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <!--边框-->
+        <item name="android:windowIsFloating">true</item>
+        <!--浮现在activity-->
+        <item name="android:windowIsTranslucent">false</item>
+        <!--半透明-->
+        <item name="android:windowNoTitle">true</item>
+        <!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--背景透明-->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!--模糊-->
+    </style>
 </resources>

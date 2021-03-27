@@ -409,4 +409,16 @@ public class FileUtil {
         System.out.println(builder.toString());
         return builder.toString();
     }
+
+    public static String getFileSize(File file) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");//构造方法的字符格式这里如果小数不足2位,会以0补足.
+        if (file.length() > 1024 * 1024) {
+            String string = decimalFormat.format(file.length() / 1024f / 1024f);//返回字符串
+            return string + "M";
+        } else if (file.length() > 1024) {
+            String string = decimalFormat.format(file.length() / 1024f);//返回字符串
+            return string + "K";
+        }
+        return file.length() + "B";
+    }
 }

@@ -48,9 +48,11 @@ import com.example.android.askquastionapp.VideoPlayerActivity;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.views.BottomPop;
+import com.example.android.askquastionapp.views.CommonDialog;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -59,8 +61,11 @@ import com.scwang.smartrefresh.layout.util.DensityUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -251,6 +256,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         PictureCheckManager.MediaData mediaData = mDataList.get(position);
                         BottomPop current = BottomPop.getCurrent(getActivity());
                         current.addItemText("排序方式");
+                        current.addItemText("图片信息");
                         current.addItemText("复制");
                         current.addItemText("删除");
                         current.addItemText("分享");
@@ -330,6 +336,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                                         PictureCheckManager.getInstance().setSortType((PictureCheckManager.getInstance().getSortType() + 1) % 3);
                                         dismissAllowingStateLoss();
                                         break;
+                                    case "图片信息":
+                                        new CommonDialog(getContext()).setContent("路径：" + filePath
+                                                        + "\n修改日期：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(file.lastModified()))
+                                                        + "\n大小：" + FileUtil.getFileSize(file)).show();
+                                        break;
                                     default:
                                         break;
                                 }
@@ -396,12 +407,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                     if (obj instanceof PictureCheckManager.MediaData) {
                         if (((PictureCheckManager.MediaData) obj).path != null) {
                             for (int i = 0; i < mDataList.size(); i++) {
-                                if (mDataList.get(i).path == null && ((PictureCheckManager.MediaData) obj).folder.equalsIgnoreCase(mDataList.get(i).folder)) {
-                                    mDataList.add(i + 1, (PictureCheckManager.MediaData) obj);
-                                    position = i + 1;
-                                    break;
+                                if (((PictureCheckManager.MediaData) obj).folder.equalsIgnoreCase(mDataList.get(i).folder)) {
+                                    position = i;
                                 }
                             }
+                            mDataList.add(++position, (PictureCheckManager.MediaData) obj);
                         } else {
                             mDataList.add((PictureCheckManager.MediaData) obj);
                             position = mDataList.size();
