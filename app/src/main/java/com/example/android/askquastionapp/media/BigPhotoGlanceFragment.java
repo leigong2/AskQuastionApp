@@ -78,12 +78,6 @@ public class BigPhotoGlanceFragment extends Fragment {
                 }).create().show();
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        bigImageView.dismiss();
-    }
-
     private int getLayoutId() {
         return R.layout.fragment_big_photo_glance;
     }

@@ -185,7 +185,7 @@ abstract class AbstractPhotoImageView extends View {
                 limitRect[0] = byScroll;
             }
             screenScale = measuredHeight / (1f * measuredWidth * mImageHeight / mImageWidth);
-            if (scaleFactor < screenScale) {
+            if (scaleFactor <= screenScale) {
                 /*zune：当高度还没有手机屏幕高，就固定死上下距离**/
                 top = (-measuredHeight * scaleFactor + measuredHeight) / 2;
                 bottom = measuredHeight * scaleFactor - top;
@@ -216,7 +216,7 @@ abstract class AbstractPhotoImageView extends View {
                 limitRect[1] = byScroll;
             }
             screenScale = measuredWidth / (1f * measuredHeight * mImageWidth / mImageHeight);
-            if (scaleFactor < screenScale) {
+            if (scaleFactor <= screenScale) {
                 /*zune：当宽度还没有手机屏幕宽，就固定死左右距离**/
                 left = (-measuredWidth * scaleFactor + measuredWidth) / 2;
                 right = measuredWidth * scaleFactor - left;
