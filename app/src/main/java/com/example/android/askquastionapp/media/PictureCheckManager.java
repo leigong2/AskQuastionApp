@@ -21,7 +21,7 @@ import static com.example.android.askquastionapp.utils.FileUtil.isImageFile;
 
 public class PictureCheckManager {
     private static PictureCheckManager sPictureCheckManager;
-    private int fileSize = 1024 * 100;
+    private int fileSize = 1024 * 30;
 
     private PictureCheckManager() {
     }
