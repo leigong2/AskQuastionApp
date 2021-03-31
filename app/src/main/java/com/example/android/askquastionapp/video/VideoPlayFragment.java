@@ -1,6 +1,9 @@
 package com.example.android.askquastionapp.video;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
@@ -23,9 +26,14 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.views.BottomPop;
+import com.example.android.askquastionapp.views.CommonDialog;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import static android.os.Build.VERSION_CODES.N;
 
@@ -48,17 +56,38 @@ public class VideoPlayFragment extends Fragment {
 
     private boolean onLongClick() {
         BottomPop current = BottomPop.getCurrent(getActivity());
-        current.addItemText("删除");
+        current.addItemText("视频信息");
+        current.addItemText("复制");
         current.addItemText("分享");
+        current.addItemText("删除");
         current.show(getActivity());
         current.setOnItemClickListener(new BottomPop.OnItemClickListener() {
             @Override
             public void onItemClick(BottomPop bottomPop, int position) {
+                String tag = bottomPop.getPosition(position);
+                String filePath = mediaData.url;
+                File file = new File(filePath);
                 bottomPop.dismiss();
-                switch (position) {
-                    case 0:
-                        String filePath = mediaData.url;
-                        File file = new File(filePath);
+                switch (tag) {
+                    case "视频信息":
+                        new CommonDialog(getContext()).setContent("路径：" + filePath
+                                + "\n修改日期：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(new Date(file.lastModified()))
+                                + "\n大小：" + FileUtil.getFileSize(file)).show();
+                        break;
+                    case "复制":
+                        if (getActivity() == null) {
+                            return;
+                        }
+                        ClipboardManager clipboardmanager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (clipboardmanager == null) {
+                            return;
+                        }
+                        Uri copyUri = Uri.parse(filePath);
+                        ClipData clip = ClipData.newUri(getActivity().getContentResolver(), "URI", copyUri);
+                        clipboardmanager.setPrimaryClip(clip);
+                        ToastUtils.showShort(filePath + "\n已复制到剪贴板");
+                        break;
+                    case "删除":
                         boolean delete = file.delete();
                         ToastUtils.showShort(delete ? "删除成功" : "删除失败");
                         if (getActivity() instanceof VideoPlayerActivity) {
@@ -68,7 +97,7 @@ public class VideoPlayFragment extends Fragment {
                             getActivity().finish();
                         }
                         break;
-                    case 1:
+                    case "分享":
                     default:
                         Intent shareIntent = new Intent();
                         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);

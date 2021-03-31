@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.LogUtils;
 import com.example.jsoup.GsonGetter;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
@@ -36,6 +37,9 @@ import java.util.Map;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 
 /**
  * Created by 请叫我张懂 on 2017/9/25.
@@ -318,5 +322,41 @@ public class ExcelManager {
             }
         }
         return new float[]{min, max};
+    }
+
+    public void writeToXlsx(File file, Map<String, List<List<String>>> datas) {
+        WritableWorkbook writableWorkbook = null;
+        try {
+            if (file.exists()) {
+                Workbook workbook = Workbook.getWorkbook(file);
+                writableWorkbook = Workbook.createWorkbook(file, workbook);
+            } else {
+                boolean newFile = file.createNewFile();
+                LogUtils.i("zune: ", "writeToXlsx createNewFile：" + newFile);
+                writableWorkbook = Workbook.createWorkbook(file);
+            }
+            for (String s : datas.keySet()) {
+                List<List<String>> lists = datas.get(s);
+                if (lists == null) {
+                    continue;
+                }
+                WritableSheet sheet = writableWorkbook.createSheet(s, 0);
+                for (int i = 0; i < lists.size(); i++) {
+                    for (int j = 0; j < lists.get(i).size(); j++) {
+                        Label label = new Label(j, i, lists.get(i).get(j));
+                        sheet.addCell(label);
+                    }
+                }
+            }
+            writableWorkbook.write();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                writableWorkbook.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

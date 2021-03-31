@@ -5,7 +5,9 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,9 +25,14 @@ import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.views.BottomPop;
+import com.example.android.askquastionapp.views.CommonDialog;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class BigPhotoGlanceFragment extends Fragment {
 
@@ -84,6 +91,9 @@ public class BigPhotoGlanceFragment extends Fragment {
 
     private boolean onLongClick() {
         BottomPop current = BottomPop.getCurrent(getActivity());
+        current.addItemText("图片信息");
+        current.addItemText("分享");
+        current.addItemText("复制");
         current.addItemText("扫描");
         current.addItemText("删除");
         current.show(bigImageView);
@@ -91,7 +101,40 @@ public class BigPhotoGlanceFragment extends Fragment {
             @Override
             public void onItemClick(BottomPop bottomPop, int position) {
                 String tag = bottomPop.getPosition(position);
+                String filePath = mediaData.path;
+                File file = new File(filePath);
                 switch (tag) {
+                    case "图片信息":
+                        new CommonDialog(getContext()).setContent("路径：" + filePath
+                                + "\n修改日期：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(new Date(file.lastModified()))
+                                + "\n大小：" + FileUtil.getFileSize(file)).show();
+                        break;
+                    case "分享":
+                        Intent shareIntent = new Intent();
+                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        shareIntent.setType("image/*");
+                        Uri currentUri = FileUtil.getCurrentUri(getContext(), filePath);
+                        if (currentUri == null) {
+                            return;
+                        }
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, currentUri);
+                        startActivity(Intent.createChooser(shareIntent, "Here is the title of image"));
+                        break;
+                    case "复制":
+                        if (getActivity() == null) {
+                            return;
+                        }
+                        ClipboardManager clipboardmanager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (clipboardmanager == null) {
+                            return;
+                        }
+                        Uri copyUri = Uri.parse(filePath);
+                        ClipData clip = ClipData.newUri(getActivity().getContentResolver(), "URI", copyUri);
+                        clipboardmanager.setPrimaryClip(clip);
+                        ToastUtils.showShort(filePath + "\n已复制到剪贴板");
+                        break;
                     case "扫描":
                         bottomPop.dismiss();
                         if (bigImageView != null) {
@@ -101,8 +144,6 @@ public class BigPhotoGlanceFragment extends Fragment {
                         }
                         break;
                     case "删除":
-                        String filePath = mediaData.path;
-                        File file = new File(filePath);
                         bottomPop.dismiss();
                         boolean delete = file.delete();
                         ToastUtils.showShort(delete ? "删除成功" : "删除失败");

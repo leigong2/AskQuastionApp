@@ -455,7 +455,7 @@ abstract class AbstractPhotoImageView extends View {
                 msg.what = 1002;
                 loadingHandler.sendMessage(msg);
                 BitmapFactory.Options newOpts = new BitmapFactory.Options();
-                Bitmap image = BitmapFactory.decodeStream(BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), srcFile)), null, newOpts);
+                Bitmap image = BitmapFactory.decodeStream(BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getCurrentUri(getContext(), srcFile.getPath())), null, newOpts);
                 if (mCurRotation % 360 != 0) {
                     image = rotate(image, mCurRotation);
                 }
@@ -518,7 +518,7 @@ abstract class AbstractPhotoImageView extends View {
         int degree = 0;
         try {
             // 从指定路径下读取图片，并获取其EXIF信息
-            InputStream inputStream = BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getUriFromFile(getContext(), file));
+            InputStream inputStream = BaseApplication.getInstance().getContentResolver().openInputStream(FileUtil.getCurrentUri(getContext(), file.getPath()));
             ExifInterface exifInterface = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 exifInterface = new ExifInterface(inputStream);

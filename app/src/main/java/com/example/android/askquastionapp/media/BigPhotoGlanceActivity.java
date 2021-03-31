@@ -90,7 +90,9 @@ public class BigPhotoGlanceActivity extends AppCompatActivity {
     public void removeItem(PictureCheckManager.MediaData mediaData) {
         this.mediaData.remove(mediaData);
         if (viewPager.getAdapter() != null) {
+            int currentItem = viewPager.getCurrentItem();
             viewPager.getAdapter().notifyDataSetChanged();
+            viewPager.setCurrentItem(++currentItem);
         }
     }
 }

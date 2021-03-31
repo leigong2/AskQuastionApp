@@ -440,5 +440,12 @@
     "minMoney": "9.35",
     "repeatCount": 331,
     "timeLimitCount": 146
+  },
+  "2021-03-31": {
+    "addCount": 1,
+    "maxMoney": "14.91",
+    "minMoney": "9.36",
+    "repeatCount": 327,
+    "timeLimitCount": 151
   }
 }

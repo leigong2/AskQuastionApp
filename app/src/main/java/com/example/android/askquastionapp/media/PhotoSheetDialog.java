@@ -303,7 +303,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                                         } else {
                                             shareIntent.setType("image/*");
                                         }
-                                        Uri currentUri = getCurrentUri(filePath);
+                                        Uri currentUri = FileUtil.getCurrentUri(getContext(), filePath);
                                         if (currentUri == null) {
                                             return;
                                         }
@@ -533,35 +533,6 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             RectF rectF = new RectF(left, top, right, bottom);
             float baseline = rectF.centerY() + distance;
             c.drawText((String) viewHolder.itemView.getTag(), DensityUtil.dp2px(5), baseline, textPaint);
-        }
-    }
-
-    private Uri getCurrentUri(String filePath) {
-        if (getActivity() == null) {
-            return null;
-        }
-        File file = new File(filePath);
-        if (Build.VERSION.SDK_INT < N) {
-            return Uri.fromFile(file);
-        } else if (Build.VERSION.SDK_INT < 29) {
-            return FileProvider.getUriForFile(getActivity(), getActivity().getPackageName() + ".FileProvider", file);
-        } else {
-            Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
-                    new String[]{filePath}, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
-                Uri baseUri = Uri.parse("content://media/external/images/media");
-                return Uri.withAppendedPath(baseUri, "" + id);
-            } else {
-                if (file.exists()) {
-                    ContentValues values = new ContentValues();
-                    values.put(MediaStore.Images.Media.DATA, filePath);
-                    return getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                } else {
-                    return null;
-                }
-            }
         }
     }
 

@@ -237,7 +237,7 @@ public class ShareDialog extends DialogFragment {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     if (!TextUtils.isEmpty(sourcePath)) {
-                        intent.setDataAndType(FileUtil.getUriFromFile(mContext, new File(sourcePath)), "image/*");
+                        intent.setDataAndType(FileUtil.getCurrentUri(mContext, sourcePath), "image/*");
                     }
                     // 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
                     intent.putExtra("crop", "true");

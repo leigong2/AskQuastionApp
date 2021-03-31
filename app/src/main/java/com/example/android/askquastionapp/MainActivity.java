@@ -316,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("扫一扫");
         added.add("生成二维码");
         added.add("qq拖动特效");
+        added.add("写入xlsx");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -502,6 +503,14 @@ public class MainActivity extends AppCompatActivity {
                 MediaActivity.start(this);
                 break;
             case "相册":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        return;
+                    }
+                }
                 PhotoSheetDialog dialog = new PhotoSheetDialog();
                 dialog.show(getSupportFragmentManager(), PhotoSheetDialog.class.getSimpleName());
                 break;
@@ -550,6 +559,33 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "qq拖动特效":
                 QQDragActivity.start(this);
+                break;
+            case "写入xlsx":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        return;
+                    }
+                }
+                File fileName = FileUtil.assetsToFile(getApplicationContext(), "【郑州,android招聘，求职】-前程无忧.xlsx");
+                if (fileName == null) {
+                    return;
+                }
+                Observable.just(fileName).map(new Function<File, Integer>() {
+                    @Override
+                    public Integer apply(File file) throws Exception {
+                        Map<String, List<List<String>>> map = ExcelManager.getInstance().analyzeXlsx(file);
+                        ExcelManager.getInstance().writeToXlsx(new File(getExternalCacheDir(), "测试.xlsx"), map);
+                        return 1;
+                    }
+                }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                    @Override
+                    public void onNext(Integer integer, Integer integer2) {
+                        ToastUtils.showShort("测试写入完成");
+                    }
+                });
                 break;
         }
     }
@@ -1426,7 +1462,7 @@ public class MainActivity extends AppCompatActivity {
         }
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         //7.0以上跳转系统文件需用FileProvider，参考链接：https://blog.csdn.net/growing_tree/article/details/71190741
-        Uri uri = FileUtil.getUriFromFile(this, file);
+        Uri uri = FileUtil.getCurrentUri(this, file.getPath());
         intent.setData(uri);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, EXTERNAL_FILE_CODE);

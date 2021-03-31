@@ -1,6 +1,8 @@
 package com.example.android.askquastionapp.utils;
 
+import android.app.Activity;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -22,6 +24,8 @@ import java.io.LineNumberReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.os.Build.VERSION_CODES.N;
 
 /**
  * Created by DB_BOY on 2019/6/24.</br>
@@ -50,26 +54,6 @@ public class FileUtil {
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
-
-    /**
-     * file --> uri
-     *
-     * @param context
-     * @param file
-     * @return
-     */
-    public static Uri getUriFromFile(Context context, File file) {
-        if (context == null || file == null) {
-            throw new NullPointerException();
-        }
-        Uri uri;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            uri = FileProvider.getUriForFile(context.getApplicationContext(), context.getPackageName() + ".FileProvider", file);
-        } else {
-            uri = Uri.fromFile(file);
-        }
-        return uri;
-    }
 
     /**
      * 专为Android4.4设计的从Uri获取文件绝对路径，以前的方法已不好使
@@ -420,5 +404,34 @@ public class FileUtil {
             return string + "K";
         }
         return file.length() + "B";
+    }
+
+    public static Uri getCurrentUri(Context activity, String filePath) {
+        if (activity == null) {
+            return null;
+        }
+        File file = new File(filePath);
+        if (Build.VERSION.SDK_INT < N) {
+            return Uri.fromFile(file);
+        } else if (Build.VERSION.SDK_INT < 29) {
+            return FileProvider.getUriForFile(activity, activity.getPackageName() + ".FileProvider", file);
+        } else {
+            Cursor cursor = activity.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
+                    new String[]{filePath}, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+                Uri baseUri = Uri.parse("content://media/external/images/media");
+                return Uri.withAppendedPath(baseUri, "" + id);
+            } else {
+                if (file.exists()) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.DATA, filePath);
+                    return activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                } else {
+                    return null;
+                }
+            }
+        }
     }
 }

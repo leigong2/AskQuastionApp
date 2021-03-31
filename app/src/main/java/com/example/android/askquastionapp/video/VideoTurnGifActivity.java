@@ -140,7 +140,7 @@ public class VideoTurnGifActivity extends AppCompatActivity {
                 }
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 //7.0以上跳转系统文件需用FileProvider，参考链接：https://blog.csdn.net/growing_tree/article/details/71190741
-                Uri uri = FileUtil.getUriFromFile(VideoTurnGifActivity.this, file);
+                Uri uri = FileUtil.getCurrentUri(VideoTurnGifActivity.this, file.getPath());
                 intent.setData(uri);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 startActivityForResult(intent, EXTERNAL_FILE_CODE);
