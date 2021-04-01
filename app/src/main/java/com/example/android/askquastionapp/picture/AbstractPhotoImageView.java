@@ -69,6 +69,8 @@ abstract class AbstractPhotoImageView extends View {
     private FillingValueAnimator filingAnimator; // 惯性动画
     private int orientation = LinearLayout.HORIZONTAL;
     private TextPaint mTextPaint;  //画文字的画笔
+    private Bitmap smallBitmap;
+    private RectF smallRect;
 
     public AbstractPhotoImageView(Context context) {
         super(context);
@@ -439,8 +441,11 @@ abstract class AbstractPhotoImageView extends View {
         }
     });
 
+    private long time;
+
     public void setFile(File file, boolean changeSrcFile) {
         srcFile = file;
+        time = System.currentTimeMillis();
         Observable.just(file).map(new Function<File, File>() {
             @Override
             public File apply(File srcFile) throws Exception {
@@ -449,6 +454,7 @@ abstract class AbstractPhotoImageView extends View {
                     mCurRotation = getRotation(srcFile);
                 }
                 if (mCurRotation == 0 && changeSrcFile) {
+                    getSmallBitmap(srcFile);
                     return srcFile;
                 }
                 Message msg = new Message();
@@ -493,7 +499,9 @@ abstract class AbstractPhotoImageView extends View {
                         image.recycle();
                     }
                 }
-                return changeSrcFile ? srcFile : file;
+                File resultFile = changeSrcFile ? srcFile : file;
+                getSmallBitmap(resultFile);
+                return resultFile;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SimpleObserver<File, Integer>(1, false) {
@@ -512,6 +520,39 @@ abstract class AbstractPhotoImageView extends View {
                         }
                     }
                 });
+    }
+
+    private void getSmallBitmap(@Nullable File file) {
+        if (file == null) {
+            return;
+        }
+        BitmapFactory.Options curOptions = new BitmapFactory.Options();
+        curOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(file.getPath(), curOptions);
+        int outWidth = curOptions.outWidth;
+        int outHeight = curOptions.outHeight;
+        float scale = 1f * outWidth / measuredWidth * outHeight / measuredHeight;
+        curOptions.inSampleSize = (int) Math.max(1, scale);
+        if (curOptions.inSampleSize == 1) {
+            return;
+        }
+        smallRect = new RectF();
+        float widthWeight = 1f * outWidth / measuredWidth;
+        float heightWeight = 1f * outHeight / measuredHeight;
+        if (widthWeight >= heightWeight) {
+            smallRect.left = 0;
+            smallRect.right = measuredWidth;
+            smallRect.top = (measuredHeight - 1f * measuredWidth * outHeight / outWidth) / 2;
+            smallRect.bottom = (measuredHeight + 1f * measuredWidth * outHeight / outWidth) / 2;
+        } else {
+            smallRect.left = (measuredWidth - 1f * measuredHeight * outWidth / outHeight) / 2;
+            smallRect.right = (measuredWidth + 1f * measuredHeight * outWidth / outHeight) / 2;
+            smallRect.top = 0;
+            smallRect.bottom = measuredHeight;
+        }
+        curOptions.inJustDecodeBounds = false;
+        smallBitmap = BitmapFactory.decodeFile(file.getPath(), curOptions);
+        postInvalidate();
     }
 
     private int getRotation(File file) {
@@ -952,6 +993,9 @@ abstract class AbstractPhotoImageView extends View {
         super.onDraw(canvas);
         if (!TextUtils.isEmpty(loadingText)) {
             float width = mTextPaint.measureText(loadingText);
+            if (smallBitmap != null) {
+                canvas.drawBitmap(smallBitmap, null, smallRect, null);
+            }
             canvas.drawText(loadingText, measuredWidth / 2f - width / 2f, measuredHeight / 2f, mTextPaint);
             return;
         }
@@ -980,7 +1024,7 @@ abstract class AbstractPhotoImageView extends View {
             }
             if (!canvasResetting && !imageRequest) {
                 canvas.drawBitmap(girdBitmaps.get(i), null, rectF, null);
-                canvas.drawRect(rectF, colorPaint);
+                //canvas.drawRect(rectF, colorPaint);  绘制分割线，调试的时候用
             }
             Iterator<Integer> iterator = realBitmap.keySet().iterator();
             while (iterator.hasNext()) {
