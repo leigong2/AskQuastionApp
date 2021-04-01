@@ -466,9 +466,9 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 }
                 datas.add(data);
             }
-            BigPhotoGlanceActivity.start(getContext(), datas, index);
+            BigPhotoGlanceActivity.start(getContext(), datas, index, this);
         } else {
-            List<WatchVideoActivity.MediaData> datas = new ArrayList<>();
+            List<PictureCheckManager.MediaData> datas = new ArrayList<>();
             int index = 0;
             for (PictureCheckManager.MediaData data : mDataList) {
                 if (data.path == null || data.folder == null || !mediaData.folder.equalsIgnoreCase(data.folder)) {
@@ -477,16 +477,15 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 if (data.path.equalsIgnoreCase(mediaData.path)) {
                     index = datas.size();
                 }
-                WatchVideoActivity.MediaData temp = new WatchVideoActivity.MediaData(data.path, data.path, String.valueOf(mediaType), null);
-                datas.add(temp);
+                datas.add(data);
             }
             VideoPlayerActivity.start(this, datas, index);
         }
     }
 
-    public void remove(WatchVideoActivity.MediaData mediaData) {
+    public void remove(PictureCheckManager.MediaData mediaData) {
         for (PictureCheckManager.MediaData data : mDataList) {
-            if (data.path != null && data.path.equalsIgnoreCase(mediaData.url)) {
+            if (data.path != null && data.path.equalsIgnoreCase(mediaData.path)) {
                 mDataList.remove(data);
                 break;
             }

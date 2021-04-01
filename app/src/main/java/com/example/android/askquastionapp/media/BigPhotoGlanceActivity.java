@@ -12,9 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.MemoryCache;
+import com.example.android.askquastionapp.utils.ViewPagerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +24,13 @@ public class BigPhotoGlanceActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private List<PictureCheckManager.MediaData> mediaData = new ArrayList<>();
     private int position;
+    private PhotoSheetDialog photoSheetDialog;
 
-    public static void start(Context context, List<PictureCheckManager.MediaData> mediaData, int position) {
+    public static void start(Context context, List<PictureCheckManager.MediaData> mediaData, int position, PhotoSheetDialog photoSheetDialog) {
         Intent intent = new Intent(context, BigPhotoGlanceActivity.class);
         MemoryCache.getInstance().put("mediaData", mediaData);
         MemoryCache.getInstance().put("position", position);
+        MemoryCache.getInstance().put("photoSheetDialog", photoSheetDialog);
         context.startActivity(intent);
     }
 
@@ -41,6 +43,7 @@ public class BigPhotoGlanceActivity extends AppCompatActivity {
             this.mediaData.addAll(mediaData);
         }
         position = MemoryCache.getInstance().remove("position");
+        photoSheetDialog = MemoryCache.getInstance().remove("photoSheetDialog");
         viewPager = findViewById(R.id.view_pager2);
         viewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         viewPager.setAdapter(new FragmentStateAdapter(this) {
@@ -62,15 +65,7 @@ public class BigPhotoGlanceActivity extends AppCompatActivity {
         }
         childAt.setItemViewCacheSize(0);
         viewPager.registerOnPageChangeCallback(callback);
-        viewPager.setCurrentItem(position);
-        if (position > 0) {
-            BaseApplication.getInstance().getHandler().postDelayed(() -> {
-                Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + viewPager.getAdapter().getItemId(position));
-                if (fragment instanceof BigPhotoGlanceFragment) {
-                    ((BigPhotoGlanceFragment)fragment).loadPicture(BigPhotoGlanceActivity.this.mediaData.get(position));
-                }
-            }, 500);
-        }
+        childAt.scrollToPosition(position);
     }
 
     private ViewPager2.OnPageChangeCallback callback = new ViewPager2.OnPageChangeCallback() {
@@ -89,10 +84,13 @@ public class BigPhotoGlanceActivity extends AppCompatActivity {
 
     public void removeItem(PictureCheckManager.MediaData mediaData) {
         this.mediaData.remove(mediaData);
+        if (photoSheetDialog != null) {
+            photoSheetDialog.remove(mediaData);
+        }
         if (viewPager.getAdapter() != null) {
             int currentItem = viewPager.getCurrentItem();
             viewPager.getAdapter().notifyDataSetChanged();
-            viewPager.setCurrentItem(++currentItem);
+            ViewPagerUtils.getRecyclerView(viewPager).scrollToPosition(++currentItem);
         }
     }
 }

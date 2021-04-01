@@ -23,7 +23,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.media.PhotoSheetDialog;
+import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.MemoryCache;
+import com.example.android.askquastionapp.utils.ViewPagerUtils;
 import com.example.android.askquastionapp.video.SurfaceVideoPlayer;
 import com.example.android.askquastionapp.video.VideoPlayFragment;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
@@ -55,14 +57,14 @@ public class VideoPlayerActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    public static void start(Context context, List<WatchVideoActivity.MediaData> mediaData, int position) {
+    public static void start(Context context, List<PictureCheckManager.MediaData> mediaData, int position) {
         Intent intent = new Intent(context, VideoPlayerActivity.class);
         MemoryCache.getInstance().put("mediaData", mediaData);
         MemoryCache.getInstance().put("position", position);
         context.startActivity(intent);
     }
 
-    public static void start(PhotoSheetDialog dialog, List<WatchVideoActivity.MediaData> mediaData, int position) {
+    public static void start(PhotoSheetDialog dialog, List<PictureCheckManager.MediaData> mediaData, int position) {
         if (dialog.getContext() == null) {
             return;
         }
@@ -119,7 +121,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
         initDialog();
     }
 
-    private List<WatchVideoActivity.MediaData> mediaData;
+    private List<PictureCheckManager.MediaData> mediaData;
     private int position;
 
     private void resetVideosPlayer() {
@@ -153,21 +155,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
         childAt.setItemViewCacheSize(0);
         recyclerView.registerOnPageChangeCallback(callback);
-        recyclerView.setCurrentItem(position);
-        if (position > 0) {
-            BaseApplication.getInstance().getHandler().postDelayed(() -> {
-                if (isPlayed) {
-                    return;
-                }
-                Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
-                if (fragment instanceof VideoPlayFragment) {
-                    ((VideoPlayFragment) fragment).play(mediaData.get(position));
-                }
-            }, 500);
-        }
+        ViewPagerUtils.getRecyclerView(recyclerView).scrollToPosition(position);
     }
-
-    private boolean isPlayed;
 
     ViewPager2.OnPageChangeCallback callback = new ViewPager2.OnPageChangeCallback() {
         @Override
@@ -176,7 +165,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
             Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + recyclerView.getAdapter().getItemId(position));
             if (fragment instanceof VideoPlayFragment) {
                 ((VideoPlayFragment) fragment).play(mediaData.get(position));
-                isPlayed = true;
             }
         }
 

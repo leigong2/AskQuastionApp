@@ -89,6 +89,7 @@ import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.example.jsoup.GsonGetter;
 import com.example.jsoup.bean.KeyWords;
 import com.google.gson.reflect.TypeToken;
+import com.meituan.android.walle.WalleChannelReader;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -317,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("生成二维码");
         added.add("qq拖动特效");
         added.add("写入xlsx");
+        added.add("channel");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -586,6 +588,10 @@ public class MainActivity extends AppCompatActivity {
                         ToastUtils.showShort("测试写入完成");
                     }
                 });
+                break;
+            case "channel":
+                String channel = WalleChannelReader.getChannel(this);
+                ToastUtils.showShort(TextUtils.isEmpty(channel) ? "null" : channel);
                 break;
         }
     }

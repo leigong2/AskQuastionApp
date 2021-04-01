@@ -13,12 +13,13 @@ import androidx.annotation.FloatRange;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.media.PictureCheckManager;
 
 import static android.media.MediaPlayer.SEEK_CLOSEST;
 
 public class SurfaceVideoPlayer {
     private static SurfaceVideoPlayer sSurfaceVideoPlayController;
-    private WatchVideoActivity.MediaData mediaData;
+    private PictureCheckManager.MediaData mediaData;
 
     private SurfaceVideoPlayer() {
     }
@@ -71,7 +72,7 @@ public class SurfaceVideoPlayer {
         mSurfaceVideoController = videoController;
     }
 
-    public void bindMedia(WatchVideoActivity.MediaData mediaData) {
+    public void bindMedia(PictureCheckManager.MediaData mediaData) {
         this.mediaData = mediaData;
     }
 
@@ -156,7 +157,7 @@ public class SurfaceVideoPlayer {
         });
         try {
             mCurMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mCurMediaPlayer.setDataSource(mediaData.url);
+            mCurMediaPlayer.setDataSource(mediaData.path);
             mCurMediaPlayer.prepareAsync();
         } catch (Exception e) {
             e.printStackTrace();

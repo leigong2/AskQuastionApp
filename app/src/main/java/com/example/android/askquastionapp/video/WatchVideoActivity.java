@@ -40,6 +40,7 @@ import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
@@ -77,7 +78,7 @@ public class WatchVideoActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SmartRefreshLayout refreshLayout;
     private String path;
-    private List<MediaData> mDatas;
+    private List<PictureCheckManager.MediaData> mDatas;
     private ProgressDialog progressDialog;
     private EditText search;
 
@@ -127,10 +128,10 @@ public class WatchVideoActivity extends AppCompatActivity {
     }
 
     private void getAllVideoFromPath(String path) {
-        Observable.just(path).map(new Function<String, List<MediaData>>() {
+        Observable.just(path).map(new Function<String, List<PictureCheckManager.MediaData>>() {
             @Override
-            public List<MediaData> apply(String path) throws Exception {
-                List<MediaData> datas = new ArrayList<>();
+            public List<PictureCheckManager.MediaData> apply(String path) throws Exception {
+                List<PictureCheckManager.MediaData> datas = new ArrayList<>();
                 File dir = new File(path);
                 if (!dir.exists()) {
                     return datas;
@@ -143,13 +144,13 @@ public class WatchVideoActivity extends AppCompatActivity {
                 return datas;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<MediaData>>() {
+                .subscribe(new Observer<List<PictureCheckManager.MediaData>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                     }
 
                     @Override
-                    public void onNext(List<MediaData> o) {
+                    public void onNext(List<PictureCheckManager.MediaData> o) {
                         VideoPlayerActivity.start(WatchVideoActivity.this, o, 0);
                     }
 
@@ -163,7 +164,7 @@ public class WatchVideoActivity extends AppCompatActivity {
                 });
     }
 
-    private void appendAllData(File[] files, List<MediaData> datas) {
+    private void appendAllData(File[] files, List<PictureCheckManager.MediaData> datas) {
         for (File file : files) {
             if (file.isDirectory()) {
                 continue;
@@ -172,9 +173,10 @@ public class WatchVideoActivity extends AppCompatActivity {
                     || file.getPath().endsWith(".mov")
                     || file.getPath().endsWith(".MP4")
                     || file.getPath().endsWith(".MOV")) {
-                DecimalFormat decimalFormat = new DecimalFormat("0.00");//构造方法的字符格式这里如果小数不足2位,会以0补足.
-                String string = decimalFormat.format(file.length() / 1024f / 1024f);//返回字符串
-                MediaData data = new MediaData(string + "M", file.getPath(), file.getPath(), new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(file.lastModified())));
+                PictureCheckManager.MediaData data = new PictureCheckManager.MediaData();
+                data.path = file.getPath();
+                data.mediaType = 1;
+                data.size = file.length();
                 datas.add(data);
             }
         }
@@ -241,9 +243,9 @@ public class WatchVideoActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         int position = (int) view.getTag();
-                        MediaData mediaData = mDatas.get(position);
-                        DownloadObjManager.getInstance().startDownWithPosition(mediaData.url
-                                , getVideoPathname() + File.separator + mediaData.name.trim() + ".mp4");
+                        PictureCheckManager.MediaData mediaData = mDatas.get(position);
+                        DownloadObjManager.getInstance().startDownWithPosition(mediaData.path
+                                , getVideoPathname() + File.separator + mediaData.getName().trim() + ".mp4");
                     }
                 });
                 return viewHolder;
@@ -263,21 +265,13 @@ public class WatchVideoActivity extends AppCompatActivity {
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
                 viewHolder.itemView.findViewById(R.id.on_download).setTag(i);
                 TextView textView = viewHolder.itemView.findViewById(R.id.text_view);
-                if (!TextUtils.isEmpty(mDatas.get(i).addTime) && !TextUtils.isEmpty(mDatas.get(i).type)) {
-                    textView.setText(String.format("%s : %s : %s", mDatas.get(i).type, mDatas.get(i).name, mDatas.get(i).addTime));
-                } else if (!TextUtils.isEmpty(mDatas.get(i).type)) {
-                    textView.setText(String.format("%s : %s", mDatas.get(i).type, mDatas.get(i).name));
-                } else if (!TextUtils.isEmpty(mDatas.get(i).addTime)) {
-                    textView.setText(String.format("%s : %s", mDatas.get(i).name, mDatas.get(i).addTime));
-                } else {
-                    textView.setText(String.format("%s", mDatas.get(i).name));
-                }
+                textView.setText(String.format("%s", mDatas.get(i).path));
                 TextView videoView = viewHolder.itemView.findViewById(R.id.video_view);
-                videoView.setText(mDatas.get(i).url);
+                videoView.setText(mDatas.get(i).path);
                 viewHolder.itemView.setOnClickListener(new OnClickListener(i) {
                     @Override
                     public void onClick(View view, int position) {
-                        VideoPlayerActivity.start(WatchVideoActivity.this, mDatas.get(position).url);
+                        VideoPlayerActivity.start(WatchVideoActivity.this, mDatas.get(position).path);
                     }
                 });
                 viewHolder.itemView.setTag(i);
@@ -285,7 +279,7 @@ public class WatchVideoActivity extends AppCompatActivity {
                     @Override
                     public boolean onLongClick(View view) {
                         int position = (int) view.getTag();
-                        String url = mDatas.get(position).url;
+                        String url = mDatas.get(position).path;
                         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                         if (cm != null) {
                             ClipData mClipData = ClipData.newPlainText("Label", url);
@@ -342,10 +336,10 @@ public class WatchVideoActivity extends AppCompatActivity {
         }
         progressDialog.show();
         mDatas.clear();
-        Observable.just(keyWord).map(new Function<String, List<MediaData>>() {
+        Observable.just(keyWord).map(new Function<String, List<PictureCheckManager.MediaData>>() {
             @Override
-            public List<MediaData> apply(String keyWord) throws Exception {
-                List<MediaData> datas = new ArrayList<>();
+            public List<PictureCheckManager.MediaData> apply(String keyWord) throws Exception {
+                List<PictureCheckManager.MediaData> datas = new ArrayList<>();
                 Map<String, Object> map = new HashMap<>();
                 map.put("video_name", keyWord);
                 map.put("video_type", keyWord);
@@ -353,20 +347,23 @@ public class WatchVideoActivity extends AppCompatActivity {
                 List<VideoBean> videoBean = SqlliteUtils.getInstance(path).queryData("video_bean", map, VideoBean.class);
                 if (videoBean != null) {
                     for (VideoBean bean : videoBean) {
-                        MediaData data = new MediaData(bean.getVideo_name(), bean.getVideo_url(), bean.getVideo_type(), bean.getVideo_add_time());
+                        PictureCheckManager.MediaData data = new PictureCheckManager.MediaData();
+                        data.path = bean.getVideo_url();
+                        data.folder = bean.getVideo_name();
+                        data.mediaType = 1;
                         datas.add(data);
                     }
                 }
                 return datas;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<MediaData>>() {
+                .subscribe(new Observer<List<PictureCheckManager.MediaData>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                     }
 
                     @Override
-                    public void onNext(List<MediaData> o) {
+                    public void onNext(List<PictureCheckManager.MediaData> o) {
                         mDatas.addAll(o);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         if (progressDialog != null) {
@@ -391,29 +388,32 @@ public class WatchVideoActivity extends AppCompatActivity {
     private int mCurPage;
 
     private void loadData() {
-        Observable.just(path).map(new Function<String, List<MediaData>>() {
+        Observable.just(path).map(new Function<String, List<PictureCheckManager.MediaData>>() {
             @Override
-            public List<MediaData> apply(String path) throws Exception {
-                List<MediaData> datas = new ArrayList<>();
+            public List<PictureCheckManager.MediaData> apply(String path) throws Exception {
+                List<PictureCheckManager.MediaData> datas = new ArrayList<>();
                 Map<String, Object> map = new HashMap<>();
                 map.put("page", mCurPage);
                 List<VideoBean> videoBean = SqlliteUtils.getInstance(path).queryData("video_bean", map, VideoBean.class, 20);
                 if (videoBean != null) {
                     for (VideoBean bean : videoBean) {
-                        MediaData data = new MediaData(bean.getVideo_name(), bean.getVideo_url(), bean.getVideo_type(), bean.getVideo_add_time());
+                        PictureCheckManager.MediaData data = new PictureCheckManager.MediaData();
+                        data.path = bean.getVideo_url();
+                        data.folder = bean.getVideo_name();
+                        data.mediaType = 1;
                         datas.add(data);
                     }
                 }
                 return datas;
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<MediaData>>() {
+                .subscribe(new Observer<List<PictureCheckManager.MediaData>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                     }
 
                     @Override
-                    public void onNext(List<MediaData> o) {
+                    public void onNext(List<PictureCheckManager.MediaData> o) {
                         mDatas.addAll(o);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         refreshLayout.finishLoadMore();

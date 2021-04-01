@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 //快捷的findviewfindid操作，建议加上
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'walle'
 //MobSDK {
 //    appKey "2cee8cab4c1f8"
 //    appSecret "647cd721d378a13bcaf1bcc7ef657fb4"
@@ -102,4 +103,13 @@ dependencies {
     implementation 'com.google.android.exoplayer:exoplayer:2.12.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.google.zxing:core:3.3.3'
+    implementation 'com.meituan.android.walle:library:1.1.7'  //美团多渠道打包工具
+}
+
+walle {
+    apkOutputFolder = new File("${project.buildDir}/outputs/channels")
+    apkFileNameFormat = '${appName}-${packageName}-${channel}-${buildType}-v${versionName}-${versionCode}-${buildTime}-${flavorName}.apk'
+    //configFile与channelFile两者必须存在一个，否则无法生成渠道包。两者都存在时优先执行configFile
+    channelFile = new File("${project.getProjectDir()}/channel")
+    //configFile = new File("${project.getProjectDir()}/config.json")
 }

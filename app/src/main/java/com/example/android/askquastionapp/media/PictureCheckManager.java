@@ -309,5 +309,12 @@ public class PictureCheckManager {
         public String type;
         public int mediaType;//0-图片，1-视频
         public String folder;
+        public String getName() {
+            if (path == null) {
+                return "";
+            }
+            String[] split = path.split(File.pathSeparator);
+            return split[split.length - 1];
+        }
     }
 }

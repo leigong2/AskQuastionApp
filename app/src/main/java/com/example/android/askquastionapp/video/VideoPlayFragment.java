@@ -26,6 +26,7 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.views.BottomPop;
 import com.example.android.askquastionapp.views.CommonDialog;
@@ -65,7 +66,7 @@ public class VideoPlayFragment extends Fragment {
             @Override
             public void onItemClick(BottomPop bottomPop, int position) {
                 String tag = bottomPop.getPosition(position);
-                String filePath = mediaData.url;
+                String filePath = mediaData.path;
                 File file = new File(filePath);
                 bottomPop.dismiss();
                 switch (tag) {
@@ -121,7 +122,7 @@ public class VideoPlayFragment extends Fragment {
         if (getActivity() == null) {
             return null;
         }
-        String filePath = mediaData.url;
+        String filePath = mediaData.path;
         File file = new File(filePath);
         if (Build.VERSION.SDK_INT < N) {
             return Uri.fromFile(file);
@@ -166,9 +167,9 @@ public class VideoPlayFragment extends Fragment {
         });
     }
 
-    private WatchVideoActivity.MediaData mediaData;
+    private PictureCheckManager.MediaData mediaData;
 
-    public void play(@NonNull WatchVideoActivity.MediaData mediaData) {
+    public void play(@NonNull PictureCheckManager.MediaData mediaData) {
         this.mediaData = mediaData;
         videoController.setVisibility(View.VISIBLE);
         SurfaceVideoPlayer.getInstance().bindSurfaceController(videoController);
@@ -176,12 +177,12 @@ public class VideoPlayFragment extends Fragment {
         SurfaceVideoPlayer.getInstance().bindMedia(mediaData);
         SurfaceVideoPlayer.getInstance().play();
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(mediaData.url);
+        retriever.setDataSource(mediaData.path);
         String title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if (!TextUtils.isEmpty(title)) {
             videoController.setTitle(title);
-        } else if (!TextUtils.isEmpty(mediaData.name)) {
-            String[] split = mediaData.name.split(File.separator);
+        } else if (!TextUtils.isEmpty(mediaData.folder)) {
+            String[] split = mediaData.folder.split(File.separator);
             videoController.setTitle(split[split.length - 1]);
         }
         if (videoController.isControllerHide) {
