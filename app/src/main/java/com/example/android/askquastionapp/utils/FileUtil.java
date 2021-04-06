@@ -286,6 +286,9 @@ public class FileUtil {
 
     public static List<File> sortFileWithLastModify(File dir, @IntRange(from = 0, to = 2) int sortType) {
         File[] files = dir.listFiles();
+        if (files == null) {
+            return new ArrayList<>();
+        }
         List<Long> tempLastModifies = new ArrayList<>();
         long[] lastModifies = new long[files.length];
         for (int i = 0; i < files.length; i++) {

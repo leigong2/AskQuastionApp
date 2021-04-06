@@ -5,7 +5,7 @@
     "minMoney": 10.0,
     "money": "10-15K",
     "os": "Android C/C++开发工程师",
-    "repeatCount": "261",
+    "repeatCount": "266",
     "timeLimit": false
   },
   {
@@ -23,7 +23,7 @@
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "Android",
-    "repeatCount": "239",
+    "repeatCount": "246",
     "timeLimit": false
   },
   {
@@ -50,7 +50,7 @@
     "minMoney": 11.0,
     "money": "11-18K",
     "os": "android",
-    "repeatCount": "208",
+    "repeatCount": "216",
     "timeLimit": false
   },
   {
@@ -59,7 +59,16 @@
     "minMoney": 8.0,
     "money": "8K-15K",
     "os": "安卓端工程师",
-    "repeatCount": "173",
+    "repeatCount": "178",
+    "timeLimit": false
+  },
+  {
+    "company": "麒麟合盛网络技术股份有限公司",
+    "maxMoney": 20.0,
+    "minMoney": 15.0,
+    "money": "15-20k·13薪",
+    "os": "资深Android开发工程师-浏览器方向",
+    "repeatCount": "172",
     "timeLimit": false
   },
   {
@@ -72,12 +81,12 @@
     "timeLimit": true
   },
   {
-    "company": "麒麟合盛网络技术股份有限公司",
+    "company": "郑州珑凌科技有限公司",
     "maxMoney": 20.0,
     "minMoney": 15.0,
-    "money": "15-20k·13薪",
-    "os": "资深Android开发工程师-浏览器方向",
-    "repeatCount": "165",
+    "money": "15K-20K",
+    "os": "资深android开发工程师",
+    "repeatCount": "134",
     "timeLimit": false
   },
   {
@@ -86,16 +95,7 @@
     "minMoney": 8.0,
     "money": "8-13K·14薪",
     "os": "Android工程师",
-    "repeatCount": "131",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州珑凌科技有限公司",
-    "maxMoney": 20.0,
-    "minMoney": 15.0,
-    "money": "15K-20K",
-    "os": "资深android开发工程师",
-    "repeatCount": "131",
+    "repeatCount": "133",
     "timeLimit": false
   },
   {
@@ -104,7 +104,7 @@
     "minMoney": 12.0,
     "money": "12K-15K",
     "os": "android/安卓技术主管",
-    "repeatCount": "129",
+    "repeatCount": "132",
     "timeLimit": false
   },
   {
@@ -113,16 +113,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "安卓开发工程师",
-    "repeatCount": "126",
-    "timeLimit": false
-  },
-  {
-    "company": "超级智慧家(上海)物联网科技有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8K-15K",
-    "os": "android开发工程师",
-    "repeatCount": "115",
+    "repeatCount": "129",
     "timeLimit": false
   },
   {
@@ -132,7 +123,16 @@
     "minMoney": 8.0,
     "money": "8千-1.3万",
     "os": "android开发工程师",
-    "repeatCount": "115",
+    "repeatCount": "120",
+    "timeLimit": false
+  },
+  {
+    "company": "超级智慧家(上海)物联网科技有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8K-15K",
+    "os": "android开发工程师",
+    "repeatCount": "117",
     "timeLimit": false
   },
   {
@@ -141,7 +141,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "Android jni开发工程师",
-    "repeatCount": "112",
+    "repeatCount": "114",
     "timeLimit": false
   },
   {
@@ -150,7 +150,7 @@
     "minMoney": 7.0,
     "money": "7-12K",
     "os": "诚聘安卓开发工程师",
-    "repeatCount": "108",
+    "repeatCount": "110",
     "timeLimit": false
   },
   {
@@ -159,7 +159,7 @@
     "minMoney": 6.0,
     "money": "6-11K·13薪",
     "os": "android开发工程师",
-    "repeatCount": "105",
+    "repeatCount": "108",
     "timeLimit": false
   },
   {
@@ -168,7 +168,7 @@
     "minMoney": 16.0,
     "money": "16-20K·15薪",
     "os": "移动端开发",
-    "repeatCount": "101",
+    "repeatCount": "103",
     "timeLimit": false
   },
   {
@@ -177,7 +177,7 @@
     "minMoney": 10.0,
     "money": "10-15K·16薪",
     "os": "安卓",
-    "repeatCount": "93",
+    "repeatCount": "95",
     "timeLimit": false
   },
   {
@@ -186,7 +186,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "Android",
-    "repeatCount": "91",
+    "repeatCount": "92",
     "timeLimit": false
   },
   {
@@ -195,106 +195,7 @@
     "minMoney": 7.0,
     "money": "7-12K",
     "os": "Android安卓手机软件开发维护",
-    "repeatCount": "89",
-    "timeLimit": false
-  },
-  {
-    "company": "河南涛雷软件科技",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6-12K",
-    "os": "Android",
-    "repeatCount": "86",
-    "timeLimit": false
-  },
-  {
-    "company": "云涌科技",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8K-12K",
-    "os": "安卓工程师",
-    "repeatCount": "86",
-    "timeLimit": false
-  },
-  {
-    "company": "河南哈夫曼信息科技有限公司",
-    "maxMoney": 20.0,
-    "minMoney": 15.0,
-    "money": "1.5-2万/月",
-    "os": "Android资深发工程师",
-    "repeatCount": "86",
-    "timeLimit": false
-  },
-  {
-    "company": "七七网络科技",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "Android",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州广之达",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8-12K",
-    "os": "Android",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "河南华鼎供应链管理有限公司",
-    "maxMoney": 11.0,
-    "minMoney": 6.0,
-    "money": "6K-11K",
-    "os": "android开发工程师",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "厦门特力通通信工程有限公司",
-    "maxMoney": 20.0,
-    "minMoney": 10.0,
-    "money": "10K-20K",
-    "os": "android开发工程师",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "亚瑞材料",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6-12K",
-    "os": "Android",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州帕博文化传媒",
-    "maxMoney": 20.0,
-    "minMoney": 10.0,
-    "money": "10-20K",
-    "os": "Android 开发工程师",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "采知企业孵化器",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6-12K",
-    "os": "Android",
-    "repeatCount": "85",
-    "timeLimit": false
-  },
-  {
-    "company": "集优科技",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8-12K",
-    "os": "Android工程师",
-    "repeatCount": "85",
+    "repeatCount": "90",
     "timeLimit": false
   },
   {
@@ -304,7 +205,106 @@
     "minMoney": 7.0,
     "money": "7千-1.4万",
     "os": "android开发工程师",
-    "repeatCount": "85",
+    "repeatCount": "90",
+    "timeLimit": false
+  },
+  {
+    "company": "云涌科技",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8K-12K",
+    "os": "安卓工程师",
+    "repeatCount": "89",
+    "timeLimit": false
+  },
+  {
+    "company": "河南哈夫曼信息科技有限公司",
+    "maxMoney": 20.0,
+    "minMoney": 15.0,
+    "money": "1.5-2万/月",
+    "os": "Android资深发工程师",
+    "repeatCount": "89",
+    "timeLimit": false
+  },
+  {
+    "company": "河南涛雷软件科技",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6-12K",
+    "os": "Android",
+    "repeatCount": "87",
+    "timeLimit": false
+  },
+  {
+    "company": "七七网络科技",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8-13K",
+    "os": "Android",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州广之达",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8-12K",
+    "os": "Android",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "河南华鼎供应链管理有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 6.0,
+    "money": "6K-11K",
+    "os": "android开发工程师",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "厦门特力通通信工程有限公司",
+    "maxMoney": 20.0,
+    "minMoney": 10.0,
+    "money": "10K-20K",
+    "os": "android开发工程师",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "亚瑞材料",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6-12K",
+    "os": "Android",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州帕博文化传媒",
+    "maxMoney": 20.0,
+    "minMoney": 10.0,
+    "money": "10-20K",
+    "os": "Android 开发工程师",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "采知企业孵化器",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6-12K",
+    "os": "Android",
+    "repeatCount": "86",
+    "timeLimit": false
+  },
+  {
+    "company": "集优科技",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8-12K",
+    "os": "Android工程师",
+    "repeatCount": "86",
     "timeLimit": false
   },
   {
@@ -313,7 +313,7 @@
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "Android",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -322,7 +322,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "Android（五险一金）",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -331,7 +331,7 @@
     "minMoney": 10.0,
     "money": "10-11K",
     "os": "安卓高级开发工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -340,7 +340,7 @@
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "高级Android工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -349,7 +349,7 @@
     "minMoney": 7.0,
     "money": "7-12K·13薪",
     "os": "安卓开发工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -358,7 +358,7 @@
     "minMoney": 10.0,
     "money": "10-11K",
     "os": "Android工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -367,7 +367,7 @@
     "minMoney": 7.0,
     "money": "7-12K",
     "os": "Android",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -376,7 +376,7 @@
     "minMoney": 9.0,
     "money": "9-14K",
     "os": "Android",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -385,7 +385,7 @@
     "minMoney": 10.0,
     "money": "10-11K",
     "os": "Android程序员",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -394,7 +394,7 @@
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "安卓开发工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -403,7 +403,7 @@
     "minMoney": 10.0,
     "money": "10-20K",
     "os": "Android",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -412,7 +412,7 @@
     "minMoney": 6.0,
     "money": "6-11K",
     "os": "Android",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -421,7 +421,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "安卓开发工程师",
-    "repeatCount": "84",
+    "repeatCount": "85",
     "timeLimit": false
   },
   {
@@ -430,6 +430,60 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "安卓开发工程师",
+    "repeatCount": "85",
+    "timeLimit": false
+  },
+  {
+    "company": "正商地产",
+    "maxMoney": 20.0,
+    "minMoney": 10.0,
+    "money": "10K-20K",
+    "os": "android开发（IOS开发）",
+    "repeatCount": "85",
+    "timeLimit": false
+  },
+  {
+    "company": "北京云海航创网络科技有限公司郑州分公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10K-15K",
+    "os": "高薪诚聘android开发工程师",
+    "repeatCount": "85",
+    "timeLimit": false
+  },
+  {
+    "company": "大觉慧海",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "安卓开发工程师",
+    "repeatCount": "84",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州致博思远企业管理咨询有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6K-12K",
+    "os": "android开发工程师",
+    "repeatCount": "84",
+    "timeLimit": false
+  },
+  {
+    "company": "一品凡客",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8-15K",
+    "os": "Android   ios  app开发",
+    "repeatCount": "84",
+    "timeLimit": false
+  },
+  {
+    "company": "北京打造前程互联网教育科技有限公司河南分公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8-12k·12薪",
+    "os": "android讲师",
     "repeatCount": "84",
     "timeLimit": false
   },
@@ -440,52 +494,7 @@
     "money": "10-15K",
     "os": "Android程序员",
     "repeatCount": "83",
-    "timeLimit": false
-  },
-  {
-    "company": "大觉慧海",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "安卓开发工程师",
-    "repeatCount": "83",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州致博思远企业管理咨询有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6K-12K",
-    "os": "android开发工程师",
-    "repeatCount": "83",
-    "timeLimit": false
-  },
-  {
-    "company": "一品凡客",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8-15K",
-    "os": "Android   ios  app开发",
-    "repeatCount": "83",
-    "timeLimit": false
-  },
-  {
-    "company": "正商地产",
-    "maxMoney": 20.0,
-    "minMoney": 10.0,
-    "money": "10K-20K",
-    "os": "android开发（IOS开发）",
-    "repeatCount": "83",
-    "timeLimit": false
-  },
-  {
-    "company": "北京云海航创网络科技有限公司郑州分公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10K-15K",
-    "os": "高薪诚聘android开发工程师",
-    "repeatCount": "83",
-    "timeLimit": false
+    "timeLimit": true
   },
   {
     "company": "河南万邦",
@@ -497,11 +506,20 @@
     "timeLimit": true
   },
   {
-    "company": "北京打造前程互联网教育科技有限公司河南分公司",
+    "company": "郑州三和通用航空有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15k·12薪",
+    "os": "地面站Android软件工程师",
+    "repeatCount": "82",
+    "timeLimit": false
+  },
+  {
+    "company": "悠悠游戏服务网",
     "maxMoney": 12.0,
     "minMoney": 8.0,
-    "money": "8-12k·12薪",
-    "os": "android讲师",
+    "money": "8-12K",
+    "os": "安卓工程师",
     "repeatCount": "82",
     "timeLimit": false
   },
@@ -515,31 +533,13 @@
     "timeLimit": true
   },
   {
-    "company": "郑州三和通用航空有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15k·12薪",
-    "os": "地面站Android软件工程师",
-    "repeatCount": "80",
-    "timeLimit": false
-  },
-  {
-    "company": "悠悠游戏服务网",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8-12K",
-    "os": "安卓工程师",
-    "repeatCount": "79",
-    "timeLimit": false
-  },
-  {
     "address": "郑州-郑东新区",
     "company": "郑州思博科信息技术有限公司",
     "maxMoney": 12.0,
     "minMoney": 6.0,
     "money": "6-12k·13薪",
     "os": "高级android开发工程师",
-    "repeatCount": "78",
+    "repeatCount": "81",
     "timeLimit": false
   },
   {
@@ -548,16 +548,7 @@
     "minMoney": 15.0,
     "money": "15-20k·12薪",
     "os": "Android",
-    "repeatCount": "77",
-    "timeLimit": false
-  },
-  {
-    "company": "臻尚网络",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "安卓软件工程师",
-    "repeatCount": "75",
+    "repeatCount": "80",
     "timeLimit": false
   },
   {
@@ -566,6 +557,33 @@
     "minMoney": 10.0,
     "money": "10-15k·16薪",
     "os": "安卓开发工程师",
+    "repeatCount": "78",
+    "timeLimit": false
+  },
+  {
+    "company": "臻尚网络",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "安卓软件工程师",
+    "repeatCount": "76",
+    "timeLimit": false
+  },
+  {
+    "company": "金豆豆互联网有限责任公司",
+    "maxMoney": 15.0,
+    "minMoney": 7.0,
+    "money": "7-15k·12薪",
+    "os": "android开发工程师",
+    "repeatCount": "76",
+    "timeLimit": false
+  },
+  {
+    "company": "河南省新星科技有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8K-12K",
+    "os": "安卓工程师",
     "repeatCount": "75",
     "timeLimit": false
   },
@@ -576,25 +594,7 @@
     "money": "7K-12K",
     "os": "android开发工程师",
     "repeatCount": "74",
-    "timeLimit": false
-  },
-  {
-    "company": "金豆豆互联网有限责任公司",
-    "maxMoney": 15.0,
-    "minMoney": 7.0,
-    "money": "7-15k·12薪",
-    "os": "android开发工程师",
-    "repeatCount": "74",
-    "timeLimit": false
-  },
-  {
-    "company": "河南省新星科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8K-12K",
-    "os": "安卓工程师",
-    "repeatCount": "73",
-    "timeLimit": false
+    "timeLimit": true
   },
   {
     "company": "易宝软件",
@@ -602,8 +602,8 @@
     "minMoney": 12.0,
     "money": "12-24K",
     "os": "安卓开发",
-    "repeatCount": "72",
-    "timeLimit": true
+    "repeatCount": "74",
+    "timeLimit": false
   },
   {
     "company": "浪潮集团",
@@ -611,7 +611,7 @@
     "minMoney": 6.0,
     "money": "6K-12K",
     "os": "android 开发",
-    "repeatCount": "72",
+    "repeatCount": "73",
     "timeLimit": false
   },
   {
@@ -620,7 +620,7 @@
     "minMoney": 10.0,
     "money": "10K-15K",
     "os": "android开发工程师",
-    "repeatCount": "71",
+    "repeatCount": "72",
     "timeLimit": false
   },
   {
@@ -629,34 +629,7 @@
     "minMoney": 10.0,
     "money": "10K-15K",
     "os": "android开发工程师",
-    "repeatCount": "71",
-    "timeLimit": false
-  },
-  {
-    "company": "河南澳乐康科技有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8K-13K",
-    "os": "android安卓开发工程师",
-    "repeatCount": "70",
-    "timeLimit": false
-  },
-  {
-    "company": "河南双汇投资发展...",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "android",
-    "repeatCount": "69",
-    "timeLimit": false
-  },
-  {
-    "company": "南京北路智控科技股份有限公司",
-    "maxMoney": 18.0,
-    "minMoney": 12.0,
-    "money": "12K-18K",
-    "os": "安卓开发工程师",
-    "repeatCount": "69",
+    "repeatCount": "72",
     "timeLimit": false
   },
   {
@@ -666,6 +639,42 @@
     "minMoney": 15.0,
     "money": "15-20k·12薪",
     "os": "project manager(JAVA /.NET/Android/iOS)",
+    "repeatCount": "72",
+    "timeLimit": false
+  },
+  {
+    "company": "河南澳乐康科技有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8K-13K",
+    "os": "android安卓开发工程师",
+    "repeatCount": "71",
+    "timeLimit": false
+  },
+  {
+    "company": "南京北路智控科技股份有限公司",
+    "maxMoney": 18.0,
+    "minMoney": 12.0,
+    "money": "12K-18K",
+    "os": "安卓开发工程师",
+    "repeatCount": "71",
+    "timeLimit": false
+  },
+  {
+    "company": "河南双汇投资发展...",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8-13K",
+    "os": "android",
+    "repeatCount": "70",
+    "timeLimit": false
+  },
+  {
+    "company": "河南趣思得网络科技有限公司",
+    "maxMoney": 18.0,
+    "minMoney": 9.0,
+    "money": "9K-18K",
+    "os": "APP开发工程师",
     "repeatCount": "69",
     "timeLimit": false
   },
@@ -684,7 +693,7 @@
     "minMoney": 7.0,
     "money": "7K-12K",
     "os": "android开发工程师",
-    "repeatCount": "67",
+    "repeatCount": "68",
     "timeLimit": false
   },
   {
@@ -693,6 +702,33 @@
     "minMoney": 8.0,
     "money": "8K-16K",
     "os": "APP推广ASO优化师",
+    "repeatCount": "68",
+    "timeLimit": false
+  },
+  {
+    "company": "乐之富科技公司",
+    "maxMoney": 16.0,
+    "minMoney": 12.0,
+    "money": "12-16K",
+    "os": "安卓工程师（高级）",
+    "repeatCount": "68",
+    "timeLimit": false
+  },
+  {
+    "company": "修齐治平",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "Android",
+    "repeatCount": "67",
+    "timeLimit": false
+  },
+  {
+    "company": "南京迈特望",
+    "maxMoney": 20.0,
+    "minMoney": 15.0,
+    "money": "15K-20K",
+    "os": "android开发工程师",
     "repeatCount": "67",
     "timeLimit": false
   },
@@ -715,38 +751,20 @@
     "timeLimit": true
   },
   {
-    "company": "修齐治平",
-    "maxMoney": 12.0,
+    "company": "咱的店",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15K",
+    "os": "android",
+    "repeatCount": "65",
+    "timeLimit": false
+  },
+  {
+    "company": "启程教育",
+    "maxMoney": 11.0,
     "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "Android",
-    "repeatCount": "66",
-    "timeLimit": false
-  },
-  {
-    "company": "南京迈特望",
-    "maxMoney": 20.0,
-    "minMoney": 15.0,
-    "money": "15K-20K",
-    "os": "android开发工程师",
-    "repeatCount": "66",
-    "timeLimit": false
-  },
-  {
-    "company": "乐之富科技公司",
-    "maxMoney": 16.0,
-    "minMoney": 12.0,
-    "money": "12-16K",
-    "os": "安卓工程师（高级）",
-    "repeatCount": "66",
-    "timeLimit": false
-  },
-  {
-    "company": "河南趣思得网络科技有限公司",
-    "maxMoney": 18.0,
-    "minMoney": 9.0,
-    "money": "9K-18K",
-    "os": "APP开发工程师",
+    "money": "7-11K",
+    "os": "安卓软件开发",
     "repeatCount": "65",
     "timeLimit": false
   },
@@ -760,24 +778,6 @@
     "timeLimit": true
   },
   {
-    "company": "咱的店",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15K",
-    "os": "android",
-    "repeatCount": "64",
-    "timeLimit": false
-  },
-  {
-    "company": "启程教育",
-    "maxMoney": 11.0,
-    "minMoney": 7.0,
-    "money": "7-11K",
-    "os": "安卓软件开发",
-    "repeatCount": "64",
-    "timeLimit": false
-  },
-  {
     "company": "八角科技",
     "maxMoney": 15.0,
     "minMoney": 11.0,
@@ -785,6 +785,15 @@
     "os": "安卓开发工程师",
     "repeatCount": "63",
     "timeLimit": true
+  },
+  {
+    "company": "北京合众伟奇科技股份有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7K-12K",
+    "os": "android开发工程师",
+    "repeatCount": "63",
+    "timeLimit": false
   },
   {
     "company": "中冠网科",
@@ -805,15 +814,6 @@
     "timeLimit": true
   },
   {
-    "company": "北京合众伟奇科技股份有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7K-12K",
-    "os": "android开发工程师",
-    "repeatCount": "62",
-    "timeLimit": false
-  },
-  {
     "company": "北京企服嘉通技术服务有限公司",
     "maxMoney": 11.0,
     "minMoney": 6.0,
@@ -823,6 +823,15 @@
     "timeLimit": true
   },
   {
+    "company": "郑州浩创房地产开发有限公司",
+    "maxMoney": 18.0,
+    "minMoney": 10.0,
+    "money": "10K-18K",
+    "os": "APP运营主管/经理",
+    "repeatCount": "61",
+    "timeLimit": false
+  },
+  {
     "company": "牧客科技",
     "maxMoney": 18.0,
     "minMoney": 12.0,
@@ -830,15 +839,6 @@
     "os": "安卓逆向开发",
     "repeatCount": "60",
     "timeLimit": true
-  },
-  {
-    "company": "郑州浩创房地产开发有限公司",
-    "maxMoney": 18.0,
-    "minMoney": 10.0,
-    "money": "10K-18K",
-    "os": "APP运营主管/经理",
-    "repeatCount": "60",
-    "timeLimit": false
   },
   {
     "company": "合众伟奇",
@@ -864,7 +864,7 @@
     "minMoney": 9.0,
     "money": "9-13k·13薪",
     "os": "高级android开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -873,7 +873,7 @@
     "minMoney": 8.0,
     "money": "8-17k·12薪",
     "os": "移动端开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -882,7 +882,7 @@
     "minMoney": 10.0,
     "money": "10-12k·12薪",
     "os": "Android开发工程师(J10013)",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -891,7 +891,7 @@
     "minMoney": 8.0,
     "money": "8-16k·12薪",
     "os": "android开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -900,7 +900,7 @@
     "minMoney": 8.0,
     "money": "8-12k·13薪",
     "os": "android工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -909,7 +909,7 @@
     "minMoney": 10.0,
     "money": "10-15k·12薪",
     "os": "android开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -918,7 +918,7 @@
     "minMoney": 6.0,
     "money": "6-12k·12薪",
     "os": "android开发",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -927,7 +927,7 @@
     "minMoney": 6.0,
     "money": "6-13k·12薪",
     "os": "Android安卓开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -936,7 +936,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "android开发工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -945,7 +945,7 @@
     "minMoney": 10.0,
     "money": "10-12k·12薪",
     "os": "安卓工程师",
-    "repeatCount": "58",
+    "repeatCount": "59",
     "timeLimit": false
   },
   {
@@ -954,6 +954,43 @@
     "minMoney": 6.0,
     "money": "6-11k·12薪",
     "os": "安卓开发工程师",
+    "repeatCount": "59",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州卓见软件科技有限公司",
+    "maxMoney": 20.0,
+    "minMoney": 11.0,
+    "money": "11-20k·13薪",
+    "os": "Android",
+    "repeatCount": "58",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州李唐电子科技有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6-12k·12薪",
+    "os": "Android开发工程师",
+    "repeatCount": "58",
+    "timeLimit": false
+  },
+  {
+    "company": "汉克时代",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15k·12薪",
+    "os": "Android工程师（郑州）",
+    "repeatCount": "58",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·金水区·CBD",
+    "company": "屹通信息科技",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8-12K",
+    "os": "安卓开发（全国出差）",
     "repeatCount": "58",
     "timeLimit": false
   },
@@ -976,39 +1013,12 @@
     "timeLimit": true
   },
   {
-    "company": "郑州卓见软件科技有限公司",
-    "maxMoney": 20.0,
-    "minMoney": 11.0,
-    "money": "11-20k·13薪",
-    "os": "Android",
-    "repeatCount": "57",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州李唐电子科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6-12k·12薪",
-    "os": "Android开发工程师",
-    "repeatCount": "57",
-    "timeLimit": false
-  },
-  {
-    "company": "汉克时代",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15k·12薪",
-    "os": "Android工程师（郑州）",
-    "repeatCount": "57",
-    "timeLimit": false
-  },
-  {
     "company": "富士康",
     "maxMoney": 12.0,
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "移动开发工程师（Android方向）",
-    "repeatCount": "56",
+    "repeatCount": "57",
     "timeLimit": false
   },
   {
@@ -1017,7 +1027,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "app开发工程师",
-    "repeatCount": "56",
+    "repeatCount": "57",
     "timeLimit": false
   },
   {
@@ -1026,7 +1036,7 @@
     "minMoney": 10.0,
     "money": "10-15k·12薪",
     "os": "Android高级开发工程师",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1035,7 +1045,7 @@
     "minMoney": 20.0,
     "money": "20-40k·12薪",
     "os": "Android开发工程师",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1044,7 +1054,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "Android工程师",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1053,7 +1063,7 @@
     "minMoney": 15.0,
     "money": "15-25k·12薪",
     "os": "Android",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1062,7 +1072,7 @@
     "minMoney": 8.0,
     "money": "8-11k·12薪",
     "os": "Android",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1071,7 +1081,7 @@
     "minMoney": 10.0,
     "money": "10-15k·12薪",
     "os": "Android开发工程师",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1080,7 +1090,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "Android开发工程师",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1089,17 +1099,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "Android开发工程师",
-    "repeatCount": "55",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·CBD",
-    "company": "屹通信息科技",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8-12K",
-    "os": "安卓开发（全国出差）",
-    "repeatCount": "55",
+    "repeatCount": "56",
     "timeLimit": false
   },
   {
@@ -1108,7 +1108,7 @@
     "minMoney": 8.0,
     "money": "8-13k·12薪",
     "os": "移动开发工程师",
-    "repeatCount": "54",
+    "repeatCount": "55",
     "timeLimit": false
   },
   {
@@ -1117,7 +1117,7 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "安卓开发工程师",
-    "repeatCount": "54",
+    "repeatCount": "55",
     "timeLimit": false
   },
   {
@@ -1126,7 +1126,7 @@
     "minMoney": 23.0,
     "money": "23-45K",
     "os": "逆向工程师",
-    "repeatCount": "54",
+    "repeatCount": "55",
     "timeLimit": false
   },
   {
@@ -1148,6 +1148,15 @@
     "timeLimit": true
   },
   {
+    "company": "郑州五岳电子科技有限公司",
+    "maxMoney": 16.0,
+    "minMoney": 10.0,
+    "money": "10K-16K",
+    "os": "APP开发工程师",
+    "repeatCount": "53",
+    "timeLimit": false
+  },
+  {
     "company": "郑州燚轩科技",
     "maxMoney": 15.0,
     "minMoney": 12.0,
@@ -1157,11 +1166,20 @@
     "timeLimit": true
   },
   {
-    "company": "郑州五岳电子科技有限公司",
-    "maxMoney": 16.0,
+    "company": "欣意无限",
+    "maxMoney": 12.0,
     "minMoney": 10.0,
-    "money": "10K-16K",
-    "os": "APP开发工程师",
+    "money": "10-12K",
+    "os": "安卓底层开发工程师",
+    "repeatCount": "52",
+    "timeLimit": false
+  },
+  {
+    "company": "优路教育",
+    "maxMoney": 18.0,
+    "minMoney": 12.0,
+    "money": "12K-18K",
+    "os": "产品经理（移动端）+五险一金+带薪年假+单双休",
     "repeatCount": "52",
     "timeLimit": false
   },
@@ -1193,11 +1211,29 @@
     "timeLimit": true
   },
   {
-    "company": "欣意无限",
+    "company": "河南智森物联网科技有限公司",
     "maxMoney": 12.0,
-    "minMoney": 10.0,
-    "money": "10-12K",
-    "os": "安卓底层开发工程师",
+    "minMoney": 6.0,
+    "money": "6K-12K",
+    "os": "8-15K双休android五险工程师",
+    "repeatCount": "51",
+    "timeLimit": false
+  },
+  {
+    "company": "麒麟软件有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8K-12K",
+    "os": "android工程师(J10282)",
+    "repeatCount": "51",
+    "timeLimit": false
+  },
+  {
+    "company": "指南星",
+    "maxMoney": 11.0,
+    "minMoney": 6.0,
+    "money": "6-11K",
+    "os": "Android",
     "repeatCount": "51",
     "timeLimit": false
   },
@@ -1211,29 +1247,20 @@
     "timeLimit": true
   },
   {
-    "company": "河南智森物联网科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6K-12K",
-    "os": "8-15K双休android五险工程师",
-    "repeatCount": "50",
-    "timeLimit": false
-  },
-  {
-    "company": "麒麟软件有限公司",
+    "company": "天星教育",
     "maxMoney": 12.0,
     "minMoney": 8.0,
     "money": "8K-12K",
-    "os": "android工程师(J10282)",
+    "os": "android开发工程师(J10013)",
     "repeatCount": "50",
     "timeLimit": false
   },
   {
-    "company": "指南星",
-    "maxMoney": 11.0,
-    "minMoney": 6.0,
-    "money": "6-11K",
-    "os": "Android",
+    "company": "河南派普建工集团有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8K-13K",
+    "os": "android开发工程师",
     "repeatCount": "50",
     "timeLimit": false
   },
@@ -1245,33 +1272,6 @@
     "os": "Andriod安卓高级工程师",
     "repeatCount": "49",
     "timeLimit": true
-  },
-  {
-    "company": "天星教育",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8K-12K",
-    "os": "android开发工程师(J10013)",
-    "repeatCount": "49",
-    "timeLimit": false
-  },
-  {
-    "company": "河南派普建工集团有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8K-13K",
-    "os": "android开发工程师",
-    "repeatCount": "49",
-    "timeLimit": false
-  },
-  {
-    "company": "优路教育",
-    "maxMoney": 18.0,
-    "minMoney": 12.0,
-    "money": "12K-18K",
-    "os": "产品经理（移动端）+五险一金+带薪年假+单双休",
-    "repeatCount": "49",
-    "timeLimit": false
   },
   {
     "company": "河南星火燎原",
@@ -1297,7 +1297,44 @@
     "minMoney": 8.0,
     "money": "8-13K",
     "os": "Android",
+    "repeatCount": "48",
+    "timeLimit": false
+  },
+  {
+    "company": "云库科技",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8K-15K",
+    "os": "android开发工程师",
     "repeatCount": "47",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南隋唐网络科技有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8-13k·12薪",
+    "os": "安卓开发工程师",
+    "repeatCount": "47",
+    "timeLimit": false
+  },
+  {
+    "company": "河南友联金融服务有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8千-1.2万",
+    "os": "android开发工程师",
+    "repeatCount": "46",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州报业集团有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "安卓开发工程师",
+    "repeatCount": "46",
     "timeLimit": false
   },
   {
@@ -1310,30 +1347,12 @@
     "timeLimit": true
   },
   {
-    "company": "云库科技",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8K-15K",
-    "os": "android开发工程师",
-    "repeatCount": "45",
-    "timeLimit": false
-  },
-  {
-    "company": "河南友联金融服务有限公司",
+    "company": "鲜易控股",
     "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8千-1.2万",
-    "os": "android开发工程师",
-    "repeatCount": "44",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州报业集团有限公司",
-    "maxMoney": 15.0,
     "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "安卓开发工程师",
-    "repeatCount": "44",
+    "money": "10-12k·12薪",
+    "os": "APP工程师",
+    "repeatCount": "45",
     "timeLimit": false
   },
   {
@@ -1342,7 +1361,7 @@
     "minMoney": 10.0,
     "money": "10-20k·12薪",
     "os": "Flutter框架方向 Leader/工程师",
-    "repeatCount": "43",
+    "repeatCount": "44",
     "timeLimit": false
   },
   {
@@ -1351,7 +1370,7 @@
     "minMoney": 6.0,
     "money": "6-11k·12薪",
     "os": "Android开发工程师",
-    "repeatCount": "43",
+    "repeatCount": "44",
     "timeLimit": false
   },
   {
@@ -1360,25 +1379,16 @@
     "minMoney": 8.0,
     "money": "8K-12K",
     "os": "郑州研究院-android开发工程师",
-    "repeatCount": "43",
+    "repeatCount": "44",
     "timeLimit": false
   },
   {
-    "company": "鲜易控股",
-    "maxMoney": 12.0,
-    "minMoney": 10.0,
-    "money": "10-12k·12薪",
-    "os": "APP工程师",
-    "repeatCount": "43",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "河南隋唐网络科技有限公司",
+    "address": "郑州·金水区·CBD",
+    "company": "江湖工匠",
     "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8-13k·12薪",
-    "os": "安卓开发工程师",
+    "money": "8-13K",
+    "os": "Android",
     "repeatCount": "43",
     "timeLimit": false
   },
@@ -1390,6 +1400,15 @@
     "os": "安卓工程师",
     "repeatCount": "42",
     "timeLimit": true
+  },
+  {
+    "company": "郑州一迅软件科技有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8K-13K",
+    "os": "android开发工程师",
+    "repeatCount": "42",
+    "timeLimit": false
   },
   {
     "company": "龙湾科技(北京)有限公司",
@@ -1408,25 +1427,6 @@
     "os": "android开发工程师",
     "repeatCount": "41",
     "timeLimit": true
-  },
-  {
-    "company": "郑州一迅软件科技有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8K-13K",
-    "os": "android开发工程师",
-    "repeatCount": "41",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·CBD",
-    "company": "江湖工匠",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "Android",
-    "repeatCount": "41",
-    "timeLimit": false
   },
   {
     "company": "英苑企业管理咨询",
@@ -1465,6 +1465,34 @@
     "timeLimit": true
   },
   {
+    "company": "郑州木歌科技有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 10.0,
+    "money": "10-13k·12薪",
+    "os": "安卓（Android）前端开发",
+    "repeatCount": "40",
+    "timeLimit": false
+  },
+  {
+    "company": "河南建达软件有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1-1.5万/月",
+    "os": "Android开发工程师",
+    "repeatCount": "40",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-宋寨",
+    "company": "河南诚禾智能科技有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 9.0,
+    "money": "9-12k·12薪",
+    "os": "android",
+    "repeatCount": "40",
+    "timeLimit": false
+  },
+  {
     "company": "北京赏心悦目软件有限公司",
     "maxMoney": 15.0,
     "minMoney": 10.0,
@@ -1483,30 +1511,12 @@
     "timeLimit": true
   },
   {
-    "company": "郑州木歌科技有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 10.0,
-    "money": "10-13k·12薪",
-    "os": "安卓（Android）前端开发",
-    "repeatCount": "39",
-    "timeLimit": false
-  },
-  {
-    "company": "河南建达软件有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1-1.5万/月",
-    "os": "Android开发工程师",
-    "repeatCount": "39",
-    "timeLimit": false
-  },
-  {
     "company": "郑州有充智能科技有限公司",
     "maxMoney": 15.0,
     "minMoney": 10.0,
     "money": "1-1.5万/月",
     "os": "Android开发工程师",
-    "repeatCount": "38",
+    "repeatCount": "39",
     "timeLimit": false
   },
   {
@@ -1515,16 +1525,24 @@
     "minMoney": 6.0,
     "money": "0.6-1.5万/月",
     "os": "Android开发工程师",
+    "repeatCount": "39",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州软盟通信技术有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7K-12K",
+    "os": "安卓开发工程师",
     "repeatCount": "38",
     "timeLimit": false
   },
   {
-    "address": "郑州-宋寨",
-    "company": "河南诚禾智能科技有限公司",
-    "maxMoney": 12.0,
+    "company": "康桥悦生活服务集团有限公司",
+    "maxMoney": 13.0,
     "minMoney": 9.0,
-    "money": "9-12k·12薪",
-    "os": "android",
+    "money": "9千-1.3万",
+    "os": "android开发工程师",
     "repeatCount": "38",
     "timeLimit": false
   },
@@ -1547,19 +1565,10 @@
     "timeLimit": true
   },
   {
-    "company": "郑州软盟通信技术有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7K-12K",
-    "os": "安卓开发工程师",
-    "repeatCount": "37",
-    "timeLimit": false
-  },
-  {
-    "company": "康桥悦生活服务集团有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 9.0,
-    "money": "9千-1.3万",
+    "company": "硕诺科技",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8K-15K",
     "os": "android开发工程师",
     "repeatCount": "37",
     "timeLimit": false
@@ -1574,15 +1583,6 @@
     "timeLimit": true
   },
   {
-    "company": "硕诺科技",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8K-15K",
-    "os": "android开发工程师",
-    "repeatCount": "36",
-    "timeLimit": false
-  },
-  {
     "company": "梦之源科技集团有限公司",
     "maxMoney": 12.0,
     "minMoney": 8.0,
@@ -1590,6 +1590,24 @@
     "os": "android系统固件工程师",
     "repeatCount": "35",
     "timeLimit": true
+  },
+  {
+    "company": "河南好项目企业管理有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10K-15K",
+    "os": "android开发工程师",
+    "repeatCount": "35",
+    "timeLimit": false
+  },
+  {
+    "company": "合肥观六智能科技有限公司",
+    "maxMoney": 25.0,
+    "minMoney": 15.0,
+    "money": "15K-25K",
+    "os": "Flutter开发工程师（可兼职）",
+    "repeatCount": "35",
+    "timeLimit": false
   },
   {
     "company": "河南容亿软件技术有限公司",
@@ -1601,30 +1619,12 @@
     "timeLimit": true
   },
   {
-    "company": "河南好项目企业管理有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10K-15K",
-    "os": "android开发工程师",
-    "repeatCount": "34",
-    "timeLimit": false
-  },
-  {
-    "company": "合肥观六智能科技有限公司",
-    "maxMoney": 25.0,
-    "minMoney": 15.0,
-    "money": "15K-25K",
-    "os": "Flutter开发工程师（可兼职）",
-    "repeatCount": "34",
-    "timeLimit": false
-  },
-  {
     "company": "博商云(郑州)科技有限公司",
     "maxMoney": 12.0,
     "minMoney": 7.0,
     "money": "7K-12K",
     "os": "android开发工程师",
-    "repeatCount": "33",
+    "repeatCount": "34",
     "timeLimit": false
   },
   {
@@ -1671,6 +1671,25 @@
     "os": "flutter APP 开发工程师",
     "repeatCount": "32",
     "timeLimit": true
+  },
+  {
+    "company": "买多网",
+    "maxMoney": 11.0,
+    "minMoney": 8.0,
+    "money": "8-11K",
+    "os": "安卓开发工程师",
+    "repeatCount": "32",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "郑州维飞软件科技有限公司",
+    "maxMoney": 16.0,
+    "minMoney": 9.0,
+    "money": "9千-1.6万",
+    "os": "android",
+    "repeatCount": "32",
+    "timeLimit": false
   },
   {
     "company": "北京晟壁科技有限公司郑州分公司",
@@ -1727,11 +1746,31 @@
     "timeLimit": true
   },
   {
-    "company": "买多网",
-    "maxMoney": 11.0,
-    "minMoney": 8.0,
-    "money": "8-11K",
-    "os": "安卓开发工程师",
+    "company": "河南威漫信息科技有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10K-15K",
+    "os": "android高级开发工程师（14薪+双休）",
+    "repeatCount": "31",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南云煤网网络科技有限责任公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7千-1.2万",
+    "os": "android开发工程师",
+    "repeatCount": "31",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-金水区",
+    "company": "河南纳食信息科技有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "android开发工程师",
     "repeatCount": "31",
     "timeLimit": false
   },
@@ -1745,21 +1784,12 @@
     "timeLimit": true
   },
   {
-    "company": "河南威漫信息科技有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10K-15K",
-    "os": "android高级开发工程师（14薪+双休）",
-    "repeatCount": "30",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "郑州维飞软件科技有限公司",
-    "maxMoney": 16.0,
+    "address": "郑州·金水区·燕庄",
+    "company": "UU跑腿",
+    "maxMoney": 12.0,
     "minMoney": 9.0,
-    "money": "9千-1.6万",
-    "os": "android",
+    "money": "9-12K",
+    "os": "安卓开发工程师",
     "repeatCount": "30",
     "timeLimit": false
   },
@@ -1791,41 +1821,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州",
-    "company": "河南云煤网网络科技有限责任公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7千-1.2万",
-    "os": "android开发工程师",
-    "repeatCount": "29",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-金水区",
-    "company": "河南纳食信息科技有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "android开发工程师",
-    "repeatCount": "29",
-    "timeLimit": false
-  },
-  {
     "company": "郑州恩普特",
     "maxMoney": 12.0,
     "minMoney": 7.0,
     "money": "7K-12K",
     "os": "android开发工程师",
-    "repeatCount": "28",
-    "timeLimit": false
-  },
-  {
-    "company": "万邦国际集团",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8千-1.5万",
-    "os": "安卓端工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1834,7 +1835,7 @@
     "minMoney": 7.0,
     "money": "7-12K",
     "os": "Android",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1843,7 +1844,7 @@
     "minMoney": 8.0,
     "money": "8-12K·14薪",
     "os": "安卓工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1852,7 +1853,7 @@
     "minMoney": 15.0,
     "money": "15-30K",
     "os": "安卓高级开发工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1861,7 +1862,7 @@
     "minMoney": 7.0,
     "money": "7-12K",
     "os": "安卓开发工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1870,7 +1871,7 @@
     "minMoney": 8.0,
     "money": "8-12k·12薪",
     "os": "安卓开发工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1879,7 +1880,7 @@
     "minMoney": 10.0,
     "money": "1-1.6万/月",
     "os": "Android开发工程师",
-    "repeatCount": "28",
+    "repeatCount": "29",
     "timeLimit": false
   },
   {
@@ -1889,16 +1890,87 @@
     "minMoney": 8.0,
     "money": "8-12k·13薪",
     "os": "安卓工程师",
+    "repeatCount": "29",
+    "timeLimit": false
+  },
+  {
+    "company": "万邦国际集团",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8千-1.5万",
+    "os": "安卓端工程师",
+    "repeatCount": "28",
+    "timeLimit": true
+  },
+  {
+    "company": "郑州点读电子科技有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8千-1.2万",
+    "os": "android开发工程师",
     "repeatCount": "28",
     "timeLimit": false
   },
   {
-    "address": "郑州·金水区·燕庄",
-    "company": "UU跑腿",
+    "company": "某大型智能家居公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15k·15薪",
+    "os": "高级android开发工程师",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "郑州米当秀品网络科技有限公司",
     "maxMoney": 12.0,
-    "minMoney": 9.0,
-    "money": "9-12K",
-    "os": "安卓开发工程师",
+    "minMoney": 8.0,
+    "money": "8K-12K",
+    "os": "android开发工程师",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "友途车家科技服务有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 7.0,
+    "money": "7千-1.1万",
+    "os": "android开发工程师",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "鸿港科芯电子",
+    "maxMoney": 18.0,
+    "minMoney": 14.0,
+    "money": "14-18K·13薪",
+    "os": "Android",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "崤云安全",
+    "maxMoney": 18.0,
+    "minMoney": 14.0,
+    "money": "14-18k·12薪",
+    "os": "高级android开发工程师",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "中国电信集团系统集成有限责任公司",
+    "maxMoney": 11.0,
+    "minMoney": 5.0,
+    "money": "0.5-1.1万/月",
+    "os": "Android开发工程师",
+    "repeatCount": "28",
+    "timeLimit": false
+  },
+  {
+    "company": "河南蓝信科技有限责任公司",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8K-12K",
+    "os": "安卓工程师",
     "repeatCount": "28",
     "timeLimit": false
   },
@@ -1912,74 +1984,11 @@
     "timeLimit": true
   },
   {
-    "company": "郑州点读电子科技有限公司",
+    "company": "佳维",
     "maxMoney": 12.0,
     "minMoney": 8.0,
-    "money": "8千-1.2万",
-    "os": "android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "某大型智能家居公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15k·15薪",
-    "os": "高级android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "郑州米当秀品网络科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8K-12K",
-    "os": "android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "友途车家科技服务有限公司",
-    "maxMoney": 11.0,
-    "minMoney": 7.0,
-    "money": "7千-1.1万",
-    "os": "android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "鸿港科芯电子",
-    "maxMoney": 18.0,
-    "minMoney": 14.0,
-    "money": "14-18K·13薪",
-    "os": "Android",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "崤云安全",
-    "maxMoney": 18.0,
-    "minMoney": 14.0,
-    "money": "14-18k·12薪",
-    "os": "高级android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "中国电信集团系统集成有限责任公司",
-    "maxMoney": 11.0,
-    "minMoney": 5.0,
-    "money": "0.5-1.1万/月",
+    "money": "8-12K",
     "os": "Android开发工程师",
-    "repeatCount": "27",
-    "timeLimit": false
-  },
-  {
-    "company": "河南蓝信科技有限责任公司",
-    "maxMoney": 12.0,
-    "minMoney": 8.0,
-    "money": "8K-12K",
-    "os": "安卓工程师",
     "repeatCount": "27",
     "timeLimit": false
   },
@@ -2011,11 +2020,20 @@
     "timeLimit": true
   },
   {
-    "company": "佳维",
-    "maxMoney": 12.0,
+    "company": "崤云信息",
+    "maxMoney": 18.0,
+    "minMoney": 14.0,
+    "money": "14-18k·12薪",
+    "os": "移动端组（Android开发工程师）高级",
+    "repeatCount": "26",
+    "timeLimit": false
+  },
+  {
+    "company": "新云电子商务",
+    "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8-12K",
-    "os": "Android开发工程师",
+    "money": "8-13K",
+    "os": "八九物联-安卓开发、APP开发、Android开发",
     "repeatCount": "26",
     "timeLimit": false
   },
@@ -2047,30 +2065,12 @@
     "timeLimit": true
   },
   {
-    "company": "崤云信息",
-    "maxMoney": 18.0,
-    "minMoney": 14.0,
-    "money": "14-18k·12薪",
-    "os": "移动端组（Android开发工程师）高级",
-    "repeatCount": "25",
-    "timeLimit": false
-  },
-  {
-    "company": "新云电子商务",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "八九物联-安卓开发、APP开发、Android开发",
-    "repeatCount": "25",
-    "timeLimit": false
-  },
-  {
     "company": "大河网络传媒集团有限公司",
     "maxMoney": 15.0,
     "minMoney": 10.0,
     "money": "1万-1.5万",
     "os": "高级安卓android开发工程师",
-    "repeatCount": "24",
+    "repeatCount": "25",
     "timeLimit": false
   },
   {
@@ -2079,7 +2079,7 @@
     "minMoney": 10.0,
     "money": "10-15K",
     "os": "Android",
-    "repeatCount": "24",
+    "repeatCount": "25",
     "timeLimit": false
   },
   {
@@ -2088,7 +2088,7 @@
     "minMoney": 8.0,
     "money": "8千-1.2万",
     "os": "android开发工程师",
-    "repeatCount": "24",
+    "repeatCount": "25",
     "timeLimit": false
   },
   {
@@ -2097,7 +2097,7 @@
     "minMoney": 8.0,
     "money": "8-12K",
     "os": "安卓逆向工程师",
-    "repeatCount": "24",
+    "repeatCount": "25",
     "timeLimit": false
   },
   {
@@ -2106,6 +2106,25 @@
     "minMoney": 6.0,
     "money": "6-11K",
     "os": "安卓开发工程师",
+    "repeatCount": "25",
+    "timeLimit": false
+  },
+  {
+    "company": "河南博众供应链管理有限公司",
+    "maxMoney": 30.0,
+    "minMoney": 20.0,
+    "money": "20-30k·12薪",
+    "os": "APP运行维护",
+    "repeatCount": "24",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南省中原大健康产业有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12k·12薪",
+    "os": "flutter开发工程师",
     "repeatCount": "24",
     "timeLimit": false
   },
@@ -2164,11 +2183,11 @@
     "timeLimit": true
   },
   {
-    "company": "河南博众供应链管理有限公司",
-    "maxMoney": 30.0,
-    "minMoney": 20.0,
-    "money": "20-30k·12薪",
-    "os": "APP运行维护",
+    "company": "河南饮水网文化传媒有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "android开发工程师",
     "repeatCount": "23",
     "timeLimit": false
   },
@@ -2218,21 +2237,32 @@
     "timeLimit": true
   },
   {
-    "company": "河南饮水网文化传媒有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "android开发工程师",
+    "address": "郑州·金水区·经三路沿线",
+    "company": "趣思得网络",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "安卓应用开发工程师",
     "repeatCount": "22",
     "timeLimit": false
   },
   {
     "address": "郑州",
-    "company": "河南省中原大健康产业有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12k·12薪",
-    "os": "flutter开发工程师",
+    "company": "郑州清森科技有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 8.0,
+    "money": "8-11k·12薪",
+    "os": "Android",
+    "repeatCount": "22",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "威科姆",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "android/安卓高级开发工程师",
     "repeatCount": "22",
     "timeLimit": false
   },
@@ -2292,22 +2322,22 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·金水区·经三路沿线",
-    "company": "趣思得网络",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "安卓应用开发工程师",
+    "address": "郑州·金水区·郑东新区东建材",
+    "company": "维飞科技",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8-13K",
+    "os": "Android",
     "repeatCount": "21",
     "timeLimit": false
   },
   {
-    "address": "郑州",
-    "company": "郑州清森科技有限公司",
-    "maxMoney": 11.0,
+    "address": "郑州-金水区",
+    "company": "郑州祥和盛电子技术有限公司",
+    "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8-11k·12薪",
-    "os": "Android",
+    "money": "8-13k·13薪",
+    "os": "安卓工程师",
     "repeatCount": "21",
     "timeLimit": false
   },
@@ -2348,32 +2378,40 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·金水区·郑东新区东建材",
-    "company": "维飞科技",
+    "company": "蓝火科技",
     "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "Android",
+    "money": "8-13K·13薪",
+    "os": "安卓开发工程师",
     "repeatCount": "20",
     "timeLimit": false
   },
   {
-    "address": "郑州-金水区",
-    "company": "郑州祥和盛电子技术有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13k·13薪",
-    "os": "安卓工程师",
+    "company": "河南亿秒电子科技有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "安桌app开发员",
     "repeatCount": "20",
     "timeLimit": false
   },
   {
     "address": "郑州",
-    "company": "威科姆",
+    "company": "河南印爱文化艺术有限公司",
     "maxMoney": 15.0,
     "minMoney": 10.0,
     "money": "1万-1.5万",
-    "os": "android/安卓高级开发工程师",
+    "os": "高级android开发工程师",
+    "repeatCount": "20",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·金水区·祭城",
+    "company": "正尚科技",
+    "maxMoney": 11.0,
+    "minMoney": 7.0,
+    "money": "7-11K",
+    "os": "安卓开发",
     "repeatCount": "20",
     "timeLimit": false
   },
@@ -2433,24 +2471,6 @@
     "timeLimit": true
   },
   {
-    "company": "蓝火科技",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K·13薪",
-    "os": "安卓开发工程师",
-    "repeatCount": "19",
-    "timeLimit": false
-  },
-  {
-    "company": "河南亿秒电子科技有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "安桌app开发员",
-    "repeatCount": "19",
-    "timeLimit": false
-  },
-  {
     "address": "郑州",
     "company": "河南指联物联网科技有限公司",
     "maxMoney": 15.0,
@@ -2458,25 +2478,24 @@
     "money": "8千-1.5万",
     "os": "android开发工程师",
     "repeatCount": "19",
-    "timeLimit": false
+    "timeLimit": true
   },
   {
-    "address": "郑州",
-    "company": "河南印爱文化艺术有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "高级android开发工程师",
+    "address": "郑州·中原区·五龙口",
+    "company": "诚毅物联网",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8-13K",
+    "os": "安卓工程师",
     "repeatCount": "19",
     "timeLimit": false
   },
   {
-    "address": "郑州·金水区·祭城",
-    "company": "正尚科技",
-    "maxMoney": 11.0,
+    "company": "无锡精英堂",
+    "maxMoney": 14.0,
     "minMoney": 7.0,
-    "money": "7-11K",
-    "os": "安卓开发",
+    "money": "7-14K",
+    "os": "Android",
     "repeatCount": "19",
     "timeLimit": false
   },
@@ -2518,21 +2537,31 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·中原区·五龙口",
-    "company": "诚毅物联网",
+    "company": "春永",
     "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "安卓工程师",
+    "minMoney": 9.0,
+    "money": "9-13K",
+    "os": "Android",
     "repeatCount": "18",
     "timeLimit": false
   },
   {
-    "company": "无锡精英堂",
-    "maxMoney": 14.0,
-    "minMoney": 7.0,
-    "money": "7-14K",
-    "os": "Android",
+    "address": "郑州·金水区·金水路",
+    "company": "老纳科技",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15K",
+    "os": "安卓移动开发Android开发",
+    "repeatCount": "18",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "捷安高科",
+    "maxMoney": 18.0,
+    "minMoney": 13.0,
+    "money": "1.3万-1.8万",
+    "os": "android应用开发工程师",
     "repeatCount": "18",
     "timeLimit": false
   },
@@ -2601,31 +2630,12 @@
     "timeLimit": true
   },
   {
-    "company": "春永",
-    "maxMoney": 13.0,
-    "minMoney": 9.0,
-    "money": "9-13K",
-    "os": "Android",
-    "repeatCount": "17",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·金水路",
-    "company": "老纳科技",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15K",
-    "os": "安卓移动开发Android开发",
-    "repeatCount": "17",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "捷安高科",
-    "maxMoney": 18.0,
-    "minMoney": 13.0,
-    "money": "1.3万-1.8万",
-    "os": "android应用开发工程师",
+    "address": "郑州·金水区·东风路",
+    "company": "河南领红网络科技",
+    "maxMoney": 11.0,
+    "minMoney": 6.0,
+    "money": "6-11K",
+    "os": "高薪安卓Android开发工程师",
     "repeatCount": "17",
     "timeLimit": false
   },
@@ -2693,6 +2703,36 @@
     "timeLimit": true
   },
   {
+    "address": "郑州·管城回族区·二里岗",
+    "company": "格然",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "安卓开发工程师",
+    "repeatCount": "16",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·金水区·省电视台",
+    "company": "郑州蓝元科技",
+    "maxMoney": 11.0,
+    "minMoney": 8.0,
+    "money": "8-11K",
+    "os": "安卓开发工程师",
+    "repeatCount": "16",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·中原区·高新区",
+    "company": "梦天门",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "安卓APP工程师",
+    "repeatCount": "16",
+    "timeLimit": false
+  },
+  {
     "company": "河南省炽天使网络技术有限公司",
     "maxMoney": 15.0,
     "minMoney": 10.0,
@@ -2755,7 +2795,7 @@
     "money": "10-15k·12薪",
     "os": "Android开发工程师",
     "repeatCount": "15",
-    "timeLimit": false
+    "timeLimit": true
   },
   {
     "address": "郑州-金水区",
@@ -2765,45 +2805,25 @@
     "money": "2.5万-3.5万",
     "os": "android开发工程师",
     "repeatCount": "15",
-    "timeLimit": false
+    "timeLimit": true
   },
   {
-    "address": "郑州·管城回族区·二里岗",
-    "company": "格然",
+    "address": "郑州-金水区",
+    "company": "郑州富铭环保科技股份有限公司",
     "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "安卓开发工程师",
-    "repeatCount": "15",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·省电视台",
-    "company": "郑州蓝元科技",
-    "maxMoney": 11.0,
-    "minMoney": 8.0,
-    "money": "8-11K",
-    "os": "安卓开发工程师",
-    "repeatCount": "15",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·中原区·高新区",
-    "company": "梦天门",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "安卓APP工程师",
-    "repeatCount": "15",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·东风路",
-    "company": "河南领红网络科技",
-    "maxMoney": 11.0,
     "minMoney": 6.0,
-    "money": "6-11K",
-    "os": "高薪安卓Android开发工程师",
+    "money": "6千-1.2万",
+    "os": "安卓开发工程师",
+    "repeatCount": "15",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-郑东新区",
+    "company": "郑州阿帕斯科技有限公司",
+    "maxMoney": 25.0,
+    "minMoney": 15.0,
+    "money": "1.5万-2.5万",
+    "os": "资深安卓开发工程师",
     "repeatCount": "15",
     "timeLimit": false
   },
@@ -2890,22 +2910,61 @@
     "timeLimit": true
   },
   {
+    "company": "河南枞宁信息科技有限公司",
+    "maxMoney": 30.0,
+    "minMoney": 15.0,
+    "money": "15K-30K",
+    "os": "android开发工程师",
+    "repeatCount": "14",
+    "timeLimit": false
+  },
+  {
     "address": "郑州-金水区",
-    "company": "郑州富铭环保科技股份有限公司",
-    "maxMoney": 12.0,
+    "company": "宁波五招信息技术有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "android开发工程师",
+    "repeatCount": "14",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-二七区",
+    "company": "北京动态点网络科技有限公司",
+    "maxMoney": 11.0,
     "minMoney": 6.0,
-    "money": "6千-1.2万",
+    "money": "6千-1.1万",
+    "os": "移动开发工程师",
+    "repeatCount": "14",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·管城回族区·经开区",
+    "company": "北京凯煜网络科技公司",
+    "maxMoney": 11.0,
+    "minMoney": 9.0,
+    "money": "9-11K",
     "os": "安卓开发工程师",
     "repeatCount": "14",
     "timeLimit": false
   },
   {
-    "address": "郑州-郑东新区",
-    "company": "郑州阿帕斯科技有限公司",
-    "maxMoney": 25.0,
-    "minMoney": 15.0,
-    "money": "1.5万-2.5万",
-    "os": "资深安卓开发工程师",
+    "address": "郑州·金水区·曼哈顿广场",
+    "company": "河南七里香信息科技",
+    "maxMoney": 12.0,
+    "minMoney": 8.0,
+    "money": "8-12K",
+    "os": "安卓开发工程师",
+    "repeatCount": "14",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-高新区",
+    "company": "河南信念晨帆软件科技有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 6.0,
+    "money": "0.6-1.5万/月",
+    "os": "APP开发工程师",
     "repeatCount": "14",
     "timeLimit": false
   },
@@ -2957,61 +3016,12 @@
     "timeLimit": true
   },
   {
-    "company": "河南枞宁信息科技有限公司",
-    "maxMoney": 30.0,
-    "minMoney": 15.0,
-    "money": "15K-30K",
-    "os": "android开发工程师",
-    "repeatCount": "13",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-金水区",
-    "company": "宁波五招信息技术有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "android开发工程师",
-    "repeatCount": "13",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-二七区",
-    "company": "北京动态点网络科技有限公司",
-    "maxMoney": 11.0,
-    "minMoney": 6.0,
-    "money": "6千-1.1万",
-    "os": "移动开发工程师",
-    "repeatCount": "13",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·管城回族区·经开区",
-    "company": "北京凯煜网络科技公司",
-    "maxMoney": 11.0,
-    "minMoney": 9.0,
-    "money": "9-11K",
-    "os": "安卓开发工程师",
-    "repeatCount": "13",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·金水区·曼哈顿广场",
-    "company": "河南七里香信息科技",
-    "maxMoney": 12.0,
+    "address": "郑州·新郑市·沃金",
+    "company": "云和数据",
+    "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8-12K",
+    "money": "8-13K",
     "os": "安卓开发工程师",
-    "repeatCount": "13",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-高新区",
-    "company": "河南信念晨帆软件科技有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 6.0,
-    "money": "0.6-1.5万/月",
-    "os": "APP开发工程师",
     "repeatCount": "13",
     "timeLimit": false
   },
@@ -3106,12 +3116,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·新郑市·沃金",
-    "company": "云和数据",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8-13K",
-    "os": "安卓开发工程师",
+    "address": "郑州-郑东新区",
+    "company": "北京云鸟科技有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 9.0,
+    "money": "9千-1.1万",
+    "os": "Flutter",
     "repeatCount": "12",
     "timeLimit": false
   },
@@ -3144,12 +3154,112 @@
     "timeLimit": true
   },
   {
-    "address": "郑州-郑东新区",
-    "company": "北京云鸟科技有限公司",
+    "address": "郑州",
+    "company": "河南广播传媒集团有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6千-1.2万",
+    "os": "安卓开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南国测信息技术有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8千-1.5万",
+    "os": "android开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "郑州恒信软件科技有限公司",
+    "maxMoney": 13.0,
+    "minMoney": 8.0,
+    "money": "8千-1.3万",
+    "os": "android高级开发工程师+高薪+双休",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-金水区",
+    "company": "宁夏智宁技术有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 6.0,
+    "money": "6千-1.2万",
+    "os": "android高级开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南道阅网络技术有限公司",
+    "maxMoney": 15.0,
+    "minMoney": 8.0,
+    "money": "8千-1.5万",
+    "os": "安卓开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南省高校新技术有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7千-1.2万",
+    "os": "安卓开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "友途",
     "maxMoney": 11.0,
-    "minMoney": 9.0,
-    "money": "9千-1.1万",
-    "os": "Flutter",
+    "minMoney": 7.0,
+    "money": "7-11K",
+    "os": "安卓开发工程师",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·中原区·帝湖",
+    "company": "合众伟奇科技股份",
+    "maxMoney": 11.0,
+    "minMoney": 6.0,
+    "money": "6-11K",
+    "os": "Android",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "大型多元化集团企业",
+    "maxMoney": 50.0,
+    "minMoney": 25.0,
+    "money": "25-50k·15薪",
+    "os": "车载系统软件工程师（Android）",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-高新区",
+    "company": "精益达",
+    "maxMoney": 25.0,
+    "minMoney": 15.0,
+    "money": "15-25k·12薪",
+    "os": "软件工程师 (车载Android方向)",
+    "repeatCount": "11",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "恩普特",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12k·13薪",
+    "os": "Android开发工程师",
     "repeatCount": "11",
     "timeLimit": false
   },
@@ -3211,112 +3321,32 @@
     "timeLimit": true
   },
   {
-    "address": "郑州",
-    "company": "河南广播传媒集团有限公司",
+    "address": "郑州·金水区·汽配大世界",
+    "company": "迅众科技",
     "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6千-1.2万",
-    "os": "安卓开发工程师",
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "中级安卓工程师",
     "repeatCount": "10",
     "timeLimit": false
   },
   {
-    "address": "郑州",
-    "company": "河南国测信息技术有限公司",
-    "maxMoney": 15.0,
+    "address": "郑州-高新区",
+    "company": "河南省日立信股份有限公司",
+    "maxMoney": 13.0,
     "minMoney": 8.0,
-    "money": "8千-1.5万",
+    "money": "8千-1.3万",
     "os": "android开发工程师",
     "repeatCount": "10",
     "timeLimit": false
   },
   {
     "address": "郑州",
-    "company": "郑州恒信软件科技有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8千-1.3万",
-    "os": "android高级开发工程师+高薪+双休",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-金水区",
-    "company": "宁夏智宁技术有限公司",
+    "company": "郑州鼓点软件科技有限公司",
     "maxMoney": 12.0,
     "minMoney": 6.0,
     "money": "6千-1.2万",
-    "os": "android高级开发工程师",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "河南道阅网络技术有限公司",
-    "maxMoney": 15.0,
-    "minMoney": 8.0,
-    "money": "8千-1.5万",
-    "os": "安卓开发工程师",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "河南省高校新技术有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7千-1.2万",
-    "os": "安卓开发工程师",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "友途",
-    "maxMoney": 11.0,
-    "minMoney": 7.0,
-    "money": "7-11K",
-    "os": "安卓开发工程师",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·中原区·帝湖",
-    "company": "合众伟奇科技股份",
-    "maxMoney": 11.0,
-    "minMoney": 6.0,
-    "money": "6-11K",
-    "os": "Android",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "大型多元化集团企业",
-    "maxMoney": 50.0,
-    "minMoney": 25.0,
-    "money": "25-50k·15薪",
-    "os": "车载系统软件工程师（Android）",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-高新区",
-    "company": "精益达",
-    "maxMoney": 25.0,
-    "minMoney": 15.0,
-    "money": "15-25k·12薪",
-    "os": "软件工程师 (车载Android方向)",
-    "repeatCount": "10",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "恩普特",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12k·13薪",
-    "os": "Android开发工程师",
+    "os": "android开发",
     "repeatCount": "10",
     "timeLimit": false
   },
@@ -3449,32 +3479,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·金水区·汽配大世界",
-    "company": "迅众科技",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "中级安卓工程师",
-    "repeatCount": "9",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-高新区",
-    "company": "河南省日立信股份有限公司",
-    "maxMoney": 13.0,
-    "minMoney": 8.0,
-    "money": "8千-1.3万",
-    "os": "android开发工程师",
-    "repeatCount": "9",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "郑州鼓点软件科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 6.0,
-    "money": "6千-1.2万",
-    "os": "android开发",
+    "address": "郑州·金水区·北环",
+    "company": "郑州指南星科计算机",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "10-15K",
+    "os": "安卓",
     "repeatCount": "9",
     "timeLimit": false
   },
@@ -3570,12 +3580,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州·金水区·北环",
-    "company": "郑州指南星科计算机",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "10-15K",
-    "os": "安卓",
+    "address": "郑州-金水区",
+    "company": "无锡精英堂信息科技有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7千-1.2万",
+    "os": "android开发工程师",
     "repeatCount": "8",
     "timeLimit": false
   },
@@ -3673,11 +3683,41 @@
   },
   {
     "address": "郑州-金水区",
-    "company": "无锡精英堂信息科技有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7千-1.2万",
+    "company": "德一文化旅游产业有限公司",
+    "maxMoney": 25.0,
+    "minMoney": 16.0,
+    "money": "1.6万-2.5万",
     "os": "android开发工程师",
+    "repeatCount": "7",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-管城区",
+    "company": "某客车行业龙头企业",
+    "maxMoney": 30.0,
+    "minMoney": 20.0,
+    "money": "20-30k·12薪",
+    "os": "车载系统软件工程师（Android）",
+    "repeatCount": "7",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "羲和网络",
+    "maxMoney": 30.0,
+    "minMoney": 20.0,
+    "money": "20-30k·12薪",
+    "os": "移动端技术经理",
+    "repeatCount": "7",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "某知名汽车企业",
+    "maxMoney": 40.0,
+    "minMoney": 20.0,
+    "money": "20-40k·12薪",
+    "os": "软件工程师（移动开发APP）安卓和ios",
     "repeatCount": "7",
     "timeLimit": false
   },
@@ -3765,42 +3805,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州-金水区",
-    "company": "德一文化旅游产业有限公司",
-    "maxMoney": 25.0,
-    "minMoney": 16.0,
-    "money": "1.6万-2.5万",
-    "os": "android开发工程师",
-    "repeatCount": "6",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-管城区",
-    "company": "某客车行业龙头企业",
-    "maxMoney": 30.0,
-    "minMoney": 20.0,
-    "money": "20-30k·12薪",
-    "os": "车载系统软件工程师（Android）",
-    "repeatCount": "6",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "羲和网络",
-    "maxMoney": 30.0,
-    "minMoney": 20.0,
-    "money": "20-30k·12薪",
-    "os": "移动端技术经理",
-    "repeatCount": "6",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "某知名汽车企业",
-    "maxMoney": 40.0,
-    "minMoney": 20.0,
-    "money": "20-40k·12薪",
-    "os": "软件工程师（移动开发APP）安卓和ios",
+    "address": "郑州-管城回族区",
+    "company": "郑州卡卡罗特软件科技有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 6.0,
+    "money": "6千-1.1万",
+    "os": "Flutter移动开发工程师",
     "repeatCount": "6",
     "timeLimit": false
   },
@@ -3833,14 +3843,24 @@
     "timeLimit": true
   },
   {
-    "address": "郑州-管城回族区",
-    "company": "郑州卡卡罗特软件科技有限公司",
-    "maxMoney": 11.0,
-    "minMoney": 6.0,
-    "money": "6千-1.1万",
-    "os": "Flutter移动开发工程师",
+    "address": "郑州-金水区",
+    "company": "河南中安市政建设有限公司",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7千-1.2万",
+    "os": "android开发工程师",
     "repeatCount": "5",
-    "timeLimit": true
+    "timeLimit": false
+  },
+  {
+    "address": "郑州·中原区·中原万达",
+    "company": "郑州蓓蕾",
+    "maxMoney": 12.0,
+    "minMoney": 7.0,
+    "money": "7-12K",
+    "os": "高级安卓开发工程师",
+    "repeatCount": "5",
+    "timeLimit": false
   },
   {
     "company": "新天科技股份有限公司",
@@ -3982,21 +4002,11 @@
   },
   {
     "address": "郑州-金水区",
-    "company": "河南中安市政建设有限公司",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7千-1.2万",
+    "company": "北京京学教育咨询集团有限公司",
+    "maxMoney": 16.0,
+    "minMoney": 8.0,
+    "money": "8千-1.6万",
     "os": "android开发工程师",
-    "repeatCount": "4",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州·中原区·中原万达",
-    "company": "郑州蓓蕾",
-    "maxMoney": 12.0,
-    "minMoney": 7.0,
-    "money": "7-12K",
-    "os": "高级安卓开发工程师",
     "repeatCount": "4",
     "timeLimit": false
   },
@@ -4074,12 +4084,12 @@
     "timeLimit": true
   },
   {
-    "address": "郑州-金水区",
-    "company": "北京京学教育咨询集团有限公司",
-    "maxMoney": 16.0,
-    "minMoney": 8.0,
-    "money": "8千-1.6万",
-    "os": "android开发工程师",
+    "address": "郑州-高新区",
+    "company": "北京软件出口中心发展有限公司郑州分公司",
+    "maxMoney": 15.0,
+    "minMoney": 10.0,
+    "money": "1万-1.5万",
+    "os": "android高级开发工程师",
     "repeatCount": "3",
     "timeLimit": false
   },
@@ -4193,12 +4203,42 @@
     "timeLimit": true
   },
   {
-    "address": "郑州-高新区",
-    "company": "北京软件出口中心发展有限公司郑州分公司",
-    "maxMoney": 15.0,
-    "minMoney": 10.0,
-    "money": "1万-1.5万",
-    "os": "android高级开发工程师",
+    "address": "郑州",
+    "company": "郑州白松信息技术有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 7.0,
+    "money": "7千-1.1万",
+    "os": "android研发工程师",
+    "repeatCount": "2",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "宇通",
+    "maxMoney": 40.0,
+    "minMoney": 20.0,
+    "money": "20-40k·12薪",
+    "os": "车载应用软件工程师（Android）",
+    "repeatCount": "2",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州-凤凰台",
+    "company": "旭正集团",
+    "maxMoney": 12.0,
+    "minMoney": 9.0,
+    "money": "9-12k·12薪",
+    "os": "Android",
+    "repeatCount": "2",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "专注于汽车制造的中国500强企业",
+    "maxMoney": 28.0,
+    "minMoney": 15.0,
+    "money": "15-28k·12薪",
+    "os": "软件工程师（移动开发）",
     "repeatCount": "2",
     "timeLimit": false
   },
@@ -4388,46 +4428,6 @@
   },
   {
     "address": "郑州",
-    "company": "郑州白松信息技术有限公司",
-    "maxMoney": 11.0,
-    "minMoney": 7.0,
-    "money": "7千-1.1万",
-    "os": "android研发工程师",
-    "repeatCount": "1",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "宇通",
-    "maxMoney": 40.0,
-    "minMoney": 20.0,
-    "money": "20-40k·12薪",
-    "os": "车载应用软件工程师（Android）",
-    "repeatCount": "1",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州-凤凰台",
-    "company": "旭正集团",
-    "maxMoney": 12.0,
-    "minMoney": 9.0,
-    "money": "9-12k·12薪",
-    "os": "Android",
-    "repeatCount": "1",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
-    "company": "专注于汽车制造的中国500强企业",
-    "maxMoney": 28.0,
-    "minMoney": 15.0,
-    "money": "15-28k·12薪",
-    "os": "软件工程师（移动开发）",
-    "repeatCount": "1",
-    "timeLimit": false
-  },
-  {
-    "address": "郑州",
     "company": "河南海融软件有限公司",
     "maxMoney": 12.0,
     "minMoney": 8.0,
@@ -4443,5 +4443,23 @@
     "money": "20-35K·14薪",
     "os": "Android高级开发工程师",
     "timeLimit": true
+  },
+  {
+    "address": "郑州·金水区·CBD",
+    "company": "飞渡",
+    "maxMoney": 13.0,
+    "minMoney": 10.0,
+    "money": "10-13K·13薪",
+    "os": "安卓开发工程师",
+    "timeLimit": false
+  },
+  {
+    "address": "郑州",
+    "company": "河南飞渡电子科技有限公司",
+    "maxMoney": 11.0,
+    "minMoney": 8.0,
+    "money": "8-11k·13薪",
+    "os": "安卓开发工程师",
+    "timeLimit": false
   }
 ]
