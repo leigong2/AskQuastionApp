@@ -40,7 +40,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.ObjectUtils;
 import com.blankj.utilcode.util.SPUtils;
-import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.aes.test;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.UpdateCompanyBean;
@@ -77,6 +76,7 @@ import com.example.android.askquastionapp.utils.LogUtils;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.utils.SetIpDialog;
 import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.video.DownloadObjManager;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.VideoTurnGifActivity;
@@ -222,8 +222,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         ClearUtils.getInstance().getAppProcessName(this);
         resetIp();
-        ToastUtils.setMsgColor(Color.WHITE);
-        ToastUtils.setBgResource(R.drawable.bg_toast);
         startScreenBroadcastReceiver();
     }
 

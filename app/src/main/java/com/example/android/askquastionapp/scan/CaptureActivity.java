@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.scan.zxing.android.CaptureActivityHandler;

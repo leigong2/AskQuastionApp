@@ -36,10 +36,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.KeyboardUtils;
-import com.blankj.utilcode.util.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.DisableDoubleClickUtils;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
 import com.example.jsoup.bean.MusicBean;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -76,8 +76,8 @@ public class ListenMusicActivity extends AppCompatActivity {
     private int mCurPage;
     private int mCurPlayPosition;
     private EditText search;
-    private String[] mIconExa = new String[] {"随机加载", "正常加载", "随机播放", "顺序播放"};
-    private String[] mLongExa = new String[] {"复制", "删除"};
+    private String[] mIconExa = new String[]{"随机加载", "正常加载", "随机播放", "顺序播放"};
+    private String[] mLongExa = new String[]{"复制", "删除"};
     private TextView mMode;
 
 
@@ -137,9 +137,11 @@ public class ListenMusicActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
+
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(search.getText().toString())) {
@@ -342,7 +344,15 @@ public class ListenMusicActivity extends AppCompatActivity {
         }
         File[] files = dir.listFiles();
         for (File file : files) {
-            MediaData media = new MediaData(file.getName(), file.getPath(), "");
+            if (file.isHidden()) {
+                continue;
+            }
+            String fileName = file.getName();
+            if (!fileName.endsWith("mp3") && !fileName.endsWith("wma") && !fileName.endsWith("amr")
+                    && !fileName.endsWith("MP3") && !fileName.endsWith("WMA") && !fileName.endsWith("AMR")) {
+                continue;
+            }
+            MediaData media = new MediaData(fileName, file.getPath(), "");
             media.hideDownload = true;
             mDatas.add(media);
         }

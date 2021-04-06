@@ -26,7 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ScreenUtils;
-import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.MainActivity;
 import com.example.android.askquastionapp.utils.MemoryCache;
 import com.example.android.askquastionapp.R;

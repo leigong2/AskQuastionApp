@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.blankj.utilcode.util.ToastUtils;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.media.PhotoSheetDialog;
 import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.MemoryCache;

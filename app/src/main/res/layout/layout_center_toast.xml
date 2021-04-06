@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_toast"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingStart="33dp"
+    android:paddingTop="26.5dp"
+    android:paddingEnd="33dp"
+    android:paddingBottom="24dp">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="26.5dp" />
+
+    <TextView
+        android:id="@android:id/message"
+        android:maxWidth="140dp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(1/3)，2倍领取，+120 Exp！sdfsdfssdfsdfsdf明日有惊喜！"
+        android:textColor="@color/white"
+        android:textSize="14sp" />
+</LinearLayout>
