@@ -23,8 +23,12 @@ import androidx.annotation.StringDef;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 
+import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.BaseApplication;
+import com.example.jsoup.GsonGetter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +60,19 @@ public class DocumentsFileUtils {
     public static final String VOICE_TYPE = "audio/x-mpeg";
     public static final String IMAGE_TYPE = "image/jpeg";
 
+    public Uri getCurrentTreeUri() {
+        String treeUri = SPUtils.getInstance().getString("treeUri");
+        if (TextUtils.isEmpty(treeUri)) {
+            return null;
+        }
+        try {
+            return Uri.parse(treeUri);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @StringDef({VIDEO_TYPE, TXT_TYPE, WORD_TYPE, EXCEL_TYPE, VOICE_TYPE, IMAGE_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface NormalMimeType {
@@ -66,6 +83,7 @@ public class DocumentsFileUtils {
     private static final String TAG = DocumentsFileUtils.class.getSimpleName();
 
     public static final int OPEN_DOCUMENT_TREE_CODE = 8000;
+    public static final int UPDATE_DOCUMENT_TREE_CODE = 8001;
 
     private static List<String> sExtSdCardPaths = new ArrayList<>();
 
@@ -515,30 +533,34 @@ public class DocumentsFileUtils {
         if (intent == null) {
             intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         }
-        activity.startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+        activity.startActivityForResult(intent, UPDATE_DOCUMENT_TREE_CODE);
         return true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public boolean showOpenDocumentTreeIgnore(Activity activity) {
-        Intent intent = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            StorageManager sm = activity.getSystemService(StorageManager.class);
-            StorageVolume volume = sm.getStorageVolume(new File(rootPath[rootPath.length - 1]));
-            if (volume != null) {
-                intent = volume.createAccessIntent(null);
-            }
+    public boolean showOpenDocumentTreeIgnore(LifecycleOwner activity) {
+        Intent intent =  new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (activity instanceof Activity) {
+            ((Activity) activity).startActivityForResult(intent, UPDATE_DOCUMENT_TREE_CODE);
+        } else if (activity instanceof Fragment) {
+            ((Fragment) activity).startActivityForResult(intent, UPDATE_DOCUMENT_TREE_CODE);
         }
-        if (intent == null) {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        }
-        activity.startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
         return true;
     }
 
     public void onActivityResult(Context context, int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case OPEN_DOCUMENT_TREE_CODE:
+                if (data != null && data.getData() != null) {
+                    Uri uri = data.getData();
+                    SPUtils.getInstance().put("treeUri", uri.toString());
+                }
+                break;
+            case UPDATE_DOCUMENT_TREE_CODE:
+                if (data != null && data.getData() != null) {
+                    Uri uri = data.getData();
+                    SPUtils.getInstance().put("treeUri", uri.toString());
+                }
                 if (rootPath == null) {
                     return;
                 }

@@ -280,8 +280,12 @@ public class PictureCheckManager {
         return resultMap;
     }
 
-    private boolean isVideoFile(File file) {
-        String name = file.getName();
+    public static <T> boolean isVideoFile(T file) {
+        String name = file instanceof File ? ((File) file).getName() : ((DocumentFile) file).getName();
+        String path = file instanceof File ? ((File) file).getPath() : ((DocumentFile) file).getUri().getPath();
+        if (name == null) {
+            return false;
+        }
         //获取拓展名
         String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
         return fileEnd.equalsIgnoreCase("mp4") || fileEnd.equalsIgnoreCase("MOV")
@@ -320,11 +324,32 @@ public class PictureCheckManager {
     public void getQNormalPictures(LifecycleOwner lifecycle, Handler handler, int mediaType) {
         mHandler = handler;
         this.mediaType = mediaType;
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        if (lifecycle instanceof Activity) {
-            ((Activity) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
-        } else if (lifecycle instanceof Fragment) {
-            ((Fragment) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+        Uri currentTreeUri = DocumentsFileUtils.getInstance().getCurrentTreeUri();
+        if (currentTreeUri == null) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (lifecycle instanceof Activity) {
+                ((Activity) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+            } else if (lifecycle instanceof Fragment) {
+                ((Fragment) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+            }
+        } else {
+            getNormalPicturesFromUri(currentTreeUri, mHandler, mediaType);
+        }
+    }
+
+    public void getQNormalVideos(LifecycleOwner lifecycle, Handler handler, int mediaType) {
+        mHandler = handler;
+        this.mediaType = mediaType;
+        Uri currentTreeUri = DocumentsFileUtils.getInstance().getCurrentTreeUri();
+        if (currentTreeUri == null) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (lifecycle instanceof Activity) {
+                ((Activity) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+            } else if (lifecycle instanceof Fragment) {
+                ((Fragment) lifecycle).startActivityForResult(intent, OPEN_DOCUMENT_TREE_CODE);
+            }
+        } else {
+            getNormalVideosFromUri(currentTreeUri, mHandler, mediaType);
         }
     }
 
@@ -340,7 +365,11 @@ public class PictureCheckManager {
             @Override
             public void run() {
                 super.run();
-                getNormalPicturesFromUri(uriDir, mHandler, mediaType);
+                if (mediaType == 1) {
+                    getNormalVideosFromUri(uriDir, mHandler, mediaType);
+                } else {
+                    getNormalPicturesFromUri(uriDir, mHandler, mediaType);
+                }
             }
         }.start();
     }
@@ -361,19 +390,78 @@ public class PictureCheckManager {
                 continue;
             }
             String pathName = path.replaceAll(dirPath, "");
-            if (pathName.startsWith("/Android")) {
+            if (pathName.startsWith("Android")) {
 //                resultMap.putAll(getAllQPictures(new DocumentFile(dir, "/Android/data/org.telegram.messenger/cache"), handler, mediaType));
                 continue;
             }
-            if (pathName.startsWith("/.")) {
-                continue;
-            }
-            if (pathName.startsWith("/tencent")) {
+            if (pathName.startsWith("tencent")) {
                 continue;
             }
             if (file.isDirectory()) {
                 if (file.listFiles().length > 0) {
                     resultMap.putAll(getAllQPictures(file, handler, mediaType));
+                }
+            } else {
+                if (file.length() > fileSize && isImageFile(file)) {
+                    MediaData mediaData = new MediaData();
+                    mediaData.path = file.getUri().getPath();
+                    mediaData.pathUri = file.getUri();
+                    String parent = file.getParentFile() == null ? "" : file.getParentFile().getName();
+                    List<MediaData> group = resultMap.get(parent);
+                    if (group == null) {
+                        group = new ArrayList<>();
+                    }
+                    group.add(mediaData);
+                    if (!resultMap.containsKey(parent)) {
+                        Message msg = new Message();
+                        msg.what = mediaType;
+                        mediaData.folder = parent;
+                        mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
+                        MediaData parentMedia = new MediaData();
+                        parentMedia.folder = parent;
+                        parentMedia.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
+                        msg.obj = parentMedia;
+                        handler.sendMessage(msg);
+                    }
+                    resultMap.put(parent, group);
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    msg.obj = mediaData;
+                    handler.sendMessage(msg);
+                }
+            }
+        }
+        return resultMap;
+    }
+
+    private Map<String, List<MediaData>> getNormalVideosFromUri(Uri uriDir, Handler handler, int mediaType) {
+        DocumentFile dir = DocumentFile.fromTreeUri(BaseApplication.getInstance(), uriDir);
+        Map<String, List<MediaData>> resultMap = new HashMap<>();
+        if (dir.listFiles() == null) {
+            return resultMap;
+        }
+        for (DocumentFile file : dir.listFiles()) {
+            String path = file.getUri().getPath();
+            if (path == null) {
+                continue;
+            }
+            String dirPath = dir.getUri().getPath();
+            if (dirPath == null) {
+                continue;
+            }
+            String pathName = path.replaceAll(dirPath, "");
+            if (pathName.startsWith("Android")) {
+//                resultMap.putAll(getAllQPictures(new DocumentFile(dir, "/Android/data/org.telegram.messenger/cache"), handler, mediaType));
+                continue;
+            }
+            if (pathName.startsWith("tencent")) {
+                continue;
+            }
+            if (file.isDirectory()) {
+                if (file.listFiles().length > 0) {
+                    resultMap.putAll(getAllQVideos(file, handler, mediaType));
                 }
             } else {
                 if (file.length() > fileSize && isImageFile(file)) {
@@ -426,6 +514,56 @@ public class PictureCheckManager {
             } else if (file.length() > fileSize && isImageFile(file)) {
                 LogUtils.i("zune: ", "image path = " + file.getUri().getPath());
                 MediaData mediaData = new MediaData();
+                mediaData.path = file.getUri().getPath();
+                mediaData.pathUri = file.getUri();
+                String parent = file.getParentFile() == null ? "" : file.getParentFile().getName();
+                List<MediaData> group = resultMap.get(parent);
+                if (group == null) {
+                    group = new ArrayList<>();
+                }
+                if (!resultMap.containsKey(parent)) {
+                    Message msg = new Message();
+                    msg.what = mediaType;
+                    mediaData.folder = parent;
+                    mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
+                    parentMedia.folder = parent;
+                    parentMedia.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    msg.obj = parentMedia;
+                    handler.sendMessage(msg);
+                }
+                group.add(mediaData);
+                Message msg = new Message();
+                msg.what = mediaType;
+                mediaData.folder = parent;
+                mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                msg.obj = mediaData;
+                handler.sendMessage(msg);
+                resultMap.put(parent, group);
+            } else {
+                LogUtils.i("zune: ", "file path = " + file.getUri().getPath());
+            }
+        }
+        return resultMap;
+    }
+
+    private Map<String, List<MediaData>> getAllQVideos(DocumentFile documentDir, Handler handler, int mediaType) {
+        Map<String, List<MediaData>> resultMap = new HashMap<>();
+        List<DocumentFile> files = DocumentsFileUtils.sortFileWithLastModify(documentDir, sortType);
+        for (DocumentFile file : files) {
+            if (file.isDirectory()) {
+                if (file.getUri().getPath() != null && file.getUri().getPath().contains("/.")) {
+                    LogUtils.i("zune: ", "........dir path = " + file.getUri().getPath());
+                    continue;
+                }
+                if (file.listFiles() != null && file.listFiles().length > 0) {
+                    LogUtils.i("zune: ", "dir path = " + file.getUri().getPath());
+                    resultMap.putAll(getAllQVideos(file, handler, mediaType));
+                }
+            } else if (file.length() > fileSize && isVideoFile(file)) {
+                LogUtils.i("zune: ", "image path = " + file.getUri().getPath());
+                MediaData mediaData = new MediaData();
+                mediaData.mediaType = 1;
                 mediaData.path = file.getUri().getPath();
                 mediaData.pathUri = file.getUri();
                 String parent = file.getParentFile() == null ? "" : file.getParentFile().getName();

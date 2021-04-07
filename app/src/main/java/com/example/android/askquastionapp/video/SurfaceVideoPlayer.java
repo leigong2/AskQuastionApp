@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.FloatRange;
 
 import com.blankj.utilcode.util.ScreenUtils;
+import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
 import com.example.android.askquastionapp.media.PictureCheckManager;
@@ -157,7 +158,11 @@ public class SurfaceVideoPlayer {
         });
         try {
             mCurMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mCurMediaPlayer.setDataSource(mediaData.path);
+            if (mediaData.pathUri != null) {
+                mCurMediaPlayer.setDataSource(BaseApplication.getInstance(), mediaData.pathUri);
+            } else {
+                mCurMediaPlayer.setDataSource(mediaData.path);
+            }
             mCurMediaPlayer.prepareAsync();
         } catch (Exception e) {
             e.printStackTrace();

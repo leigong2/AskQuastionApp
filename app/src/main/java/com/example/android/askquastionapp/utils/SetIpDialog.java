@@ -81,6 +81,12 @@ public class SetIpDialog extends DialogFragment {
         return dialog;
     }
 
+    public void setHint(String baseUrl) {
+        if (editIp != null && baseUrl != null) {
+            editIp.setText(baseUrl);
+        }
+    }
+
     public interface OnResultListener {
         void onResult(String ip);
     }

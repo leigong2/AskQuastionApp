@@ -439,7 +439,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                         PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
                     }
                 } else if (mediaType == 1) {
-                    PictureCheckManager.getInstance().getNormalVideos(mHandler, mediaType);
+                    if (Build.VERSION.SDK_INT == Q) {
+                        PictureCheckManager.getInstance().getQNormalVideos(PhotoSheetDialog.this, mHandler, mediaType);
+                    } else {
+                        PictureCheckManager.getInstance().getNormalVideos(mHandler, mediaType);
+                    }
                 } else {
                     if (Build.VERSION.SDK_INT == Q) {
                         PictureCheckManager.getInstance().getQNormalPictures(PhotoSheetDialog.this, mHandler, mediaType);

@@ -56,6 +56,9 @@ public class VideoPlayFragment extends Fragment {
     }
 
     private boolean onLongClick() {
+        if (mediaData.pathUri != null) {
+            return false;
+        }
         BottomPop current = BottomPop.getCurrent(getActivity());
         current.addItemText("视频信息");
         current.addItemText("复制");
@@ -122,6 +125,9 @@ public class VideoPlayFragment extends Fragment {
         if (getActivity() == null) {
             return null;
         }
+        if (mediaData.pathUri != null) {
+            return mediaData.pathUri;
+        }
         String filePath = mediaData.path;
         File file = new File(filePath);
         if (Build.VERSION.SDK_INT < N) {
@@ -177,7 +183,11 @@ public class VideoPlayFragment extends Fragment {
         SurfaceVideoPlayer.getInstance().bindMedia(mediaData);
         SurfaceVideoPlayer.getInstance().play();
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(mediaData.path);
+        if (mediaData.pathUri != null) {
+            retriever.setDataSource(getContext(), mediaData.pathUri);
+        } else {
+            retriever.setDataSource(mediaData.path);
+        }
         String title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if (!TextUtils.isEmpty(title)) {
             videoController.setTitle(title);

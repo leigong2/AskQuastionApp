@@ -129,6 +129,7 @@ import io.reactivex.schedulers.Schedulers;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.os.Build.VERSION_CODES.Q;
 import static java.io.File.separator;
 
 /**
@@ -154,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
     private String avUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/av_db.db";
     private String musicUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/music_db.db";
 
-    public static String baseUrl = TextUtils.isEmpty(SPUtils.getInstance().getString("baseUrl")) ? "http://192.168.200.62" : SPUtils.getInstance().getString("baseUrl");
+    public static String baseUrl = TextUtils.isEmpty(SPUtils.getInstance().getString("baseUrl")) ? "http://192.168.200.142" : SPUtils.getInstance().getString("baseUrl");
 
     private String devolop, preProducation, production_blue, production, release, self, imgs;
     private List<String> mMainTags = new ArrayList<>();
@@ -416,6 +417,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "设置ip": //设置ip");
                 SetIpDialog setIpDialog = SetIpDialog.showDialog(this);
+                setIpDialog.setHint(baseUrl);
                 setIpDialog.setOnResultListener(new SetIpDialog.OnResultListener() {
                     @Override
                     public void onResult(String ip) {
@@ -942,41 +944,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            DocumentsFileUtils.getInstance().showOpenDocumentTree(this);
-            if (!DocumentsFileUtils.getInstance().hasUriTree(DocumentsFileUtils.getInstance().rootPath[DocumentsFileUtils.getInstance().rootPath.length - 1])) {
-                return;
-            }
+            DocumentsFileUtils.getInstance().showOpenDocumentTreeIgnore(this);
         }
-        if (clearHolder == null) {
-            clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-        }
-        clearHolder.startLoad();
-        Observable.just(1).map(new Function<Integer, List<String>>() {
-            @Override
-            public List<String> apply(Integer integer) throws Exception {
-                List<String> strings = getWechatFile("tencent/MicroMsg");
-                copyToWeixin(strings);
-                return strings;
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<String>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(List<String> strings) {
-                        clearHolder.stopLoad(strings, false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                    }
-                });
     }
 
     private void copyToWeixin(List<String> strings) {
@@ -1506,6 +1475,7 @@ public class MainActivity extends AppCompatActivity {
             shareDialog.onActivityResult(requestCode, resultCode, data);
         }
         DocumentsFileUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
+        ClearUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
     }
 
     /**
@@ -1523,9 +1493,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-
+        if (Build.VERSION.SDK_INT == Q) {
+            ClearUtils.getInstance().delete(this, null, null);
+            return;
+        }
         ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, true);
-        ClearUtils.getInstance().delete(Environment.getExternalStorageDirectory().getPath(), new SimpleObserver<List<String>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
+        ClearUtils.getInstance().delete(this, Environment.getExternalStorageDirectory().getPath(), new SimpleObserver<List<String>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
             @Override
             public void onNext(List<String> strings, ListDialog<ListDialog.BaseData> listDialog) {
                 List<ListDialog.BaseData> datas = new ArrayList<>();
@@ -1533,7 +1506,6 @@ public class MainActivity extends AppCompatActivity {
                     ListDialog.BaseData data = new ListDialog.BaseData(s);
                     datas.add(data);
                 }
-                ToastUtils.showShort("删除完成");
                 listDialog.showWithData(datas, false);
             }
         });
