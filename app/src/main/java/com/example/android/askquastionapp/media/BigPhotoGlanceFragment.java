@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -19,13 +20,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
 import com.example.android.askquastionapp.views.CommonDialog;
 
@@ -33,6 +34,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import static android.os.Build.VERSION_CODES.Q;
 
 public class BigPhotoGlanceFragment extends Fragment {
 
@@ -189,7 +192,12 @@ public class BigPhotoGlanceFragment extends Fragment {
         }
         rotationView.setText("旋转");
         this.mediaData = mediaData;
-        File file = new File(mediaData.path);
+        File file;
+        if (mediaData.pathUri != null && Build.VERSION.SDK_INT == Q) {
+            file = FileUtil.uriToFileApiQ(mediaData.pathUri, BaseApplication.getInstance());
+        } else {
+            file = new File(mediaData.path);
+        }
         bigImageView.setVisibility(View.VISIBLE);
         bigImageView.setFile(file, true);
     }

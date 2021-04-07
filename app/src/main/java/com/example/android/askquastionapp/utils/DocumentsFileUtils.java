@@ -16,6 +16,7 @@ import android.provider.DocumentsContract;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringDef;
@@ -603,5 +604,49 @@ public class DocumentsFileUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /*zune：获取文件夹里面的文件，并排序**/
+    public static List<DocumentFile> sortFileWithLastModify(DocumentFile dir, @IntRange(from = 0, to = 2) int sortType) {
+        DocumentFile[] files = dir.listFiles();
+        if (files == null) {
+            return new ArrayList<>();
+        }
+        List<Long> tempLastModifies = new ArrayList<>();
+        long[] lastModifies = new long[files.length];
+        for (int i = 0; i < files.length; i++) {
+            if (sortType == 1) {
+                lastModifies[i] = files[i].length();
+                tempLastModifies.add(files[i].length());
+            } else {
+                lastModifies[i] = files[i].lastModified();
+                tempLastModifies.add(files[i].lastModified());
+            }
+        }
+        if (sortType > 0) {
+            for (int i = 0; i < lastModifies.length; i++) {
+                for (int j = i + 1; j <= lastModifies.length - 1; j++) {
+                    if (lastModifies[i] > lastModifies[j]) {
+                        long temp = lastModifies[i];
+                        lastModifies[i] = lastModifies[j];
+                        lastModifies[j] = temp;
+                    }
+                }
+            }
+        }
+        List<DocumentFile> sortFiles = new ArrayList<>();
+        for (int i = 0; i < lastModifies.length; i++) {
+            int firstIndex = tempLastModifies.indexOf(lastModifies[i]);
+            DocumentFile file = files[firstIndex];
+            while (sortFiles.contains(file)) {
+                firstIndex += (tempLastModifies.subList(firstIndex + 1, tempLastModifies.size()).indexOf(lastModifies[i]) + 1);
+                if (firstIndex == -1 || firstIndex >= files.length) {
+                    break;
+                }
+                file = files[firstIndex];
+            }
+            sortFiles.add(file);
+        }
+        return sortFiles;
     }
 }

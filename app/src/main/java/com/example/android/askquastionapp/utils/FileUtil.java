@@ -1,6 +1,6 @@
 package com.example.android.askquastionapp.utils;
 
-import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,11 +8,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
 import androidx.annotation.IntRange;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -327,11 +330,15 @@ public class FileUtil {
         return sortFiles;
     }
 
-    public static boolean isImageFile(File file) {
-        String name = file.getName();
+    public static <T> boolean isImageFile(T file) {
+        String name = file instanceof File ? ((File) file).getName() : ((DocumentFile) file).getName();
+        String path = file instanceof File ? ((File) file).getPath() : ((DocumentFile) file).getUri().getPath();
+        if (name == null) {
+            return false;
+        }
         //获取拓展名
         String fileEnd = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
-        String fileHeader = getFileHeader(file.getPath());
+        String fileHeader = getFileHeader(path);
         if (fileEnd.equals("jpg") || fileEnd.equals("png") || fileEnd.equals("gif") || fileEnd.equals("jpeg") || fileEnd.equals("bmp") || fileEnd.equals("webp")) {
             return true;
         }
@@ -436,5 +443,31 @@ public class FileUtil {
                 }
             }
         }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public static File uriToFileApiQ(Uri uri, Context context) {
+        File file = null;
+        if(uri == null || uri.getPath() == null) {
+            return null;
+        }
+        //android10以上转换
+        if (uri.getScheme() != null && uri.getScheme().equalsIgnoreCase(ContentResolver.SCHEME_FILE)) {
+            file = new File(uri.getPath());
+        } else if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            //把文件复制到沙盒目录
+            ContentResolver contentResolver = context.getContentResolver();
+            try {
+                InputStream is = contentResolver.openInputStream(uri);
+                File cache = new File(context.getExternalCacheDir().getAbsolutePath(), "temp");
+                FileOutputStream fos = new FileOutputStream(cache);
+                FileUtils.copy(is, fos);
+                file = cache;
+                fos.close();
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file;
     }
 }

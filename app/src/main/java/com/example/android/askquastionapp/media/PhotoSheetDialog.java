@@ -3,11 +3,9 @@ package com.example.android.askquastionapp.media;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,7 +20,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.text.TextPaint;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,14 +29,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.FileProvider;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.ScreenUtils;
-import com.example.android.askquastionapp.utils.ToastUtils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.android.askquastionapp.BaseApplication;
@@ -50,7 +46,7 @@ import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
-import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
 import com.example.android.askquastionapp.views.CommonDialog;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -72,7 +68,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
-import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 
 public class PhotoSheetDialog extends BottomSheetDialogFragment {
 
@@ -386,7 +382,7 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
                 }
                 PictureCheckManager.MediaData mediaData = mDataList.get(position);
                 Glide.with(imageView.getContext())
-                        .load(mediaData.path)
+                        .load(mediaData.pathUri == null ? mediaData.path : mediaData.pathUri)
                         .apply(new RequestOptions().override(200, 200).fitCenter().placeholder(R.mipmap.place_loading))
                         .into(imageView);
                 imageView.setTag(position);
@@ -437,11 +433,19 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             public void run() {
                 super.run();
                 if (mediaType == 0) {
-                    PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                    if (Build.VERSION.SDK_INT == Q) {
+                        PictureCheckManager.getInstance().getQNormalPictures(PhotoSheetDialog.this, mHandler, mediaType);
+                    } else {
+                        PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                    }
                 } else if (mediaType == 1) {
                     PictureCheckManager.getInstance().getNormalVideos(mHandler, mediaType);
                 } else {
-                    PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                    if (Build.VERSION.SDK_INT == Q) {
+                        PictureCheckManager.getInstance().getQNormalPictures(PhotoSheetDialog.this, mHandler, mediaType);
+                    } else {
+                        PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
+                    }
                 }
             }
         }.start();
@@ -541,5 +545,11 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        PictureCheckManager.getInstance().onActivityResult(requestCode, resultCode, data);
     }
 }

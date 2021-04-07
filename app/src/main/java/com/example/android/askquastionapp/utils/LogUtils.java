@@ -16,7 +16,7 @@ public class LogUtils {
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
     public static void i(String tag, String msg) {
-        writeLog(msg, tag);
+        //writeLog(msg, tag);
         Log.i(tag, createMessage(msg));
     }
 

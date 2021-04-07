@@ -162,6 +162,9 @@ public class ClearUtils {
                     File tempFile = files[i];
                     String tempFileName = tempFile.getName();
                     if (noDelete.contains(tempFileName)) {
+                        if ("tencent".equalsIgnoreCase(tempFileName)) {
+                            continue;
+                        }
                         if ("Android".equals(tempFileName)) {
                             File[] listFiles = tempFile.listFiles();
                             if (listFiles != null) {
@@ -180,10 +183,12 @@ public class ClearUtils {
                                     }
                                 }
                             }
+                            continue;
                         }
-                        if ("DCIM".equalsIgnoreCase(tempFileName)) {
-                            for (File listFile : tempFile.listFiles()) {
-                                if (listFile.getPath().contains("/.")) {
+                        File[] tempList = tempFile.listFiles();
+                        if (tempList != null) {
+                            for (File listFile : tempList) {
+                                if (listFile.isHidden()) {
                                     delete(listFile.getPath());
                                 }
                             }
