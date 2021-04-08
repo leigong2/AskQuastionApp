@@ -25,6 +25,7 @@ import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
+import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
@@ -193,7 +194,7 @@ public class BigPhotoGlanceFragment extends Fragment {
         rotationView.setText("旋转");
         this.mediaData = mediaData;
         File file;
-        if (mediaData.pathUri != null && Build.VERSION.SDK_INT == Q) {
+        if (mediaData.pathUri != null && Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
             file = FileUtil.uriToFileApiQ(mediaData.pathUri, BaseApplication.getInstance());
         } else {
             file = new File(mediaData.path);

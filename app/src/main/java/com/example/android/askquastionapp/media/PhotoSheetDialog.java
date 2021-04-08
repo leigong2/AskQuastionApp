@@ -44,6 +44,7 @@ import com.example.android.askquastionapp.VideoPlayerActivity;
 import com.example.android.askquastionapp.picture.PhotoImageView;
 import com.example.android.askquastionapp.scan.CapturePictureUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
+import com.example.android.askquastionapp.utils.ClearUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.utils.ToastUtils;
@@ -433,19 +434,19 @@ public class PhotoSheetDialog extends BottomSheetDialogFragment {
             public void run() {
                 super.run();
                 if (mediaType == 0) {
-                    if (Build.VERSION.SDK_INT == Q) {
+                    if (Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
                         PictureCheckManager.getInstance().getQNormalPictures(PhotoSheetDialog.this, mHandler, mediaType);
                     } else {
                         PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);
                     }
                 } else if (mediaType == 1) {
-                    if (Build.VERSION.SDK_INT == Q) {
+                    if (Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
                         PictureCheckManager.getInstance().getQNormalVideos(PhotoSheetDialog.this, mHandler, mediaType);
                     } else {
                         PictureCheckManager.getInstance().getNormalVideos(mHandler, mediaType);
                     }
                 } else {
-                    if (Build.VERSION.SDK_INT == Q) {
+                    if (Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
                         PictureCheckManager.getInstance().getQNormalPictures(PhotoSheetDialog.this, mHandler, mediaType);
                     } else {
                         PictureCheckManager.getInstance().getNormalPictures(mHandler, mediaType);

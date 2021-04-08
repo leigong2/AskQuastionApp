@@ -22,6 +22,7 @@ import com.example.android.askquastionapp.utils.ToastUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,11 +92,20 @@ public class PictureCheckManager {
 
     public Map<String, List<MediaData>> getNormalVideos(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
+        String storagePath = FileUtil.getStoragePath(BaseApplication.getInstance(), true);
+        List<File> files = new ArrayList<>();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
-        if (dir.listFiles() == null) {
-            return resultMap;
+        File[] neiFiles = dir.listFiles();
+        if (neiFiles != null) {
+            Collections.addAll(files, neiFiles);
         }
-        for (File file : dir.listFiles()) {
+        if (storagePath != null) {
+            File[] waiFiles = new File(storagePath).listFiles();
+            if (waiFiles != null) {
+                Collections.addAll(files, waiFiles);
+            }
+        }
+        for (File file : files) {
             if (file == null) {
                 continue;
             }
@@ -111,8 +121,9 @@ public class PictureCheckManager {
             if (pathName.startsWith("/tencent")) {
                 continue;
             }
-            if (file.isDirectory() && file.listFiles() != null) {
-                if (file.listFiles().length > 0) {
+            File[] listFiles = file.listFiles();
+            if (file.isDirectory() && listFiles != null) {
+                if (listFiles.length > 0) {
                     resultMap.putAll(getAllVideos(handler, file, mediaType));
                 }
             } else if (!file.isDirectory() && file.length() > fileSize && isVideoFile(file)) {
@@ -148,11 +159,20 @@ public class PictureCheckManager {
 
     public Map<String, List<MediaData>> getNormalPictures(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
+        String storagePath = FileUtil.getStoragePath(BaseApplication.getInstance(), true);
+        List<File> files = new ArrayList<>();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
-        if (dir.listFiles() == null) {
-            return resultMap;
+        File[] neiFiles = dir.listFiles();
+        if (neiFiles != null) {
+            Collections.addAll(files, neiFiles);
         }
-        for (File file : dir.listFiles()) {
+        if (storagePath != null) {
+            File[] waiFiles = new File(storagePath).listFiles();
+            if (waiFiles != null) {
+                Collections.addAll(files, waiFiles);
+            }
+        }
+        for (File file : files) {
             String pathName = file.getPath().replaceAll(dir.getPath(), "");
             if (pathName.startsWith("/Android")) {
                 resultMap.putAll(getAllPictures(handler, new File(dir, "/Android/data/org.telegram.messenger/cache"), mediaType));
@@ -164,8 +184,9 @@ public class PictureCheckManager {
             if (pathName.startsWith("/tencent")) {
                 continue;
             }
-            if (file.isDirectory()) {
-                if (file.listFiles().length > 0) {
+            File[] listFiles = file.listFiles();
+            if (file.isDirectory() && listFiles != null) {
+                if (listFiles.length > 0) {
                     resultMap.putAll(getAllPictures(handler, file, mediaType));
                 }
             } else {
@@ -525,10 +546,10 @@ public class PictureCheckManager {
                     Message msg = new Message();
                     msg.what = mediaType;
                     mediaData.folder = parent;
-                    mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                     PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
                     parentMedia.folder = parent;
-                    parentMedia.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    parentMedia.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                     msg.obj = parentMedia;
                     handler.sendMessage(msg);
                 }
@@ -536,7 +557,7 @@ public class PictureCheckManager {
                 Message msg = new Message();
                 msg.what = mediaType;
                 mediaData.folder = parent;
-                mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                 msg.obj = mediaData;
                 handler.sendMessage(msg);
                 resultMap.put(parent, group);
@@ -575,10 +596,10 @@ public class PictureCheckManager {
                     Message msg = new Message();
                     msg.what = mediaType;
                     mediaData.folder = parent;
-                    mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                     PictureCheckManager.MediaData parentMedia = new PictureCheckManager.MediaData();
                     parentMedia.folder = parent;
-                    parentMedia.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                    parentMedia.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                     msg.obj = parentMedia;
                     handler.sendMessage(msg);
                 }
@@ -586,7 +607,7 @@ public class PictureCheckManager {
                 Message msg = new Message();
                 msg.what = mediaType;
                 mediaData.folder = parent;
-                mediaData.folderUri =  file.getParentFile() == null ? null : file.getParentFile().getUri();
+                mediaData.folderUri = file.getParentFile() == null ? null : file.getParentFile().getUri();
                 msg.obj = mediaData;
                 handler.sendMessage(msg);
                 resultMap.put(parent, group);

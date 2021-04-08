@@ -58,6 +58,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
         tools:ignore="UnusedAttribute">
         <meta-data
             android:name="com.example.android.askquastionapp.utils.CustomGlideModule"

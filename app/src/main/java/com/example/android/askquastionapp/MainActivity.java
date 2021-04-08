@@ -121,9 +121,7 @@ import java.util.Random;
 import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
@@ -1493,8 +1491,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        if (Build.VERSION.SDK_INT == Q) {
-            ClearUtils.getInstance().delete(this, null, null);
+        if (Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
+            ClearUtils.getInstance().delete(this, null, null);//内置sd卡路径
             return;
         }
         ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(MainActivity.this, true);
@@ -1507,6 +1505,7 @@ public class MainActivity extends AppCompatActivity {
                     datas.add(data);
                 }
                 listDialog.showWithData(datas, false);
+                ToastUtils.showToast(BaseApplication.getInstance(), String.format("删除了%s个文件", datas.size()));
             }
         });
     }

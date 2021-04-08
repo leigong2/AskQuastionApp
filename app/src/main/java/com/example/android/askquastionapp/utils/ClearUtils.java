@@ -40,6 +40,7 @@ public class ClearUtils {
     private static ClearUtils utils;
     private boolean isDeleting;
     private static Set<String> packageNames = new HashSet<>();
+    public static final boolean requestLegacyExternalStorage = true;
 
     private ClearUtils() {
     }
@@ -100,7 +101,7 @@ public class ClearUtils {
     }
 
     public void delete(LifecycleOwner lifecycle, final String path, Observer<List<String>> observer) {
-        if (Build.VERSION.SDK_INT == Q) {
+        if (Build.VERSION.SDK_INT == Q && !ClearUtils.requestLegacyExternalStorage) {
             Uri currentTreeUri = DocumentsFileUtils.getInstance().getCurrentTreeUri();
             if (currentTreeUri == null) {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
