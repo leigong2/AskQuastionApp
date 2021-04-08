@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.preference.PreferenceManager;
@@ -28,7 +29,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.BaseApplication;
-import com.example.jsoup.GsonGetter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,10 +42,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +91,7 @@ public class DocumentsFileUtils {
         if (!hasPermissions(BaseApplication.getInstance())) {
             return;
         }
-        rootPath = getExtSDCardPath(BaseApplication.getInstance());
+        rootPath = getExtSDCardPaths(BaseApplication.getInstance());
     }
 
     public @Nullable String[] rootPath;
@@ -129,9 +125,9 @@ public class DocumentsFileUtils {
         if (sExtSdCardPaths.size() > 0) {
             return sExtSdCardPaths.toArray(new String[0]);
         } else {
-            sExtSdCardPaths.toArray(getExtSDCardPath(context));
+            sExtSdCardPaths.toArray(getExtSDCardPaths(context));
         }
-        return getExtSDCardPath(context);
+        return getExtSDCardPaths(context);
         /*for (File file : context.getExternalFilesDirs("external")) {
             if (file != null && !file.equals(context.getExternalFilesDir("external"))) {
                 int index = file.getAbsolutePath().lastIndexOf("/Android/data");
@@ -155,7 +151,7 @@ public class DocumentsFileUtils {
     /**
      * zune: 获取路所有存储器路径,一般情况下position = 0是内置存储,position= 1是外置存储
      **/
-    public String[] getExtSDCardPath(Context context) {
+    public String[] getExtSDCardPaths(Context context) {
         StorageManager storageManager = (StorageManager) context.getSystemService(Context
                 .STORAGE_SERVICE);
         try {
@@ -169,6 +165,20 @@ public class DocumentsFileUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getExtSDCardPath(Context context) {
+        String[] extSDCardPaths = getExtSDCardPaths(context);
+        File externalStorageDirectory = Environment.getExternalStorageDirectory();
+        if (extSDCardPaths == null || extSDCardPaths.length == 0) {
+            return externalStorageDirectory.getPath();
+        }
+        for (String extSDCardPath : extSDCardPaths) {
+            if (!externalStorageDirectory.getPath().equalsIgnoreCase(extSDCardPath) && !TextUtils.isEmpty(extSDCardPath)) {
+                return extSDCardPath;
+            }
+        }
+        return externalStorageDirectory.getPath();
     }
 
     /**

@@ -92,7 +92,7 @@ public class PictureCheckManager {
 
     public Map<String, List<MediaData>> getNormalVideos(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
-        String storagePath = FileUtil.getStoragePath(BaseApplication.getInstance(), true);
+        String storagePath = DocumentsFileUtils.getInstance().getExtSDCardPath(BaseApplication.getInstance());
         List<File> files = new ArrayList<>();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         File[] neiFiles = dir.listFiles();
@@ -159,7 +159,7 @@ public class PictureCheckManager {
 
     public Map<String, List<MediaData>> getNormalPictures(Handler handler, int mediaType) {
         File dir = Environment.getExternalStorageDirectory();
-        String storagePath = FileUtil.getStoragePath(BaseApplication.getInstance(), true);
+        String storagePath = DocumentsFileUtils.getInstance().getExtSDCardPath(BaseApplication.getInstance());
         List<File> files = new ArrayList<>();
         Map<String, List<MediaData>> resultMap = new HashMap<>();
         File[] neiFiles = dir.listFiles();
