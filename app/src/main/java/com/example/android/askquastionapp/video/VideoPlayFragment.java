@@ -2,32 +2,25 @@ package com.example.android.askquastionapp.video;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.blankj.utilcode.util.ScreenUtils;
-import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
 import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
 import com.example.android.askquastionapp.views.CommonDialog;
 
@@ -35,8 +28,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import static android.os.Build.VERSION_CODES.N;
 
 public class VideoPlayFragment extends Fragment {
 
@@ -108,7 +99,7 @@ public class VideoPlayFragment extends Fragment {
                         shareIntent.setAction(Intent.ACTION_SEND);
                         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         shareIntent.setType("video/*");
-                        Uri currentUri = getCurrentUri();
+                        Uri currentUri = FileUtil.getCurrentUri(getContext(), mediaData.path);
                         if (currentUri == null) {
                             return;
                         }
@@ -119,39 +110,6 @@ public class VideoPlayFragment extends Fragment {
             }
         });
         return false;
-    }
-
-    private Uri getCurrentUri() {
-        if (getActivity() == null) {
-            return null;
-        }
-        if (mediaData.pathUri != null) {
-            return mediaData.pathUri;
-        }
-        String filePath = mediaData.path;
-        File file = new File(filePath);
-        if (Build.VERSION.SDK_INT < N) {
-            return Uri.fromFile(file);
-        } else if (Build.VERSION.SDK_INT < 29) {
-            return FileProvider.getUriForFile(getActivity(), getActivity().getPackageName() + ".FileProvider", file);
-        } else {
-            Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
-                    new String[]{filePath}, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
-                Uri baseUri = Uri.parse("content://media/external/images/media");
-                return Uri.withAppendedPath(baseUri, "" + id);
-            } else {
-                if (file.exists()) {
-                    ContentValues values = new ContentValues();
-                    values.put(MediaStore.Images.Media.DATA, filePath);
-                    return getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                } else {
-                    return null;
-                }
-            }
-        }
     }
 
     protected void initView(View view) {

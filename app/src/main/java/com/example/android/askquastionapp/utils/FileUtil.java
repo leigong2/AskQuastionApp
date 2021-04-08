@@ -2,14 +2,12 @@ package com.example.android.askquastionapp.utils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.FileUtils;
-import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
@@ -25,8 +23,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -425,31 +421,15 @@ public class FileUtil {
         File file = new File(filePath);
         if (Build.VERSION.SDK_INT < N) {
             return Uri.fromFile(file);
-        } else if (Build.VERSION.SDK_INT < 29) {
-            return FileProvider.getUriForFile(activity, activity.getPackageName() + ".FileProvider", file);
         } else {
-            Cursor cursor = activity.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
-                    new String[]{filePath}, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
-                Uri baseUri = Uri.parse("content://media/external/images/media");
-                return Uri.withAppendedPath(baseUri, "" + id);
-            } else {
-                if (file.exists()) {
-                    ContentValues values = new ContentValues();
-                    values.put(MediaStore.Images.Media.DATA, filePath);
-                    return activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                } else {
-                    return null;
-                }
-            }
+            return FileProvider.getUriForFile(activity, activity.getPackageName() + ".FileProvider", file);
         }
     }
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public static File uriToFileApiQ(Uri uri, Context context) {
         File file = null;
-        if(uri == null || uri.getPath() == null) {
+        if (uri == null || uri.getPath() == null) {
             return null;
         }
         //android10以上转换
