@@ -467,6 +467,7 @@ abstract class AbstractPhotoImageView extends View {
                 }
                 // 把压缩后的数据baos存放到ByteArrayInputStream中
                 BufferedOutputStream bos = null;
+                boolean renamed = false;
                 try {
                     File parentFile = srcFile.getParentFile();
                     if (!parentFile.exists()) {
@@ -486,7 +487,7 @@ abstract class AbstractPhotoImageView extends View {
                     bos.close();
                     if (b && split.length > 1 && changeSrcFile) {
                         boolean delete = srcFile.delete();
-                        boolean renameTo = file.renameTo(new File(split[0] + "." + split[1]));
+                        renamed = file.renameTo(new File(split[0] + "." + split[1]));
                     }
                 } catch (Exception ignore) {
                 } finally {
@@ -499,7 +500,7 @@ abstract class AbstractPhotoImageView extends View {
                         image.recycle();
                     }
                 }
-                File resultFile = changeSrcFile ? srcFile : file;
+                File resultFile = changeSrcFile && renamed ? srcFile : file;
                 getSmallBitmap(resultFile);
                 return resultFile;
             }

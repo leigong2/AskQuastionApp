@@ -228,7 +228,8 @@ public class PictureCheckManager {
                 if (file.getPath().contains("/.")) {
                     continue;
                 }
-                if (file.listFiles().length > 0) {
+                File[] filesList = file.listFiles();
+                if (filesList != null && filesList.length > 0) {
                     resultMap.putAll(getAllPictures(handler, file, mediaType));
                 }
             } else if (file.length() > fileSize && isImageFile(file)) {
@@ -323,9 +324,14 @@ public class PictureCheckManager {
     }
 
     private List<MediaData> getPrivate(List<MediaData> result, File dir) {
-        for (File file : dir.listFiles()) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return result;
+        }
+        for (File file : files) {
             if (file.isDirectory()) {
-                if (file.listFiles().length > 0) {
+                File[] files1 = file.listFiles();
+                if (files1 != null && files1.length > 0) {
                     result.addAll(getPrivate(result, file));
                 }
             } else if (file.length() > fileSize && isImageFile(file)) {

@@ -179,6 +179,7 @@ public class ClearUtils {
         }
         List<String> noDelete = new ArrayList<>();
         noDelete.add("Android");
+        addExtra(noDelete);
         noDelete.add("Bing");
         noDelete.add("DCIM");
         noDelete.add("Documents");
@@ -272,6 +273,7 @@ public class ClearUtils {
             } else {
                 List<String> noDelete = new ArrayList<>();
                 noDelete.add("Android");
+                addExtra(noDelete);
                 noDelete.add("Bing");
                 noDelete.add("DCIM");
                 noDelete.add("Documents");
@@ -341,6 +343,15 @@ public class ClearUtils {
             }
             boolean delete = file.delete();
             temp.add(file.getAbsolutePath());
+        }
+    }
+
+    private void addExtra(List<String> noDeleteFiles) {
+        if (PhoneUtils.isXiaomi()) {
+            noDeleteFiles.add("MIUI");
+        }
+        if (PhoneUtils.isHuaWei()) {
+            noDeleteFiles.add("Huawei");
         }
     }
 }
