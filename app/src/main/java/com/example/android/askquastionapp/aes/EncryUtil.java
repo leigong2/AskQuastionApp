@@ -2,7 +2,7 @@ package com.example.android.askquastionapp.aes;
 
 import android.text.TextUtils;
 
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.Iterator;

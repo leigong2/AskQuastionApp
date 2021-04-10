@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.jsoup.jsoup.HttpsUrlValidator.trustAllHttpsCertificates;
 
 public class SqlliteUtils {
     private static SqlliteUtils sqlUtils;
@@ -173,7 +172,7 @@ public class SqlliteUtils {
     }
 
     @NotNull
-    public  <T> List<T> queryData(String tableName, Map<String, Object> param, Class<T> clazz, int size) {
+    public <T> List<T> queryData(String tableName, Map<String, Object> param, Class<T> clazz, int size) {
         List<T> result = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         for (String s : param.keySet()) {
@@ -181,7 +180,7 @@ public class SqlliteUtils {
             if (o instanceof String) {
                 sb.append(s).append(" like '%").append(o).append("%'").append(" ");
             } else if (o instanceof Integer && "page".equals(s)) {
-                sb.append(s).append(">").append((int) o * size - 1).append(" and ").append(s).append("<").append((int) o * size  + size).append(" ");
+                sb.append(s).append(">").append((int) o * size - 1).append(" and ").append(s).append("<").append((int) o * size + size).append(" ");
             } else {
                 sb.append(s).append("=").append(o).append(" ");
             }
@@ -296,9 +295,6 @@ public class SqlliteUtils {
         int responseCode = 0;
         try {
             url = new URL(wma);
-            if (wma.startsWith("https")) {
-                trustAllHttpsCertificates();
-            }
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setConnectTimeout(50000000);
             http.setReadTimeout(50000000);

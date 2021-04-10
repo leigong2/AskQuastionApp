@@ -37,14 +37,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.KeyboardUtils;
-import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.VideoPlayerActivity;
+import com.example.android.askquastionapp.bean.VideoBean;
 import com.example.android.askquastionapp.media.PictureCheckManager;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
-import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
-import com.example.jsoup.bean.VideoBean;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
@@ -54,13 +53,9 @@ import com.scwang.smartrefresh.layout.util.DensityUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -70,7 +65,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
-import static com.example.android.askquastionapp.MainActivity.EXTERNAL_FILE_CODE;
 import static com.example.android.askquastionapp.utils.DocumentsFileUtils.OPEN_DOCUMENT_TREE_CODE;
 
 public class WatchVideoActivity extends AppCompatActivity {

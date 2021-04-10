@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.utils.LogUtils;
-import com.example.jsoup.GsonGetter;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.CellValue;

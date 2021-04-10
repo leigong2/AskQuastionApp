@@ -25,18 +25,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.SPUtils;
-import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.utils.StringUtils;
+import com.example.android.askquastionapp.bean.HrefData;
+import com.example.android.askquastionapp.utils.BaseWebLoadUtils;
+import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
-import com.example.jsoup.GsonGetter;
-import com.example.jsoup.bean.HrefData;
-import com.example.jsoup.jsoup.JsoupUtils;
-import com.example.jsoup.jsoup.webloaddata.BaseWebLoadUtils;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.google.gson.reflect.TypeToken;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

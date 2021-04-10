@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.android.askquastionapp.location.LatLngBean;
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.R;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;

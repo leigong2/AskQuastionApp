@@ -17,7 +17,7 @@ import com.example.android.askquastionapp.contacts.PhoneBean;
 import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.HttpUtils;
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 
 import org.jetbrains.annotations.NotNull;
 

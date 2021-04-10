@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.BaseApplication;
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 
 import java.io.File;
 import java.io.FileReader;

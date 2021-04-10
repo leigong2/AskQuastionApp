@@ -14,7 +14,7 @@ import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.views.ExpandableImageTextView;
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 
 import java.util.ArrayList;
 import java.util.List;

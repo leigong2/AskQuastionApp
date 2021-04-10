@@ -43,6 +43,7 @@ import com.blankj.utilcode.util.ObjectUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.aes.test;
 import com.example.android.askquastionapp.bean.Company;
+import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.UpdateCompanyBean;
 import com.example.android.askquastionapp.besar.BesarActivity;
 import com.example.android.askquastionapp.contacts.ContactBean;
@@ -87,8 +88,7 @@ import com.example.android.askquastionapp.views.ListDialog;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
-import com.example.jsoup.GsonGetter;
-import com.example.jsoup.bean.KeyWords;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.google.gson.reflect.TypeToken;
 import com.meituan.android.walle.WalleChannelReader;
 

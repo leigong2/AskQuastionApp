@@ -1,3 +1,4 @@
+include ':app'
 include ':mathJaxLib'
-include ':app', ':jsoup'
 include ':xphotoview'
+include ':jsoup'

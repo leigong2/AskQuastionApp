@@ -37,11 +37,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.bean.MusicBean;
 import com.example.android.askquastionapp.utils.DisableDoubleClickUtils;
 import com.example.android.askquastionapp.utils.SqlliteUtils;
 import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.views.BottomPop;
-import com.example.jsoup.bean.MusicBean;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;

@@ -32,7 +32,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.example.android.askquastionapp.utils.ToastUtils;
-import com.example.jsoup.GsonGetter;
+import com.example.android.askquastionapp.utils.GsonGetter;
 
 import java.io.File;
 import java.io.FileOutputStream;
