@@ -87,6 +87,8 @@ public class ExcelManager {
                 data.put(workbook.getSheetName(i), list);
             }
         } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.i("zune: ", "analyzeXlsx : e = " + e);
             /* proper exception handling to be here */
         }
         Log.i("zune: ", "analyzeXlsx耗时: " + (System.currentTimeMillis() - start));
