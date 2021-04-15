@@ -74,6 +74,7 @@ import com.example.android.askquastionapp.utils.ContactsUtils;
 import com.example.android.askquastionapp.utils.CustomItemTouchHelperCallBack;
 import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
+import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.utils.LogUtils;
 import com.example.android.askquastionapp.utils.SaveUtils;
 import com.example.android.askquastionapp.utils.SetIpDialog;
@@ -88,7 +89,6 @@ import com.example.android.askquastionapp.views.ListDialog;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
-import com.example.android.askquastionapp.utils.GsonGetter;
 import com.google.gson.reflect.TypeToken;
 import com.meituan.android.walle.WalleChannelReader;
 
@@ -1458,29 +1458,27 @@ public class MainActivity extends AppCompatActivity {
             if (externalClick == EXTERNAL_TXT_CHOOSE) {
                 ReadTxtActivity.start(MainActivity.this, path);
             } else if (externalClick == EXTERNAL_XSL_CHOOSE) {
-                if (clearHolder == null) {
-                    clearHolder = new ClearHolder(findViewById(R.id.clear_root));
-                }
-                clearHolder.startLoad();
+                ListDialog<ListDialog.BaseData> listDialog = ListDialog.showDialog(this, true);
                 List<ContactBean> contactBeans = startParseXsl(path);
-                List<String> contacts = new ArrayList<>();
+                List<ListDialog.BaseData> contacts = new ArrayList<>();
                 for (ContactBean contactBean : contactBeans) {
-                    contacts.add(contactBean.name + " : " + contactBean.phone);
+                    contacts.add(new ListDialog.BaseData(contactBean.name + " : " + contactBean.phone));
                 }
-                clearHolder.stopLoad(contacts, false);
-                clearHolder.setOnItemClickListener(new ClearHolder.OnItemClickListener() {
+                listDialog.showWithData(contacts, false);
+                listDialog.setOnItemClickListener(new ListDialog.OnItemClickListener() {
                     @Override
-                    public void onItemClick(String data, int position) {
-                        clearHolder.dismiss();
+                    public <T extends ListDialog.BaseData> void onItemClick(T data, int position) {
+                        listDialog.dismiss();
                     }
                 });
             }
+        } else {
+            if (shareDialog != null) {
+                shareDialog.onActivityResult(requestCode, resultCode, data);
+            }
+            DocumentsFileUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
+            ClearUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
         }
-        if (shareDialog != null) {
-            shareDialog.onActivityResult(requestCode, resultCode, data);
-        }
-        DocumentsFileUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
-        ClearUtils.getInstance().onActivityResult(this, requestCode, resultCode, data);
     }
 
     /**

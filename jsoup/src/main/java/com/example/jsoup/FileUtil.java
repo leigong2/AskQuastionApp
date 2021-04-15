@@ -2,7 +2,11 @@ package com.example.jsoup;
 
 import com.example.jsoup.bean.VideoBean;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -113,5 +117,92 @@ public class FileUtil {
                 }
             }
         }
+    }
+
+    /**
+     * 获得文件编码
+     *
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    public static String codeString(String path) throws Exception {
+        BufferedInputStream bin = new BufferedInputStream(new FileInputStream(path));
+        int p = (bin.read() << 8) + bin.read();
+        System.out.println(p);
+        bin.close();
+        if (p == 0xd0a) {
+            return getRealEncode(path);
+        }
+        if (p < 0xe000) {
+            return "GBK";
+        }
+        if (p < 0xf000) {
+            return "UTF-8";
+        }
+        if (p < 0xfeff) {
+            return "UTF-16";
+        }
+        if (p < 0xfffe) {
+            return "UTF-16BE";
+        }
+        return "UTF-16LE";
+    }
+
+    private static String getRealEncode(String path) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+        String s = null;
+        StringBuilder sb = new StringBuilder();
+        while ((s = br.readLine()) != null) {
+            sb.append(s);
+        }
+        br.close();
+        return StringUtils.getEncoding(sb.toString());
+    }
+
+    /**
+     * @param srcEncode
+     * @param targetEncode 目标编码格式
+     * @param srcPath      源路径
+     */
+    public static void encodeFileToUtf8(String targetEncode, String srcEncode, String srcPath) {
+        File srcFile = new File(srcPath);
+        try {
+            File targetFile = new File(srcFile.getParentFile(), "temp.txt");
+            if (!targetFile.exists()) {
+                targetFile.createNewFile();
+            }
+            FileInputStream reader = new FileInputStream(srcFile);
+            FileOutputStream writer = new FileOutputStream(targetFile);
+            int len = 0;
+            byte[] buffer = new byte[1024];
+            while (-1 != (len = reader.read(buffer))) {
+                String str = new String(buffer, 0, len, srcEncode);
+                writer.write(str.getBytes(targetEncode));
+            }
+            reader.close();
+            writer.flush();
+            writer.close();
+            srcFile.delete();
+            targetFile.renameTo(srcFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String replaceUnableStr(String fileName) {
+        if (fileName.length() > 255) {
+            fileName = fileName.substring(0, 255);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fileName.length(); i++) {
+            char c = fileName.charAt(i);
+            if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+                    || StringUtils.isChinese(c)
+                    || c == '*' || c == '(' || c == ')' || c == '[' || (c == ']' || c == '【' || c == '】')) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 }

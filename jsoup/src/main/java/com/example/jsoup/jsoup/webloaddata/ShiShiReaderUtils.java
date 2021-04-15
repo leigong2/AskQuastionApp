@@ -124,8 +124,4 @@ public class ShiShiReaderUtils extends BaseWebLoadUtils {
             System.out.println("createNewFile error" + title);
         }
     }
-
-    private static boolean isChinese(char c) {
-        return c >= 0x4E00 && c <= 0x9FA5;
-    }
 }

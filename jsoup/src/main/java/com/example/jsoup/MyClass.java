@@ -1,5 +1,11 @@
 package com.example.jsoup;
 
+import com.example.jsoup.jsoup.GzipUtils;
+import com.example.jsoup.reader.MergeTxtUtils;
+import com.example.jsoup.reader.TelegramUtils;
+
+import java.io.File;
+
 public class MyClass {
     public static boolean sStop;
 
@@ -21,6 +27,8 @@ public class MyClass {
             @Override
             public void run() {
                 super.run();
+//                MergeTxtUtils.reMergeTxt(new File("D:\\user\\zune\\txt"));
+                MergeTxtUtils.reMergeTxt(new File("D:\\user\\zune\\txt\\dismiss\\dismissed\\zhong"));
             }
         }.start();
 //        GetGifDownloader.getFileDetail();

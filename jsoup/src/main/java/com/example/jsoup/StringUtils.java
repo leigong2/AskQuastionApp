@@ -1,6 +1,7 @@
-package com.example.android.askquastionapp.utils;
+package com.example.jsoup;
 
-import android.text.TextUtils;
+
+import com.github.stuxuhai.jpinyin.ChineseHelper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -8,7 +9,7 @@ import java.net.URLDecoder;
 public class StringUtils {
 
     public static boolean hasChinese(String str) {
-        if (TextUtils.isEmpty(str)) {
+        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(str)) {
             return false;
         }
         //1个英文一个字节，1个 中文2个字节（GBK）
@@ -24,6 +25,50 @@ public class StringUtils {
         return str;
     }
 
+    public static String getEncoding(String str) {
+        String encode = "GB2312";
+        try {
+            if (str.equals(new String(str.getBytes(encode), encode))) { //判断是不是GB2312
+                String s = encode;
+                return s; //是的话，返回“GB2312“，以下代码同理
+            }
+        } catch (Exception exception) {
+        }
+        encode = "ISO-8859-1";
+        try {
+            if (str.equals(new String(str.getBytes(encode), encode))) { //判断是不是ISO-8859-1
+                String s1 = encode;
+                return s1;
+            }
+        } catch (Exception exception1) {
+        }
+        encode = "UTF-16LE";
+        try {
+            if (str.equals(new String(str.getBytes(encode), encode))) { //判断是不是UTF-16
+                String s2 = encode;
+                return s2;
+            }
+        } catch (Exception exception2) {
+        }
+        encode = "UTF-8";
+        try {
+            if (str.equals(new String(str.getBytes(encode), encode))) { //判断是不是UTF-8
+                String s2 = encode;
+                return s2;
+            }
+        } catch (Exception exception2) {
+        }
+        encode = "GBK";
+        try {
+            if (str.equals(new String(str.getBytes(encode), encode))) { //判断是不是GBK
+                String s3 = encode;
+                return s3;
+            }
+        } catch (Exception exception3) {
+        }
+        return ""; //如果都不是，说明输入的内容不属于常见的编码格式。
+    }
+
     public static String gbk2utf8(String gbk) {
         String l_temp = GBK2Unicode(gbk);
         l_temp = unicodeToUtf8(l_temp);
@@ -34,7 +79,6 @@ public class StringUtils {
     public static String utf82gbk(String utf) {
         String l_temp = utf8ToUnicode(utf);
         l_temp = Unicode2GBK(l_temp);
-
         return l_temp;
     }
 
@@ -182,5 +226,42 @@ public class StringUtils {
                 outBuffer.append(aChar);
         }
         return outBuffer.toString();
+    }
+    /**
+     * 简体转换为繁体
+     * @param pinYinStr 要转换的字符串
+     * @return
+     */
+    public static String convertToTraditionalChinese(String pinYinStr) {
+        String tempStr = null;
+        try {
+            tempStr = ChineseHelper.convertToTraditionalChinese(pinYinStr);
+        } catch (Exception e) {
+            tempStr = pinYinStr;
+            e.printStackTrace();
+        }
+        return tempStr;
+    }
+
+
+    /**
+     * 繁体转换为简体
+     * @param pinYinSt 要转换的字符串
+     * @return
+     */
+    public static String convertToSimplifiedChinese(String pinYinSt) {
+        String tempStr = null;
+        try {
+            tempStr = ChineseHelper.convertToSimplifiedChinese(pinYinSt);
+        } catch (Exception e) {
+            tempStr = pinYinSt;
+            e.printStackTrace();
+        }
+
+        return tempStr;
+    }
+
+    public static boolean isChinese(char c) {
+        return c >= 0x4E00 && c <= 0x9FA5;
     }
 }

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -47,12 +48,12 @@ public class GzipUtils {
      */
     public static void unZipFiles(File zipfile, String descDir) {
         try {
-            ZipFile zf = new ZipFile(zipfile);
+            ZipFile zf = new ZipFile(zipfile, Charset.forName("GBK"));
             for (Enumeration entries = zf.entries(); entries.hasMoreElements(); ) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
                 String zipEntryName = entry.getName();
                 InputStream in = zf.getInputStream(entry);
-                OutputStream out = new FileOutputStream(new File(descDir + zipEntryName, "UTF-8"));
+                OutputStream out = new FileOutputStream(new File(descDir, zipEntryName));
                 byte[] buf1 = new byte[1024];
                 int len;
                 while ( (len = in.read(buf1)) > 0){
@@ -64,6 +65,16 @@ public class GzipUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+
+    public static void unZipFiles(String dir) {
+        File fileDir = new File(dir);
+        for (File file : fileDir.listFiles()) {
+            if (file.getName().endsWith("rar")) {
+                unZipFiles(file, dir);
+            }
         }
     }
 }
