@@ -63,6 +63,7 @@ import com.example.android.askquastionapp.picture.ImageViewActivity;
 import com.example.android.askquastionapp.picture.PictureActivity;
 import com.example.android.askquastionapp.pollnumber.PollNumberActivity;
 import com.example.android.askquastionapp.qqdrag.QQDragActivity;
+import com.example.android.askquastionapp.read.ProgressEditDialog;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.scan.CaptureActivity;
@@ -76,8 +77,6 @@ import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.utils.LogUtils;
-import com.example.android.askquastionapp.utils.SaveUtils;
-import com.example.android.askquastionapp.utils.SetIpDialog;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.video.DownloadObjManager;
@@ -421,13 +420,14 @@ public class MainActivity extends AppCompatActivity {
                 showDownload();
                 break;
             case "设置ip": //设置ip");
-                SetIpDialog setIpDialog = SetIpDialog.showDialog(this);
-                setIpDialog.setHint(baseUrl);
-                setIpDialog.setOnResultListener(new SetIpDialog.OnResultListener() {
+                ProgressEditDialog ipDialog = new ProgressEditDialog(this);
+                ipDialog.setHint(baseUrl);
+                ipDialog.show(this);
+                ipDialog.setOnResultListener(new ProgressEditDialog.OnResultListener() {
                     @Override
-                    public void onResult(String ip) {
-                        if (!TextUtils.isEmpty(ip)) {
-                            baseUrl = ip.startsWith("http://") ? ip : "http://" + ip;
+                    public void onResult(String result) {
+                        if (!TextUtils.isEmpty(result)) {
+                            baseUrl = result.startsWith("http://") ? result : "http://" + result;
                             resetIp();
                             SPUtils.getInstance().put("baseUrl", baseUrl);
                         }
@@ -1405,13 +1405,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        SaveUtils.SaveBean saveBean = SaveUtils.get();
         List<ListDialog.BaseData> paths = new ArrayList<>();
-        if (saveBean != null && saveBean.saves != null && !saveBean.saves.isEmpty()) {
-            for (SaveUtils.SaveBean.Save save : saveBean.saves) {
-                paths.add(new ListDialog.BaseData(save.path));
-            }
-        }
         File file = FileUtil.assetsToFile(this, "白马啸西风.txt");
         if (file != null) {
             paths.add(new ListDialog.BaseData(file.getPath()));
@@ -1423,8 +1417,6 @@ public class MainActivity extends AppCompatActivity {
             public <T extends ListDialog.BaseData> void onItemClick(T data, int index) {
                 if (index == paths.size() - 1) {
                     startFileChoose();
-                } else if (index >= 2) {
-                    ReadTxtActivity.start(MainActivity.this, saveBean, index - 2);
                 } else {
                     ReadTxtActivity.start(MainActivity.this, data.text);
                 }

@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
@@ -19,25 +20,15 @@ import androidx.fragment.app.Fragment;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.SizeUtils;
 import com.example.android.askquastionapp.R;
-import com.example.android.askquastionapp.utils.SaveUtils;
 
 public class ReadFragment extends Fragment {
     private EditText mReadPager;
-    private SaveUtils.SaveBean.Save mCurData;
 
-    public static ReadFragment getInstance(SaveUtils.SaveBean saveBean, int index) {
-        ReadFragment readFragment = new ReadFragment();
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("saveBean", saveBean);
-        bundle.putInt("index", index);
-        readFragment.setArguments(bundle);
-        return readFragment;
-    }
-
-    public static ReadFragment getInstance(String text) {
+    public static ReadFragment getInstance(String text, String keyWords) {
         ReadFragment readFragment = new ReadFragment();
         Bundle bundle = new Bundle();
         bundle.putString("text", text);
+        bundle.putString("keyWords", keyWords);
         readFragment.setArguments(bundle);
         return readFragment;
     }
@@ -51,13 +42,14 @@ public class ReadFragment extends Fragment {
             onLayoutListener.onLayout(mReadPager);
         }
         Bundle arguments = getArguments();
-        SaveUtils.SaveBean saveBean = (SaveUtils.SaveBean) arguments.getSerializable("saveBean");
-        int index = arguments.getInt("index");
         String text = arguments.getString("text");
-        if (saveBean != null) {
-            setSaveBean(saveBean, index);
-        } else if (!TextUtils.isEmpty(text)) {
+        String keyWords = arguments.getString("keyWords");
+        if (!TextUtils.isEmpty(text)) {
             mReadPager.setText(text);
+            if (keyWords != null && !keyWords.isEmpty()) {
+                int start = mReadPager.getText().toString().indexOf(keyWords);
+                mReadPager.setSelection(start, start + keyWords.length());
+            }
         }
         return view;
     }
@@ -79,17 +71,24 @@ public class ReadFragment extends Fragment {
         mReadPager.setPadding(0, -SizeUtils.dp2px(3), 0, -SizeUtils.dp2px(3));
         mReadPager.setTextColor(Color.BLACK);
         mReadPager.setOnTouchListener(new View.OnTouchListener() {
+            float mCurX;
+            float mCurY;
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        mCurX = event.getX();
+                        mCurY = event.getY();
                         isClick = true;
                         break;
                     case MotionEvent.ACTION_MOVE:
                         isClick = false;
                         break;
                     case MotionEvent.ACTION_UP:
-                        if (isClick && onReadListener != null) {
+                        if ((isClick || (Math.abs(event.getX() - mCurX) < ViewConfiguration.get(getContext()).getScaledTouchSlop()
+                                && Math.abs(event.getY() - mCurY) < ViewConfiguration.get(getContext()).getScaledTouchSlop()))
+                                && onReadListener != null) {
                             float curX = event.getX();
                             float curY = event.getY();
                             if (curY > maxY / 2 + 100) {
@@ -115,22 +114,6 @@ public class ReadFragment extends Fragment {
     float maxX;
     float maxY;
 
-    public void setSaveBean(SaveUtils.SaveBean saveBean, int index) {
-        SaveUtils.SaveBean.Save save = saveBean.saves.get(index);
-        this.mCurData = save;
-        setText();
-    }
-
-    private void setText() {
-        if (mCurData.position >= 0) {
-            this.mCurData.position++;
-            mReadPager.setText(SaveUtils.getCache(mCurData.path, mCurData.position));
-        } else {
-            mReadPager.setText(SaveUtils.getCache(mCurData.path, 0));
-            this.mCurData.position = 0;
-        }
-    }
-
     public interface OnLayoutListener {
         void onLayout(EditText editText);
     }
@@ -148,6 +131,7 @@ public class ReadFragment extends Fragment {
 
         void onMiddle();
     }
+
     private OnReadListener onReadListener;
 
     public void setOnReadListener(OnReadListener onReadListener) {

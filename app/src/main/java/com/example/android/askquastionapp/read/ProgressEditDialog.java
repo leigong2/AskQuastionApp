@@ -36,12 +36,7 @@ public class ProgressEditDialog extends BasePopup {
                     dismiss();
                     if (onResultListener != null) {
                         String result = editText.getText().toString().trim();
-                        try {
-                            double d = Double.parseDouble(result);
-                            onResultListener.onResult(d);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        onResultListener.onResult(result);
                     }
                 }
                 return true;
@@ -80,8 +75,12 @@ public class ProgressEditDialog extends BasePopup {
         });
     }
 
+    public void setHint(String hint) {
+        editText.setText(hint);
+    }
+
     public interface OnResultListener {
-        void onResult(double result);
+        void onResult(String result);
     }
 
     private OnResultListener onResultListener;

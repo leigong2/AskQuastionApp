@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class SaveUtils {
     public static void save(SaveBean saveBean) {
         SPUtils.getInstance().put("save", GsonGetter.getInstance().getGson().toJson(saveBean));

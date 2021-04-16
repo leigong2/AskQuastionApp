@@ -4,32 +4,31 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.blankj.utilcode.util.SizeUtils;
 import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.utils.FileUtil;
-import com.example.android.askquastionapp.utils.SaveUtils;
+import com.example.android.askquastionapp.utils.SimpleObserver;
+import com.example.android.askquastionapp.utils.ToastUtils;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
@@ -40,26 +39,15 @@ public class ReadTxtActivity extends AppCompatActivity {
 
     private SeekBar seekBar;
     private ReadFragmentUtil fragmentUtil;
-    private SaveUtils.SaveBean saveBean;
-    private int index;
-    private int position;
-    private String path;
+    private @NonNull
+    String path = "";
     private InputStreamReader fileInputStream;
     private boolean showSeekbar;
-    private TextView progressText;
+    private TextView progressTextView;
 
     public static void start(Context context, String path) {
         Intent intent = new Intent(context, ReadTxtActivity.class);
         intent.putExtra("path", path);
-        context.startActivity(intent);
-    }
-
-    public static void start(Context context, SaveUtils.SaveBean saveBean, int index) {
-        Intent intent = new Intent(context, ReadTxtActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("saveBean", saveBean);
-        bundle.putInt("index", index);
-        intent.putExtras(bundle);
         context.startActivity(intent);
     }
 
@@ -68,190 +56,219 @@ public class ReadTxtActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_txt);
         seekBar = findViewById(R.id.seek_bar);
-        progressText = findViewById(R.id.progress_text);
+        progressTextView = findViewById(R.id.progress_text);
+        findViewById(R.id.search_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ProgressEditDialog dialog = new ProgressEditDialog(ReadTxtActivity.this);
+                dialog.show(ReadTxtActivity.this);
+                dialog.setOnResultListener(result -> startSearchText(result));
+            }
+        });
         fragmentUtil = new ReadFragmentUtil();
         initClick();
-        path = getIntent().getStringExtra("path");
+        String temp = getIntent().getStringExtra("path");
+        this.path = temp == null ? "" : temp;
         seekBar.setEnabled(false);
-        if (path == null) {
-            saveBean = (SaveUtils.SaveBean) getIntent().getSerializableExtra("saveBean");
-            index = getIntent().getIntExtra("index", 0);
-            if (saveBean == null || saveBean.saves == null || saveBean.saves.isEmpty()) {
-                finish();
-            } else {
-                onNext();
-                int total = saveBean.saves.get(index).total;
-                seekBar.setMax(total);
-                seekBar.setProgress(saveBean.saves.get(index).position);
-                seekBar.setEnabled(true);
-            }
-            return;
-        }
-        File file = new File(path);
+        File file = new File(this.path);
         if (!file.exists()) {
             finish();
             return;
         }
         try {
-            fileInputStream = new InputStreamReader(new FileInputStream(new File(path)), FileUtil.getFileEncode(path));
-        } catch (Exception e) {
+            fileInputStream = new InputStreamReader(new FileInputStream(new File(this.path)), FileUtil.getFileEncode(this.path));
+        } catch (Exception ignore) {
         }
         readInputStream();
+    }
+
+    private void startSearchText(String result) {
+        if (mCurrentEdit == null) {
+            return;
+        }
+        String searchString = fragmentUtil.startSearchText(result);
+        if (!TextUtils.isEmpty(searchString)) {
+            String progress = getCurrentProgress();
+            progressTextView.setText(progress);
+            ReadFragment fragment = ReadFragment.getInstance(searchString, result);
+            fragment.setOnReadListener(onReadListener);
+            fragmentUtil.onNext(R.id.fragment_container, getSupportFragmentManager(), fragment);
+            return;
+        }
+        StringBuilder currentContent = new StringBuilder();
+        Observable.just(currentContent).map(new Function<StringBuilder, String>() {
+            @Override
+            public String apply(StringBuilder currentContent) throws Exception {
+                int length;
+                char[] a = new char[16];
+                boolean ready = false;
+                String progressText = "";
+                while ((length = fileInputStream.read(a)) != -1) {
+                    currentContent.append(new String(a, 0, length));
+                    if (fragmentUtil.checkNext(mCurrentEdit, currentContent)) {
+                        progressText = onNewText(currentContent);
+                        if (!ready) {
+                            currentContent.setLength(0);
+                        } else {
+                            break;
+                        }
+                    } else {
+                        if (currentContent.toString().contains(result)) {
+                            ready = true;
+                        }
+                    }
+                }
+                return progressText;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<String, StringBuilder>(currentContent, false) {
+                    @Override
+                    public void onNext(String progressText, StringBuilder currentContent) {
+                        mCurrentEdit.setText(currentContent.toString());
+                        progressTextView.setText(progressText);
+                        int start = mCurrentEdit.getText().toString().indexOf(result);
+                        mCurrentEdit.setSelection(start, start + result.length());
+                    }
+                });
+    }
+
+    private String onNewText(StringBuilder currentContent) {
+        fragmentUtil.raise(currentContent.toString());
+        return getCurrentProgress();
     }
 
     private void initClick() {
         findViewById(R.id.progress_text).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (saveBean == null) {
-                    return;
-                }
                 showProgressDialog();
             }
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             private int progress;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 this.progress = progress;
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                saveBean.saves.get(index).position = this.progress + 1;
                 onPre();
-            }
-        });
-        fragmentUtil.setOnLoadingListener(new ReadFragmentUtil.OnLoadingListener() {
-            @Override
-            public void onLoading(float percent) {
-                if (path == null) {
-                    return;
-                }
-                runnable.setPercent(percent);
-                handler.post(runnable);
             }
         });
     }
 
     private void onPre() {
-        if (saveBean != null && saveBean.saves.get(index).position >= 1) {
-            saveBean.saves.get(index).position -= 2;
-            ReadFragment fragment = ReadFragment.getInstance(saveBean, index);
-            fragment.setOnReadListener(onReadListener);
-            fragmentUtil.onPre(R.id.fragment_container, getSupportFragmentManager(), fragment);
-            fragmentUtil.save(saveBean.saves.get(index));
-            setProgress();
-        } else if (position > 0){
-            position -= 1;
-            ReadFragment fragment = ReadFragment.getInstance(fragmentUtil.mFilesString.get(position));
-            fragment.setOnReadListener(onReadListener);
-            fragmentUtil.onPre(R.id.fragment_container, getSupportFragmentManager(), fragment);
+        if (fragmentUtil.isFirst()) {
+            ToastUtils.showToast(this, "已到第一页");
+            return;
         }
+        String s = getCurrentProgress();
+        progressTextView.setText(s);
+        String preString = fragmentUtil.getPreString();
+        ReadFragment fragment = ReadFragment.getInstance(preString,"");
+        fragment.setOnReadListener(onReadListener);
+        fragmentUtil.onPre(R.id.fragment_container, getSupportFragmentManager(), fragment);
+    }
+
+    @NotNull
+    private String getCurrentProgress() {
+        double d = 1f * fragmentUtil.getCurrentLength() / new File(path).length();
+        DecimalFormat decimalFormat = new DecimalFormat("0.000");
+        return decimalFormat.format(d) + "‰";
     }
 
     private void onNext() {
-        if (saveBean != null) {
-            if (saveBean.saves.get(index).position >= saveBean.saves.get(index).total) {
-                return;
-            }
-            ReadFragment fragment = ReadFragment.getInstance(saveBean, index);
-            fragment.setOnReadListener(onReadListener);
-            fragmentUtil.onNext(R.id.fragment_container, getSupportFragmentManager(), fragment);
-            fragmentUtil.save(saveBean.saves.get(index));
-            setProgress();
-        } else {
-            position += 1;
-            ReadFragment fragment = ReadFragment.getInstance(fragmentUtil.mFilesString.get(position));
-            fragment.setOnReadListener(onReadListener);
-            fragmentUtil.onNext(R.id.fragment_container, getSupportFragmentManager(), fragment);
+        String nextString = fragmentUtil.getNextString();
+        if (TextUtils.isEmpty(nextString)) {
+            readInputStream();
+            return;
         }
+        String s = getCurrentProgress();
+        progressTextView.setText(s);
+        ReadFragment fragment = ReadFragment.getInstance(nextString, "");
+        fragment.setOnReadListener(onReadListener);
+        fragmentUtil.onNext(R.id.fragment_container, getSupportFragmentManager(), fragment);
     }
 
     private void onMiddle() {
         if (showSeekbar) {
-            ObjectAnimator oa = ObjectAnimator.ofFloat(findViewById(R.id.seek_bar_lay),"translationY",0, SizeUtils.dp2px(40));
+            ObjectAnimator oa = ObjectAnimator.ofFloat(findViewById(R.id.seek_bar_lay), "translationY", 0, SizeUtils.dp2px(40));
             oa.setDuration(300);
             oa.start();
+            ObjectAnimator oa2 = ObjectAnimator.ofFloat(findViewById(R.id.search_icon), "translationY", 0, SizeUtils.dp2px(-40));
+            oa2.setDuration(300);
+            oa2.start();
         } else {
-            ObjectAnimator oa = ObjectAnimator.ofFloat(findViewById(R.id.seek_bar_lay),"translationY",SizeUtils.dp2px(40), 0);
+            ObjectAnimator oa = ObjectAnimator.ofFloat(findViewById(R.id.seek_bar_lay), "translationY", SizeUtils.dp2px(40), 0);
             oa.setDuration(300);
             oa.start();
+            ObjectAnimator oa2 = ObjectAnimator.ofFloat(findViewById(R.id.search_icon), "translationY", SizeUtils.dp2px(-40), 0);
+            oa2.setDuration(300);
+            oa2.start();
         }
         showSeekbar = !showSeekbar;
-    }
-
-    private Handler handler = new Handler();
-    private MyRunnable runnable = new MyRunnable();
-    private class MyRunnable implements Runnable {
-        private float percent;
-        public void setPercent(float percent) {
-            this.percent = percent;
-        }
-        @Override
-        public void run() {
-            DecimalFormat decimalFormat = new DecimalFormat("0.00");//构造方法的字符格式这里如果小数不足2位,会以0补足.
-            String string = decimalFormat.format(percent < 0 ? 0 : percent);//返回字符串
-            String[] split = path.split("/");
-            progressText.setText(String.format("%s (正在下载%s)", split[split.length - 1], string + "%"));
-            seekBar.setMax(100);
-            seekBar.setProgress((int) (percent));
-        }
     }
 
     private void showProgressDialog() {
         ProgressEditDialog editDialog = new ProgressEditDialog(this);
         editDialog.show(this);
-        editDialog.setOnResultListener(new ProgressEditDialog.OnResultListener() {
-            @Override
-            public void onResult(double result) {
-                saveBean.saves.get(index).position = (int) (result * saveBean.saves.get(index).total / 100);
-                onNext();
+        editDialog.setOnResultListener(result -> {
+            try {
+                double d = Double.parseDouble(result);
+                //Todo d 百分比
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
 
-    private void setProgress() {
-        if (saveBean == null) {
-            return;
-        }
-        float progress = saveBean.saves.get(index).position / (float) saveBean.saves.get(index).total * 100;
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");//构造方法的字符格式这里如果小数不足2位,会以0补足.
-        String string = decimalFormat.format(progress < 0 ? 0 : progress);//返回字符串
-        String[] split = saveBean.saves.get(index).path.split("/");
-        progressText.setText(String.format("%s (%s)", split[split.length - 1], string + "%"));
-        seekBar.setProgress(saveBean.saves.get(index).position);
-    }
+    private EditText mCurrentEdit;
 
-    boolean isInit;
     private void readInputStream() {
-        ReadFragment fragment = ReadFragment.getInstance(saveBean, index);
+        ReadFragment fragment = ReadFragment.getInstance("", "");
         fragmentUtil.onNext(R.id.fragment_container, getSupportFragmentManager(), fragment);
         fragment.setOnLayoutListener(new ReadFragment.OnLayoutListener() {
             @Override
             public void onLayout(EditText editText) {
-                try {
-                    StringBuilder currentContent = new StringBuilder();
-                    int length;
-                    char[] a = new char[16];
-                    while ((length = fileInputStream.read(a)) != -1) {
-                        currentContent.append(new String(a, 0, length));
-                        if (fragmentUtil.checkNext(editText, currentContent)) {
-                            break;
-                        }
-                    }
-                    editText.setText(currentContent.toString());
-                } catch (Exception ignore) { }
-                if (!isInit) {
-                    isInit = true;
-                    init(editText);
-                }
+                mCurrentEdit = editText;
+                readText();
             }
         });
         fragment.setOnReadListener(onReadListener);
     }
+
+    private void readText() {
+        StringBuilder currentContent = new StringBuilder();
+        Observable.just(currentContent).map(new Function<StringBuilder, String>() {
+            @Override
+            public String apply(StringBuilder currentContent) throws Exception {
+                int length;
+                char[] a = new char[16];
+                String progressText = "";
+                while ((length = fileInputStream.read(a)) != -1) {
+                    currentContent.append(new String(a, 0, length));
+                    if (fragmentUtil.checkNext(mCurrentEdit, currentContent)) {
+                        progressText = onNewText(currentContent);
+                        break;
+                    }
+                }
+                return progressText;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<String, StringBuilder>(currentContent, false) {
+            @Override
+            public void onNext(String progressText, StringBuilder currentContent) {
+                mCurrentEdit.setText(currentContent);
+                progressTextView.setText(progressText);
+            }
+        });
+    }
+
     ReadFragment.OnReadListener onReadListener = new ReadFragment.OnReadListener() {
         @Override
         public void onNext() {
@@ -268,63 +285,4 @@ public class ReadTxtActivity extends AppCompatActivity {
             ReadTxtActivity.this.onMiddle();
         }
     };
-
-    public void init(EditText editText) {
-        Observable.just(1).map(new Function<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer integer) throws Exception {
-                return fragmentUtil.init(editText, path);
-            }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Integer>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
-                        SaveUtils.SaveBean saveBean = SaveUtils.get();
-                        if (saveBean == null) {
-                            saveBean = new SaveUtils.SaveBean();
-                        }
-                        if (saveBean.saves == null) {
-                            saveBean.saves = new ArrayList<>();
-                        }
-                        saveBean.inited = true;
-                        boolean contained = false;
-                        for (SaveUtils.SaveBean.Save temp : saveBean.saves) {
-                            if (ReadTxtActivity.this.path.equals(temp.path)) {
-                                temp.total = integer;
-                                temp.position = position;
-                                contained = true;
-                                break;
-                            }
-                        }
-                        if (!contained) {
-                            SaveUtils.SaveBean.Save save = new SaveUtils.SaveBean.Save();
-                            save.path = path;
-                            save.position = position;
-                            save.total = integer;
-                            saveBean.saves.add(save);
-                        }
-                        SaveUtils.save(saveBean);
-                        int total = saveBean.saves.get(index).total;
-                        seekBar.setMax(total);
-                        seekBar.setProgress(saveBean.saves.get(index).position);
-                        seekBar.setEnabled(true);
-                        Log.i("zune", "保存完成");
-                        ReadTxtActivity.this.saveBean = saveBean;
-                        ReadTxtActivity.this.index = saveBean.saves.size() - 1;
-                        ReadTxtActivity.this.position = saveBean.saves.get(index).position;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                    }
-                });
-    }
 }

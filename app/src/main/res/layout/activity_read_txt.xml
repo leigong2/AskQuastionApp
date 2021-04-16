@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,33 +9,46 @@
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/search_icon"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_gravity="top|start"
+        android:background="#50000000"
+        android:scaleType="centerInside"
+        android:src="@mipmap/icon_im_search_inside"
+        android:translationY="-40dp"
+        app:tint="@color/colorPrimaryDark"
+        tools:translationY="0dp"/>
 
     <FrameLayout
-        tools:translationY="0dp"
-        android:translationY="40dp"
         android:id="@+id/seek_bar_lay"
-        android:background="#50000000"
-        android:layout_gravity="bottom"
         android:layout_width="match_parent"
-        android:layout_height="40dp">
+        android:layout_height="40dp"
+        android:layout_gravity="bottom"
+        android:background="#50000000"
+        android:translationY="40dp"
+        tools:translationY="0dp">
+
         <SeekBar
             android:id="@+id/seek_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:progressDrawable="@drawable/seekbar_drawable"
             android:maxHeight="2dp"
+            android:progressDrawable="@drawable/seekbar_drawable"
             tools:visibility="visible" />
 
         <TextView
-            android:textColor="#fff"
             android:id="@+id/progress_text"
-            tools:text="0%"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:textColor="#fff"
+            tools:text="0%" />
 
     </FrameLayout>
 

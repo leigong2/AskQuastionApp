@@ -441,25 +441,35 @@ public class FileUtil {
         if (uri == null || uri.getPath() == null) {
             return null;
         }
-        //android10以上转换
-        if (uri.getScheme() != null && uri.getScheme().equalsIgnoreCase(ContentResolver.SCHEME_FILE)) {
-            file = new File(uri.getPath());
-        } else if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            //把文件复制到沙盒目录
-            ContentResolver contentResolver = context.getContentResolver();
-            try {
-                InputStream is = contentResolver.openInputStream(uri);
-                File cache = new File(context.getExternalCacheDir().getAbsolutePath(), "temp");
-                FileOutputStream fos = new FileOutputStream(cache);
-                FileUtils.copy(is, fos);
-                file = cache;
-                fos.close();
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (Build.VERSION.SDK_INT == Q) {
+            //android10以上转换
+            if (uri.getScheme() != null && uri.getScheme().equalsIgnoreCase(ContentResolver.SCHEME_FILE)) {
+                file = new File(uri.getPath());
+            } else if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+                //把文件复制到沙盒目录
+                ContentResolver contentResolver = context.getContentResolver();
+                try {
+                    InputStream is = contentResolver.openInputStream(uri);
+                    File cache = new File(context.getExternalCacheDir().getAbsolutePath(), "temp");
+                    FileOutputStream fos = new FileOutputStream(cache);
+                    FileUtils.copy(is, fos);
+                    file = cache;
+                    fos.close();
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            return file;
         }
-        return file;
+        String path = uri.getPath();
+        ///document/8BB9-15EA:Documents/3200篇H文,温柔的SM全集/3200篇H文,温柔的SM全集(1).txt
+        String extSDCardPath = DocumentsFileUtils.getInstance().getExtSDCardPath(context);
+        if (extSDCardPath != null && path.contains(extSDCardPath.replaceAll("/storage/", "")) && path.split(":").length > 1) {
+            return new File(extSDCardPath + File.separator + path.split(":")[1]);
+        } else {
+            return new File(Environment.getExternalStorageDirectory(), path.contains(":") ? path.split(":")[1] : path);
+        }
     }
 
     public static String getFileEncode(String path) {
