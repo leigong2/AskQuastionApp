@@ -16,10 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.blankj.utilcode.util.SizeUtils;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -41,7 +44,7 @@ public class ReadTxtActivity extends AppCompatActivity {
     private int index;
     private int position;
     private String path;
-    private FileReader fileInputStream;
+    private InputStreamReader fileInputStream;
     private boolean showSeekbar;
     private TextView progressText;
 
@@ -90,7 +93,7 @@ public class ReadTxtActivity extends AppCompatActivity {
             return;
         }
         try {
-            fileInputStream = new FileReader(new File(path));
+            fileInputStream = new InputStreamReader(new FileInputStream(new File(path)), FileUtil.getFileEncode(path));
         } catch (Exception e) {
         }
         readInputStream();

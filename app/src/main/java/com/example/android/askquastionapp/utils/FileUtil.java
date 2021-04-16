@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,11 +24,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 
 /**
  * Created by DB_BOY on 2019/6/24.</br>
@@ -61,6 +67,9 @@ public class FileUtil {
      * 专为Android4.4设计的从Uri获取文件绝对路径，以前的方法已不好使
      */
     public static String getPath(Context context, Uri uri) {
+        if (Build.VERSION.SDK_INT >= Q) {
+            return FileUtil.uriToFileApiQ(uri, context).getPath();
+        }
         // DocumentProvider
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
@@ -426,7 +435,7 @@ public class FileUtil {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
+    @RequiresApi(api = Q)
     public static File uriToFileApiQ(Uri uri, Context context) {
         File file = null;
         if (uri == null || uri.getPath() == null) {
@@ -451,5 +460,71 @@ public class FileUtil {
             }
         }
         return file;
+    }
+
+    public static String getFileEncode(String path) {
+        File f = new File(path);
+        try {
+            BufferedInputStream input = new BufferedInputStream(new FileInputStream(f));
+            String[] charsetsToBeTested = {"UTF-8", "GB2312", "GBK", "UTF-16LE", "UTF-16BE", "windows-1253", "ISO-8859-7"};
+            Charset charset = detectCharset(f, charsetsToBeTested);
+            CharsetDecoder decoder = charset.newDecoder();
+            decoder.reset();
+            byte[] buffer = new byte[512];
+            boolean identified = false;
+            while ((input.read(buffer) != -1) && (!identified)) {
+                identified = identify(buffer, decoder);
+            }
+            input.close();
+            if (identified) {
+                return charset.displayName();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static Charset detectCharset(File f, String[] charsets) {
+        Charset charset = null;
+        for (String charsetName : charsets) {
+            charset = detectCharset(f, Charset.forName(charsetName));
+            if (charset != null) {
+                break;
+            }
+        }
+        return charset;
+    }
+
+
+    private static Charset detectCharset(File f, Charset charset) {
+        try {
+            BufferedInputStream input = new BufferedInputStream(new FileInputStream(f));
+            CharsetDecoder decoder = charset.newDecoder();
+            decoder.reset();
+            byte[] buffer = new byte[512];
+            boolean identified = false;
+            while ((input.read(buffer) != -1) && (!identified)) {
+                identified = identify(buffer, decoder);
+            }
+            input.close();
+            if (identified) {
+                return charset;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static boolean identify(byte[] bytes, CharsetDecoder decoder) {
+        try {
+            decoder.decode(ByteBuffer.wrap(bytes));
+        } catch (CharacterCodingException e) {
+            return false;
+        }
+        return true;
     }
 }

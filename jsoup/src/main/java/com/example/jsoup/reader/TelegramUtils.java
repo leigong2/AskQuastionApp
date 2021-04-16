@@ -25,7 +25,7 @@ public class TelegramUtils {
             }
             if (file.getName().startsWith("1_") || file.getName().startsWith("5_")) {
                 try {
-                    String s = FileUtil.codeString(file.getPath());
+                    String s = FileUtil.getFileEncode(file.getPath());
                     System.out.println(s + "............" + file.getName());
 //                    FileUtil.encodeFileToUtf8("gbk", s, file.getPath());
                 } catch (Exception e) {

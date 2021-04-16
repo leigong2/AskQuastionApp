@@ -10,6 +10,10 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,90 +123,70 @@ public class FileUtil {
         }
     }
 
-    /**
-     * 获得文件编码
-     *
-     * @param path
-     * @return
-     * @throws Exception
-     */
-    public static String codeString(String path) throws Exception {
-        BufferedInputStream bin = new BufferedInputStream(new FileInputStream(path));
-        int p = (bin.read() << 8) + bin.read();
-        System.out.println(p);
-        bin.close();
-        if (p == 0xd0a) {
-            return getRealEncode(path);
-        }
-        if (p < 0xe000) {
-            return "GBK";
-        }
-        if (p < 0xf000) {
-            return "UTF-8";
-        }
-        if (p < 0xfeff) {
-            return "UTF-16";
-        }
-        if (p < 0xfffe) {
-            return "UTF-16BE";
-        }
-        return "UTF-16LE";
-    }
 
-    private static String getRealEncode(String path) throws Exception {
-        BufferedReader br = new BufferedReader(new FileReader(new File(path)));
-        String s = null;
-        StringBuilder sb = new StringBuilder();
-        while ((s = br.readLine()) != null) {
-            sb.append(s);
-        }
-        br.close();
-        return StringUtils.getEncoding(sb.toString());
-    }
-
-    /**
-     * @param srcEncode
-     * @param targetEncode 目标编码格式
-     * @param srcPath      源路径
-     */
-    public static void encodeFileToUtf8(String targetEncode, String srcEncode, String srcPath) {
-        File srcFile = new File(srcPath);
+    public static String getFileEncode(String path) {
+        File f = new File(path);
         try {
-            File targetFile = new File(srcFile.getParentFile(), "temp.txt");
-            if (!targetFile.exists()) {
-                targetFile.createNewFile();
+            BufferedInputStream input = new BufferedInputStream(new FileInputStream(f));
+            String[] charsetsToBeTested = {"UTF-8", "GB2312", "GBK", "UTF-16LE", "UTF-16BE"};
+            Charset charset = detectCharset(f, charsetsToBeTested);
+            CharsetDecoder decoder = charset.newDecoder();
+            decoder.reset();
+            byte[] buffer = new byte[512];
+            boolean identified = false;
+            while ((input.read(buffer) != -1) && (!identified)) {
+                identified = identify(buffer, decoder);
             }
-            FileInputStream reader = new FileInputStream(srcFile);
-            FileOutputStream writer = new FileOutputStream(targetFile);
-            int len = 0;
-            byte[] buffer = new byte[1024];
-            while (-1 != (len = reader.read(buffer))) {
-                String str = new String(buffer, 0, len, srcEncode);
-                writer.write(str.getBytes(targetEncode));
+            input.close();
+            if (identified) {
+                return charset.displayName();
+            } else {
+                return null;
             }
-            reader.close();
-            writer.flush();
-            writer.close();
-            srcFile.delete();
-            targetFile.renameTo(srcFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
     }
 
-    public static String replaceUnableStr(String fileName) {
-        if (fileName.length() > 255) {
-            fileName = fileName.substring(0, 255);
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < fileName.length(); i++) {
-            char c = fileName.charAt(i);
-            if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-                    || StringUtils.isChinese(c)
-                    || c == '*' || c == '(' || c == ')' || c == '[' || (c == ']' || c == '【' || c == '】')) {
-                sb.append(c);
+    public static Charset detectCharset(File f, String[] charsets) {
+        Charset charset = null;
+        for (String charsetName : charsets) {
+            charset = detectCharset(f, Charset.forName(charsetName));
+            if (charset != null) {
+                break;
             }
         }
-        return sb.toString();
+        return charset;
+    }
+
+
+    private static Charset detectCharset(File f, Charset charset) {
+        try {
+            BufferedInputStream input = new BufferedInputStream(new FileInputStream(f));
+            CharsetDecoder decoder = charset.newDecoder();
+            decoder.reset();
+            byte[] buffer = new byte[512];
+            boolean identified = false;
+            while ((input.read(buffer) != -1) && (!identified)) {
+                identified = identify(buffer, decoder);
+            }
+            input.close();
+            if (identified) {
+                return charset;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static boolean identify(byte[] bytes, CharsetDecoder decoder) {
+        try {
+            decoder.decode(ByteBuffer.wrap(bytes));
+        } catch (CharacterCodingException e) {
+            return false;
+        }
+        return true;
     }
 }

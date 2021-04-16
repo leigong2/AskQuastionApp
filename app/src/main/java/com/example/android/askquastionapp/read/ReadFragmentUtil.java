@@ -12,12 +12,15 @@ import androidx.fragment.app.FragmentManager;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.example.android.askquastionapp.R;
+import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.SaveUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,13 +79,13 @@ public class ReadFragmentUtil {
     private float progress;
     public int init(EditText editText, String path) {
         mFilesString = new ArrayList<>();
-        FileReader fr = null;
+        InputStreamReader fr = null;
         long total = 0;
         try {
             File file = new File(path);
             total = file.length();
-            fr = new FileReader(file);
-        } catch (FileNotFoundException e) {
+            fr = new InputStreamReader(new FileInputStream(file), FileUtil.getFileEncode(path));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         long curLength = 0;
