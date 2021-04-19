@@ -127,6 +127,9 @@ public class ReadTxtActivity extends AppCompatActivity {
                         mCurrentEdit.setText(currentContent.toString());
                         progressTextView.setText(progressText);
                         int start = mCurrentEdit.getText().toString().indexOf(result);
+                        if (start < 0) {
+                            return;
+                        }
                         mCurrentEdit.setSelection(start, start + result.length());
                     }
                 });

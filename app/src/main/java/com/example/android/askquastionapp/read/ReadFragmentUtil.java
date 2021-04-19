@@ -101,6 +101,8 @@ public class ReadFragmentUtil {
     public String getNextString() {
         if (++mCurrentIndex < mTextsString.size()) {
             return mTextsString.get(mCurrentIndex);
+        } else {
+            mCurrentIndex--;
         }
         return "";
     }

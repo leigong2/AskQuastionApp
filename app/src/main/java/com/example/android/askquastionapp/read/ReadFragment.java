@@ -48,7 +48,9 @@ public class ReadFragment extends Fragment {
             mReadPager.setText(text);
             if (keyWords != null && !keyWords.isEmpty()) {
                 int start = mReadPager.getText().toString().indexOf(keyWords);
-                mReadPager.setSelection(start, start + keyWords.length());
+                if (start >= 0) {
+                    mReadPager.setSelection(start, start + keyWords.length());
+                }
             }
         }
         return view;
