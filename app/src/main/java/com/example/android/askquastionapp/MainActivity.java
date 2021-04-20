@@ -2,7 +2,9 @@ package com.example.android.askquastionapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -19,6 +21,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +69,7 @@ import com.example.android.askquastionapp.qqdrag.QQDragActivity;
 import com.example.android.askquastionapp.read.ProgressEditDialog;
 import com.example.android.askquastionapp.read.ReadTxtActivity;
 import com.example.android.askquastionapp.reader.ReaderListActivity;
+import com.example.android.askquastionapp.reader.TxtUtils;
 import com.example.android.askquastionapp.scan.CaptureActivity;
 import com.example.android.askquastionapp.scan.QCodeDialog;
 import com.example.android.askquastionapp.utils.BitmapUtil;
@@ -84,6 +88,7 @@ import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.VideoTurnGifActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
 import com.example.android.askquastionapp.views.ClearHolder;
+import com.example.android.askquastionapp.views.CommonDialog;
 import com.example.android.askquastionapp.views.ListDialog;
 import com.example.android.askquastionapp.web.WebViewUtils;
 import com.example.android.askquastionapp.wxapi.ShareDialog;
@@ -322,6 +327,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("qq拖动特效");
         added.add("写入xlsx");
         added.add("channel");
+        added.add("renameSdTxt");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -597,6 +603,40 @@ public class MainActivity extends AppCompatActivity {
             case "channel":
                 String channel = WalleChannelReader.getChannel(this);
                 ToastUtils.showShort(TextUtils.isEmpty(channel) ? "null" : channel);
+                break;
+            case "renameSdTxt":
+                CommonDialog renameDialog = new CommonDialog(this, new CommonDialog.OnCloseListener() {
+                    @Override
+                    public void onClick(Dialog dialog, boolean confirm) {
+                        dialog.dismiss();
+                        String extSDCardPath = DocumentsFileUtils.getInstance().getExtSDCardPath(MainActivity.this);
+                        if (TextUtils.isEmpty(extSDCardPath)) {
+                            new CommonDialog(MainActivity.this).setContent("重命名失败：" + "\n file : " + extSDCardPath).show();
+                            return;
+                        }
+                        File file = new File(extSDCardPath, "Documents");
+                        if (confirm) {
+                            try {
+                                TxtUtils.renameTxt(MainActivity.this, "txt", "txtk", file);
+                            } catch (Throwable throwable) {
+                                new CommonDialog(MainActivity.this).setContent("重命名失败：" + "\n file : " + extSDCardPath + throwable).show();
+                                throwable.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                TxtUtils.renameTxt(MainActivity.this, "txtk", "txt", file);
+                            } catch (Throwable throwable) {
+                                new CommonDialog(MainActivity.this).setContent("重命名失败：" + "\n file : " + extSDCardPath + throwable).show();
+                                throwable.printStackTrace();
+                            }
+                        }
+                        ToastUtils.showToast(MainActivity.this, "重命名完成");
+                    }
+                });
+                renameDialog.setPositiveButton("txt -> txtk");
+                renameDialog.setNegativeButton("txtk -> txt");
+                renameDialog.setContent("请选择转换方式");
+                renameDialog.show();
                 break;
         }
     }

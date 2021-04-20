@@ -224,7 +224,7 @@ public class DocumentsFileUtils {
      * @param isDirectory flag indicating if the file should be a directory.
      * @return The DocumentFile
      */
-    public DocumentFile fileToDocument(final File file, final boolean isDirectory, Context context) {
+    public @Nullable DocumentFile fileToDocument(final File file, final boolean isDirectory, Context context) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             return DocumentFile.fromFile(file);
         }
@@ -250,8 +250,7 @@ public class DocumentsFileUtils {
         }
         String as = PreferenceManager.getDefaultSharedPreferences(context).getString(baseFolder,
                 null);
-        Uri treeUri = null;
-        if (as != null) treeUri = Uri.parse(as);
+        Uri treeUri = getCurrentTreeUri();
         if (treeUri == null) {
             return null;
         }
