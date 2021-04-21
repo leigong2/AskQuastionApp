@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -21,7 +20,6 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1537,6 +1535,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onNext(List<String> strings, ListDialog<ListDialog.BaseData> listDialog) {
                 List<ListDialog.BaseData> datas = new ArrayList<>();
+                String extSDCardPath = DocumentsFileUtils.getInstance().getExtSDCardPath(MainActivity.this);
+                File file = new File(extSDCardPath);
+                File[] rootFiles = file.listFiles();
+                if (rootFiles != null) {
+                    for (File fileDir : rootFiles) {
+                        if (fileDir.isFile()) {
+                            ListDialog.BaseData data = new ListDialog.BaseData(fileDir.getPath());
+                            datas.add(data);
+                            fileDir.delete();
+                        } else if (fileDir.listFiles() == null || fileDir.listFiles().length == 0) {
+                            ListDialog.BaseData data = new ListDialog.BaseData(fileDir.getPath());
+                            datas.add(data);
+                            fileDir.delete();
+                        }
+                    }
+                }
                 for (String s : strings) {
                     ListDialog.BaseData data = new ListDialog.BaseData(s);
                     datas.add(data);
