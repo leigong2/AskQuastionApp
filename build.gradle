@@ -25,6 +25,8 @@ allprojects {
         jcenter()
         maven {
             url 'https://jitpack.io'
+            //微博
+            maven { url "https://dl.bintray.com/thelasterstar/maven/" }
         }
     }
 }

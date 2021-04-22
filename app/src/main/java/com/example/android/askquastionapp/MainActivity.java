@@ -93,6 +93,10 @@ import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.google.gson.reflect.TypeToken;
 import com.meituan.android.walle.WalleChannelReader;
+import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.sina.weibo.sdk.auth.WbAuthListener;
+import com.sina.weibo.sdk.auth.WbConnectErrorMessage;
+import com.sina.weibo.sdk.auth.sso.SsoHandler;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -182,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
                 View itemView = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_main_tag, viewGroup, false);
-                itemView.setOnClickListener(v -> onTagClick((String) v.getTag()));
+                itemView.setOnClickListener(v -> onTagClick((String) v.getTag(), v));
                 return new RecyclerView.ViewHolder(itemView) {
                 };
             }
@@ -326,6 +330,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("写入xlsx");
         added.add("channel");
         added.add("renameSdTxt");
+        added.add("微博授权");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -333,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void onTagClick(String text) {
+    private void onTagClick(String text, View v) {
         switch (text) {
             case "阅读":
                 startReadTxt();
@@ -636,7 +641,43 @@ public class MainActivity extends AppCompatActivity {
                 renameDialog.setContent("请选择转换方式");
                 renameDialog.show();
                 break;
+            case "微博授权":
+                startLoginWeibo(v);
+                break;
         }
+    }
+
+    private SsoHandler mSsoHandler;
+    private void startLoginWeibo(View view) {
+        mSsoHandler = new SsoHandler(this);
+        mSsoHandler.authorize(new WbAuthListener() {
+            @Override
+            public void onSuccess(Oauth2AccessToken oauth2AccessToken) {
+                if (oauth2AccessToken.isSessionValid()) {
+                    //登录成功
+                    String authToken = oauth2AccessToken.getToken();
+                    String uid = oauth2AccessToken.getUid();
+                    if (view.findViewById(R.id.tag) instanceof TextView) {
+                        ((TextView) view.findViewById(R.id.tag)).setText(uid);
+                    }
+                }
+            }
+
+            @Override
+            public void cancel() {
+                if (view instanceof TextView) {
+                    ((TextView) view).setText("cancel");
+                }
+            }
+
+            @Override
+            public void onFailure(WbConnectErrorMessage wbConnectErrorMessage) {
+                if (view instanceof TextView) {
+                    String text = wbConnectErrorMessage.getErrorCode() + "..." + wbConnectErrorMessage.getErrorMessage();
+                    ((TextView) view).setText(text);
+                }
+            }
+        });
     }
 
     @Override
@@ -1479,6 +1520,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (mSsoHandler != null) {
+            mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
+        }
         if (requestCode == EXTERNAL_FILE_CODE && data != null) {
             Uri uri = data.getData();
             if (uri == null) {
