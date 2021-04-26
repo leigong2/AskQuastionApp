@@ -31,7 +31,7 @@ public class SqlliteUtils {
 
     public static SqlliteUtils getInstance(String dbFilePath) {
         try {
-            db = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.OPEN_READONLY, null);
+            db = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.OPEN_READWRITE, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -258,10 +258,10 @@ public class SqlliteUtils {
                 } else {
                     sb.append(s).append("=").append(o);
                 }
-                sb.append("and");
+                sb.append("and ");
             }
             if (sb.length() > 0) {
-                String sql = "delete from " + tableName + " where " + sb.substring(0, sb.length() - 3);
+                String sql = "delete from " + tableName + " where " + sb.substring(0, sb.length() - 4);
                 db.execSQL(sql);
                 return true;
             }

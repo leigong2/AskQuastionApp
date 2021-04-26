@@ -85,6 +85,7 @@ import com.example.android.askquastionapp.video.DownloadObjManager;
 import com.example.android.askquastionapp.video.ListenMusicActivity;
 import com.example.android.askquastionapp.video.VideoTurnGifActivity;
 import com.example.android.askquastionapp.video.WatchVideoActivity;
+import com.example.android.askquastionapp.video.xiqu.XiquListActivity;
 import com.example.android.askquastionapp.views.ClearHolder;
 import com.example.android.askquastionapp.views.CommonDialog;
 import com.example.android.askquastionapp.views.ListDialog;
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
     private String musicFile;
     private String movieFile;
     private String avFile;
+    private String xiquFile;
     private String baseDir;
     public static String imageDir;
     private String movieUrl = "https://github.com/leigong2/AskQuastionApp/blob/master/app/src/main/assets/movie_db.db";
@@ -174,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         musicFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "music_db.db";
         movieFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "movie_db.db";
         avFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "av_db.db";
+        xiquFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "xiqu_play_url.db";
         requestPermiss();
         initMainTags();
         RecyclerView recyclerView = findViewById(R.id.main_tags);
@@ -331,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("channel");
         added.add("renameSdTxt");
         added.add("微博授权");
+        added.add("戏曲");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -643,6 +647,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "微博授权":
                 startLoginWeibo(v);
+                break;
+            case "戏曲":
+                XiquListActivity.start(this, xiquFile);
                 break;
         }
     }

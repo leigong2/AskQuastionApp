@@ -17,15 +17,15 @@ public class BrowserUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
-            intent.setClassName("com.tencent.mtt", "com.tencent.mtt.MainActivity");//打开QQ浏览器
+            intent.setClassName("mark.via", "mark.via.ui.activity.BrowserActivity");
             context.startActivity(intent);
         } catch (Exception e1) {
             try {
-                intent.setClassName("com.android.browser", "com.android.browser.BrowserActivity");
+                intent.setClassName("com.tencent.mtt", "com.tencent.mtt.MainActivity");//打开QQ浏览器
                 context.startActivity(intent);
             } catch (Exception e2) {
                 try {
-                    intent.setClassName("mark.via", "mark.via.ui.activity.BrowserActivity");
+                    intent.setClassName("com.android.browser", "com.android.browser.BrowserActivity");
                     context.startActivity(intent);
                 } catch (Exception e3) {
                     // 注意此处的判断intent.resolveActivity()可以返回显示该Intent的Activity对应的组件名

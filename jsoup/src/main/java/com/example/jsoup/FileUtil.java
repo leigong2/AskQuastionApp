@@ -189,4 +189,20 @@ public class FileUtil {
         }
         return true;
     }
+
+    public static String replaceUnableStr(String fileName) {
+        if (fileName.length() > 255) {
+            fileName = fileName.substring(0, 255);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fileName.length(); i++) {
+            char c = fileName.charAt(i);
+            if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+                    || StringUtils.isChinese(c)
+                    || c == '*' || c == '(' || c == ')' || c == '[' || (c == ']' || c == '【' || c == '】')) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

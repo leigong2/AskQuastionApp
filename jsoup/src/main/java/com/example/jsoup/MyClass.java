@@ -1,6 +1,7 @@
 package com.example.jsoup;
 
 import com.example.jsoup.jsoup.GzipUtils;
+import com.example.jsoup.jsoup.webloaddata.XiqumeUtils;
 import com.example.jsoup.reader.MergeTxtUtils;
 import com.example.jsoup.reader.TelegramUtils;
 
@@ -23,14 +24,7 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("https://spritiualne.wordpress.com/2021/01/24/%e5%a8%bc%e5%a6%93%e6%94%b9%e9%80%a0%e7%89%88/");
 //        simpleThread.start();
 //        DownloadPictureUtils.loadImg("https://588ku.com/ycpng/13031081.html");
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-//                MergeTxtUtils.reMergeTxt(new File("D:\\user\\zune\\txt"));
-                MergeTxtUtils.reMergeTxt(new File("D:\\user\\zune\\txt\\dismiss\\dismissed\\zhong"));
-            }
-        }.start();
+        XiqumeUtils.load();
 //        GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
             @Override
