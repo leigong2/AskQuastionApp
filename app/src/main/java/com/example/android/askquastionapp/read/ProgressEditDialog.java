@@ -77,6 +77,7 @@ public class ProgressEditDialog extends BasePopup {
 
     public void setHint(String hint) {
         editText.setText(hint);
+        editText.setSelection(editText.getText().length());
     }
 
     public interface OnResultListener {

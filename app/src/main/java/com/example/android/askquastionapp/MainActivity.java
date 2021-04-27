@@ -249,11 +249,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetIp() {
-        devolop = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastDevelop/debug/app-develop-armeabi-v7a-debug.apk";
-        preProducation = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastPreProducation/debug/app-preProducation-armeabi-v7a-debug.apk";
-        production_blue = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction_blue/debug/app-production_blue-armeabi-v7a-debug.apk";
-        production = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction/debug/app-production-armeabi-v7a-debug.apk";
-        release = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction/release/app-production-armeabi-v7a-release.apk";
+        devolop = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastDevelop/debug/app-develop-universal-debug.apk";
+        preProducation = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastPreProducation/debug/app-preProducation-universal-debug.apk";
+        production_blue = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction_blue/debug/app-production_blue-universal-debug.apk";
+        production = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction/debug/app-production-universal-debug.apk";
+        release = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/facecastProduction/release/app-production-universal-release.apk";
         self = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/other/release/app-release.apk";
         imgs = (baseUrl.startsWith("http://") ? baseUrl : "http://" + baseUrl) + "/img0";
         setTitle("ip = " + baseUrl);
@@ -646,7 +646,11 @@ public class MainActivity extends AppCompatActivity {
                 renameDialog.show();
                 break;
             case "微博授权":
-                startLoginWeibo(v);
+                try {
+                    startLoginWeibo(v);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
                 break;
             case "戏曲":
                 XiquListActivity.start(this, xiquFile);
@@ -655,7 +659,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private SsoHandler mSsoHandler;
-    private void startLoginWeibo(View view) {
+    private void startLoginWeibo(View view) throws Throwable{
         mSsoHandler = new SsoHandler(this);
         mSsoHandler.authorize(new WbAuthListener() {
             @Override

@@ -17,7 +17,7 @@ public class BrowserUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
-            intent.setClassName("mark.via", "mark.via.ui.activity.BrowserActivity");
+            intent.setClassName("mark.via", "mark.via.Shell");
             context.startActivity(intent);
         } catch (Exception e1) {
             try {
