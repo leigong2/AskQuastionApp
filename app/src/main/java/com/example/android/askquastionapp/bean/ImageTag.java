@@ -11,6 +11,11 @@ public class ImageTag implements Comparable<ImageTag> {
     public String url;
     public Integer position;
 
+    public ImageTag(String url, Integer position) {
+        this.url = url;
+        this.position = position;
+    }
+
     @Override
     public int compareTo(@Nullable ImageTag o) {
         if (position != null && o != null && o.position != null) {

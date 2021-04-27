@@ -48,8 +48,14 @@ public class DownloadObjManager {
     }
 
     public void startDownload(String url, String path, MainActivity.CallBack callBack) {
-        if (new File(path).exists()) {
-            new File(path).delete();
+        final File file = new File(path);
+        if (file.exists()) {
+            file.delete();
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -72,7 +78,7 @@ public class DownloadObjManager {
                     onFailure(call, new IOException(""));
                 }
                 InputStream is = response.body().byteStream();
-                FileOutputStream fos = new FileOutputStream(new File(path));
+                FileOutputStream fos = new FileOutputStream(file);
                 int len = 0;
                 byte[] buffer = new byte[1024];
                 while (-1 != (len = is.read(buffer))) {
@@ -86,6 +92,42 @@ public class DownloadObjManager {
                 }
             }
         });
+    }
+
+    public void startDownload(String url, String path) {
+        try {
+            File file = new File(path);
+            if (file.exists()) {
+                file.delete();
+            }
+            file.createNewFile();
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .get()
+                    .url(url)
+                    .build();
+            Call call = client.newCall(request);
+            Response response = call.execute();
+            if (response.body() == null) {
+                return;
+            }
+            float total = response.body().contentLength();
+            if (total <= 0) {
+                return;
+            }
+            InputStream is = response.body().byteStream();
+            FileOutputStream fos = new FileOutputStream(file);
+            int len = 0;
+            byte[] buffer = new byte[1024];
+            while (-1 != (len = is.read(buffer))) {
+                fos.write(buffer, 0, len);
+            }
+            fos.flush();
+            fos.close();
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void startDownWithPosition(String url, String path) {
