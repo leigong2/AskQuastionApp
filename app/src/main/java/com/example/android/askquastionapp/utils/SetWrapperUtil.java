@@ -102,9 +102,6 @@ public class SetWrapperUtil {
         if (Integer.parseInt(formats[2]) < Integer.parseInt(nows[2])) {
             return true;
         }
-        if (Integer.parseInt(formats[3]) < Integer.parseInt(nows[3])) {
-            return true;
-        }
         return false;
     }
 
