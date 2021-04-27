@@ -79,6 +79,7 @@ import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.utils.LogUtils;
+import com.example.android.askquastionapp.utils.SetWrapperUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.utils.ToastUtils;
 import com.example.android.askquastionapp.video.DownloadObjManager;
@@ -1612,6 +1613,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 listDialog.showWithData(datas, false);
                 ToastUtils.showToast(BaseApplication.getInstance(), String.format("删除了%s个文件", datas.size()));
+                SetWrapperUtil.getInstanse().createImages();
             }
         });
     }
