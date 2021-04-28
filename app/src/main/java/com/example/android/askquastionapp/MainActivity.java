@@ -43,6 +43,7 @@ import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.blankj.utilcode.util.ObjectUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.aes.test;
+import com.example.android.askquastionapp.bean.CarBean;
 import com.example.android.askquastionapp.bean.Company;
 import com.example.android.askquastionapp.bean.KeyWords;
 import com.example.android.askquastionapp.bean.UpdateCompanyBean;
@@ -336,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("renameSdTxt");
         added.add("微博授权");
         added.add("戏曲");
+        added.add("车分析");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -656,11 +658,129 @@ public class MainActivity extends AppCompatActivity {
             case "戏曲":
                 XiquListActivity.start(this, xiquFile);
                 break;
+            case "车分析":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                                , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        return;
+                    }
+                }
+                analyseCar();
+                break;
         }
     }
 
+    private void analyseCar() {
+        ListDialog<ListDialog.BaseData> dataListDialog = ListDialog.showDialog(this, true);
+        Observable.just("【郑州5-7万二手车】郑州5-7万二手车报价_图片-郑州瓜子二手车.xlsx").map(new Function<String, List<CarBean>>() {
+            @Override
+            public List<CarBean> apply(String assets) throws Exception {
+                List<CarBean> carBeans = new ArrayList<>();
+                Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, new String[]{assets});
+                for (String key : map.keySet()) {
+                    List<List<String>> lists = map.get(key);
+                    if (lists == null) {
+                        continue;
+                    }
+                    for (int i = 1; i < lists.size(); i++) {
+                        CarBean carBean = new CarBean();
+                        String[] first = lists.get(i).get(0).split(" ");
+                        if (first.length == 7) {
+                            carBean.carName = first[0] + first[1];
+                            carBean.carType = first[2] + first[3];
+                            carBean.carGas = first[4];
+                            carBean.carVersion = first[5] + first[6];
+                        }
+                        if (first.length == 6) {
+                            carBean.carName = first[0] + first[1];
+                            carBean.carType = first[2] + first[3];
+                            carBean.carGas = first[4];
+                            carBean.carVersion = first[5];
+                        }
+                        if (first.length == 5) {
+                            carBean.carName = first[0] + first[1];
+                            carBean.carType = first[2];
+                            carBean.carGas = first[3];
+                            carBean.carVersion = first[4];
+                        }
+                        if (first.length == 4) {
+                            carBean.carName = first[0];
+                            carBean.carType = first[1];
+                            carBean.carGas = first[2];
+                            carBean.carVersion = first[3];
+                        }
+                        String[] second = lists.get(i).get(1).split("\\|");
+                        if (second.length == 3) {
+                            carBean.year = second[0];
+                            carBean.mileage = second[1];
+                            carBean.service = second[2];
+                        }
+                        carBean.nowMoney = lists.get(i).get(2);
+                        carBean.firstMoney = lists.get(i).get(3);
+                        carBeans.add(carBean);
+                    }
+                }
+                return carBeans;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<List<CarBean>, Integer>(1, false) {
+                    @Override
+                    public void onNext(List<CarBean> cars, Integer integer) {
+                        List<List<String>> lists = new ArrayList<>();
+                        for (CarBean car : cars) {
+                            if (lists.isEmpty()) {
+                                List<String> list = new ArrayList<>();
+                                list.add("车名");
+                                list.add("型号");
+                                list.add("油箱");
+                                list.add("版本");
+                                list.add("购买日期");
+                                list.add("里程");
+                                list.add("服务");
+                                list.add("现在价格");
+                                list.add("原价格");
+                                lists.add(list);
+                                continue;
+                            }
+                            List<String> list = new ArrayList<>();
+                            list.add(car.carName);
+                            list.add(car.carType);
+                            list.add(car.carGas);
+                            list.add(car.carVersion);
+                            list.add(car.year);
+                            list.add(car.mileage);
+                            list.add(car.service);
+                            list.add(car.nowMoney);
+                            list.add(car.firstMoney);
+                            lists.add(list);
+                        }
+                        Observable.just(lists).map(new Function<List<List<String>>, Integer>() {
+                            @Override
+                            public Integer apply(List<List<String>> file) throws Exception {
+                                Map<String, List<List<String>>> map = new HashMap<>();
+                                map.put("车辆信息", file);
+                                ExcelManager.getInstance().writeToXlsx(new File(getExternalCacheDir(), "郑州瓜子二手车.xlsx"), map);
+                                return 1;
+                            }
+                        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                            @Override
+                            public void onNext(Integer integer, Integer integer2) {
+                                ToastUtils.showShort("写入完成");
+                                dataListDialog.dismiss();
+                            }
+                        });
+                    }
+                });
+    }
+
     private SsoHandler mSsoHandler;
-    private void startLoginWeibo(View view) throws Throwable{
+
+    private void startLoginWeibo(View view) throws Throwable {
         mSsoHandler = new SsoHandler(this);
         mSsoHandler.authorize(new WbAuthListener() {
             @Override

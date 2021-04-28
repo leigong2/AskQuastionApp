@@ -4,14 +4,22 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.view.WindowManager;
+
+import androidx.core.content.ContextCompat;
 
 import com.blankj.utilcode.util.SPUtils;
 import com.example.android.askquastionapp.BaseApplication;
 import com.example.android.askquastionapp.MainActivity;
+import com.example.android.askquastionapp.R;
 import com.example.android.askquastionapp.bean.ImageTag;
 import com.example.android.askquastionapp.reader.ReaderActivity;
 import com.example.android.askquastionapp.video.DownloadObjManager;
@@ -75,7 +83,7 @@ public class SetWrapperUtil {
         images = GsonGetter.getInstance().getGson().fromJson(SPUtils.getInstance().getString("image", "[]"), new TypeToken<List<ImageTag>>() {
         }.getType());
         if (!needUpdate()) {
-            setImages();
+            setImages(-1);
             return;
         }
         getImages();
@@ -144,7 +152,7 @@ public class SetWrapperUtil {
                                 if (contains(images, imageUrl)) {
                                     continue;
                                 }
-                                imageUrls.add(new ImageTag(imageUrl, imageUrls.size()));
+                                imageUrls.add(new ImageTag(imageUrl));
                                 File fileDir = new File(getSavePicPath() + "/Bing");
                                 if (!fileDir.exists()) {
                                     fileDir.mkdirs();
@@ -160,17 +168,16 @@ public class SetWrapperUtil {
                 .subscribe(new SimpleObserver<List<ImageTag>, Integer>(1, false) {
                     @Override
                     public void onNext(List<ImageTag> imageUrls, Integer integer) {
-                        for (ImageTag image : images) {
-                            image.position += imageUrls.size();
-                        }
+                        int select = -1;
                         for (int i = imageUrls.size() - 1; i >= 0; i--) {
+                            select = i;
                             images.add(0, imageUrls.get(i));
                             if (images.size() > 8) {
                                 images.remove(images.size() - 1);
                             }
                         }
                         SPUtils.getInstance().put("image", GsonGetter.getInstance().getGson().toJson(images));
-                        setImages();
+                        setImages(select);
                     }
                 });
     }
@@ -217,16 +224,16 @@ public class SetWrapperUtil {
     }
 
     /*zune： 随机选择的8天图片，获取一张，并转换为bitmap， 设置壁纸**/
-    private void setImages() {
+    private void setImages(int select) {
         if (images.size() == 0) {
             return;
         }
         SPUtils.getInstance().put("mills", System.currentTimeMillis());
         // 通过网络地址创建URL对象
         Random random = new Random();
-        int nextInt = random.nextInt(images.size());
+        int nextInt = select == -1 ? random.nextInt(images.size()) : select;
         LogUtils.i("zune: ", "nextInt = " + nextInt);
-        File file = hasImage(images.get(nextInt).position);
+        File file = hasImage(nextInt);
         if (file.exists()) {
             setWallpaper(BitmapFactory.decodeFile(file.getPath()));
             return;
@@ -250,7 +257,30 @@ public class SetWrapperUtil {
         matrix.postScale(width / bitmapWidth, height / bitmapHeight); //长和宽放大缩小的比例
         Bitmap resizeBmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth()
                 , bitmap.getHeight(), matrix, true);
-        return resizeBmp;
+        GradientDrawable drawable = (GradientDrawable) ContextCompat.getDrawable(BaseApplication.getInstance(), R.drawable.bg_alpha_50);
+        Bitmap bmp = Bitmap.createBitmap(resizeBmp.getWidth(), resizeBmp.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        assert drawable != null;
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return merge(resizeBmp, bmp);
+    }
+
+    private Bitmap merge(Bitmap bitmap1, Bitmap bitmap2) {
+        Drawable[] array = new Drawable[2];
+        array[0] = new BitmapDrawable(BaseApplication.getInstance().getResources(), bitmap1);
+        array[1] = new BitmapDrawable(BaseApplication.getInstance().getResources(), bitmap2);
+        LayerDrawable drawable = new LayerDrawable(array);
+        // 其中第一个参数为层的索引号，后面的四个参数分别为left、top、right和bottom
+        drawable.setLayerInset(0, 0, 0, 0, 0);
+        drawable.setLayerInset(0, 0, 0, 0, 0);
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
     /*zune： 根据索引，获取指定的具体是哪一天**/
