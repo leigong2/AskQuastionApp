@@ -1732,8 +1732,8 @@ public class MainActivity extends AppCompatActivity {
                     datas.add(data);
                 }
                 listDialog.showWithData(datas, false);
-                ToastUtils.showToast(BaseApplication.getInstance(), String.format("删除了%s个文件", datas.size()));
                 SetWrapperUtil.getInstanse().createImages();
+                ToastUtils.showToast(BaseApplication.getInstance(), String.format("删除了%s个文件", datas.size()));
             }
         });
     }
