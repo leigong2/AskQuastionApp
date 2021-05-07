@@ -441,11 +441,8 @@ abstract class AbstractPhotoImageView extends View {
         }
     });
 
-    private long time;
-
     public void setFile(File file, boolean changeSrcFile) {
         srcFile = file;
-        time = System.currentTimeMillis();
         Observable.just(file).map(new Function<File, File>() {
             @Override
             public File apply(File srcFile) throws Exception {
