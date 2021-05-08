@@ -338,6 +338,8 @@ public class MainActivity extends AppCompatActivity {
         added.add("微博授权");
         added.add("戏曲");
         added.add("车分析");
+        added.add("插件化");
+        added.add("组件化");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -671,6 +673,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 analyseCar();
+                break;
+            case "插件化":
+                break;
+            case "组件化":
                 break;
         }
     }

@@ -24,6 +24,26 @@ public class MyClass {
 //        SimpleThread simpleThread = new SimpleThread("https://spritiualne.wordpress.com/2021/01/24/%e5%a8%bc%e5%a6%93%e6%94%b9%e9%80%a0%e7%89%88/");
 //        simpleThread.start();
 //        DownloadPictureUtils.loadImg("https://588ku.com/ycpng/13031081.html");
+//        http://www.365jjwy.com/
+//        https://nenai.xyz/vodsearch.html
+//        http://wap.qiliuxs.com/
+//        http://www.555avs.com/
+//        https://www.4hudd09.com
+//        http://0341.xyz/
+//        https://www.kuaibo555.com/
+//        https://tieniu.tv
+//        https://567863.net/
+//        http://www.mm6111.com
+//        http://www.ccpc31.com
+//        http://www.wyxun.com/
+//        http://www.118jie.com/ccls_38/
+//        https://www.geise.cc/
+//        http://ayjyf.com/
+//        https://www.pcc68.com/
+//        http://www.fvhthnjr0i3v.buzz/
+
+
+
         XiqumeUtils.load();
 //        GetGifDownloader.getFileDetail();
         /*UiUtil.getInstance().showDialog("图片加载器", new UiUtil.CallBack() {
