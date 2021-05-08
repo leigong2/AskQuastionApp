@@ -11,9 +11,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -80,6 +85,7 @@ import com.example.android.askquastionapp.utils.DocumentsFileUtils;
 import com.example.android.askquastionapp.utils.FileUtil;
 import com.example.android.askquastionapp.utils.GsonGetter;
 import com.example.android.askquastionapp.utils.LogUtils;
+import com.example.android.askquastionapp.utils.NetChangeUtils;
 import com.example.android.askquastionapp.utils.SetWrapperUtil;
 import com.example.android.askquastionapp.utils.SimpleObserver;
 import com.example.android.askquastionapp.utils.ToastUtils;
@@ -107,9 +113,11 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -145,7 +153,7 @@ import static java.io.File.separator;
  *
  * @author wangzhilong
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NetChangeUtils.OnNetworkChangeListener {
 
     public static final int EXTERNAL_FILE_CODE = 200;
     private static final int REQUEST_CODE_SCAN = 201;
@@ -168,11 +176,13 @@ public class MainActivity extends AppCompatActivity {
 
     private String devolop, preProducation, production_blue, production, release, self, imgs;
     private List<String> mMainTags = new ArrayList<>();
+    private WifiManager mWifiManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         baseDir = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents";
         imageDir = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "img";
         musicFile = Environment.getExternalStorageDirectory().getAbsolutePath() + separator + "Documents" + separator + "music_db.db";
@@ -240,6 +250,12 @@ public class MainActivity extends AppCompatActivity {
             intent.setData(uri);
             startActivity(intent);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NetChangeUtils.create().unregister(this);
     }
 
     private void startScreenBroadcastReceiver() {
@@ -338,6 +354,7 @@ public class MainActivity extends AppCompatActivity {
         added.add("微博授权");
         added.add("戏曲");
         added.add("车分析");
+        added.add("自动签到");
         added.add("插件化");
         added.add("组件化");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
@@ -675,8 +692,13 @@ public class MainActivity extends AppCompatActivity {
                 analyseCar();
                 break;
             case "插件化":
+                ToastUtils.showToast(this, "待定");
                 break;
             case "组件化":
+                ToastUtils.showToast(this, "待定");
+                break;
+            case "自动签到":
+                NetChangeUtils.create().register(this);
                 break;
         }
     }
@@ -864,6 +886,94 @@ public class MainActivity extends AppCompatActivity {
 
     private void startDownload(String url, String file, CallBack callBack) {
         DownloadObjManager.getInstance().startDownload(url, file, callBack);
+    }
+
+    @Override
+    public void onNetChanged(NetChangeUtils.NetworkType networkType) {
+        String desc = networkType.getDesc();
+        String ip = "";
+        if (NetChangeUtils.NetworkType.NETWORK_WIFI.getDesc().equalsIgnoreCase(networkType.getDesc())) {
+            WifiInfo info = mWifiManager.getConnectionInfo();
+            String wifiId = getWifiId(info);
+            if (TextUtils.isEmpty(wifiId)) {
+                return;
+            }
+            ip = wifiId + "\n" + NetChangeUtils.create().getLocalIpAddress();
+        } else if (!NetChangeUtils.NetworkType.NETWORK_NO.getDesc().equals(networkType.getDesc())) {
+            ip = networkType.getDesc() + " : " + NetChangeUtils.create().getLocalIpAddress();
+        } else {
+            String currentNet = "网络已断开";
+            if (!currentNet.equalsIgnoreCase(NetChangeUtils.create().getCurrentNet())) {
+                NetChangeUtils.create().setCurrentNet(currentNet);
+                ToastUtils.showLong(currentNet);
+            }
+            return;
+        }
+        String currentNet = "网络状态发生改变：" + desc + "\n" + ip;
+        if (!currentNet.equalsIgnoreCase(NetChangeUtils.create().getCurrentNet())) {
+            Observable.just(ip).map(new Function<String, String>() {
+                @Override
+                public String apply(String ip) throws Exception {
+                    String localIpAddress = NetChangeUtils.create().getLocalIpAddress();
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);// 调用getSystemService()方法来获取LocationManager对象
+                    String bestProvider = locationManager.getBestProvider(getCriteria(), true);
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return ip;
+                    }
+                    Location location = locationManager.getLastKnownLocation(bestProvider);
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    return ip + ";\n 经度：" + latitude + "; 纬度：" + longitude;
+                }
+            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new SimpleObserver<String, String>("1", false) {
+                        @Override
+                        public void onNext(String s, String s2) {
+                            ToastUtils.showLong(s);
+                            append(s);
+                        }
+
+                        private void append(String s) {
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    super.run();
+                                    try {
+                                        FileWriter fileWriter = new FileWriter(new File(getExternalCacheDir(), "location.txt"), true);
+                                        fileWriter.write(s + "\n");
+                                        fileWriter.close();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }.start();
+                        }
+                    });
+        }
+        NetChangeUtils.create().setCurrentNet(currentNet);
+    }
+
+    private Criteria getCriteria() {
+        Criteria c = new Criteria();
+        c.setAccuracy(Criteria.ACCURACY_COARSE);
+        c.setSpeedRequired(false);
+        c.setCostAllowed(false);
+        c.setBearingRequired(false);
+        c.setAltitudeRequired(false);
+        c.setPowerRequirement(Criteria.POWER_LOW);
+        return c;
+    }
+
+    private String getWifiId(WifiInfo info) {
+        try {
+            Field field = info.getClass().getDeclaredField("mWifiSsid");
+            field.setAccessible(true);//设置发射时取消Java的访问检查，暴力访问
+            Object mWifiSsid = field.get(info);
+            return mWifiSsid.toString();
+        } catch (Exception ignore) {
+        }
+        return null;
     }
 
     public interface CallBack {
