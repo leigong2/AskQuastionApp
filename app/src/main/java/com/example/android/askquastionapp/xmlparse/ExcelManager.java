@@ -203,12 +203,12 @@ public class ExcelManager {
             for (String s : temp.keySet()) {
                 List<List<String>> value = temp.get(s);
                 if (value != null) {
-                    List<List<String>> sheet = map.get("sheet");
+                    List<List<String>> sheet = map.get(asset);
                     if (sheet == null || sheet.isEmpty()) {
-                        map.put("sheet", value);
+                        map.put(asset, value);
                     } else {
                         sheet.addAll(value);
-                        map.put("sheet", sheet);
+                        map.put(asset, sheet);
                     }
                 }
             }
@@ -270,6 +270,7 @@ public class ExcelManager {
                     }
                     ((Company) t).minMoney = moneys[0];
                     ((Company) t).maxMoney = moneys[1];
+                    ((Company) t).from = key.replaceAll(".xlsx", "");
                 }
                 if (t != null) {
                     ts.add(t);

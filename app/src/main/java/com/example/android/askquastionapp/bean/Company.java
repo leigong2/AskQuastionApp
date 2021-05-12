@@ -19,6 +19,7 @@ public class Company extends ListDialog.BaseData {
     public String scrop;
     public String updateTime;
     public String repeatCount;
+    public String from;
     public float minMoney;
     public float maxMoney;
     public boolean timeLimit = true;

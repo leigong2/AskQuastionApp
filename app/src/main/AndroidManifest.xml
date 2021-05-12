@@ -222,6 +222,7 @@
             android:theme="@style/CustomFullScreen" />
         <activity android:name=".video.xiqu.XiquListActivity" />
         <activity android:name=".video.xiqu.WebViewActivity" />
+        <activity android:name=".tantan.TantanActivity" />
     </application>
 
 </manifest>

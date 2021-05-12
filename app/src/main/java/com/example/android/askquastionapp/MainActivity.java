@@ -76,6 +76,7 @@ import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.reader.TxtUtils;
 import com.example.android.askquastionapp.scan.CaptureActivity;
 import com.example.android.askquastionapp.scan.QCodeDialog;
+import com.example.android.askquastionapp.tantan.TantanActivity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.ClearUtils;
@@ -357,6 +358,10 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         added.add("自动签到");
         added.add("插件化");
         added.add("组件化");
+        added.add("ffmpeg");
+        added.add("mediaCodec");
+        added.add("协程");
+        added.add("探探");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -700,6 +705,15 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
             case "自动签到":
                 NetChangeUtils.create().register(this);
                 break;
+            case "ffmpeg":
+                break;
+            case "mediaCodec":
+                break;
+            case "协程":
+                break;
+            case "探探":
+                TantanActivity.start(this);
+                break;
         }
     }
 
@@ -986,7 +1000,8 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         String assetsBoss = "「郑州招聘信息」郑州招聘网 - BOSS直聘.xlsx";
         String assetsLiepin = "【郑州招聘信息_郑州招聘_郑州招聘网】-郑州猎聘.xlsx";
         String assets51 = "【郑州,android招聘，求职】-前程无忧.xlsx";
-        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, new SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
+        String assetsLagou = "招聘求职信息-招聘网站-人才网-拉勾招聘.xlsx";
+        readAssets(assetsZhilian, assetsBoss, assetsLiepin, assets51, assetsLagou, new SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>>(listDialog, false) {
             @Override
             public void onNext(List<ListDialog.BaseData> datas, ListDialog<ListDialog.BaseData> listDialog) {
                 listDialog.showWithData(datas, false);
@@ -1000,8 +1015,8 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         });
     }
 
-    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>> observer) {
-        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51}).map(new Function<String[], List<ListDialog.BaseData>>() {
+    private void readAssets(String assetsZhilian, String assetsBoss, String assetsLiepin, String assets51, String assetsLagou, SimpleObserver<List<ListDialog.BaseData>, ListDialog<ListDialog.BaseData>> observer) {
+        Observable.just(new String[]{assetsZhilian, assetsBoss, assetsLiepin, assets51, assetsLagou}).map(new Function<String[], List<ListDialog.BaseData>>() {
             @Override
             public List<ListDialog.BaseData> apply(String[] assets) throws Exception {
                 Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, assets);
@@ -1081,6 +1096,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 temp.minMoney = moneys[0];
                 temp.maxMoney = moneys[1];
                 temp.timeLimit = false;
+                temp.from = company.from;
                 localData.add(temp);
                 bean.addCount++;
                 moneyCount++;

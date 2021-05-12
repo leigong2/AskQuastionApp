@@ -608,5 +608,26 @@
     "minMoney": "9.65",
     "repeatCount": 282,
     "timeLimitCount": 243
+  },
+  "2021-05-10": {
+    "addCount": 13,
+    "maxMoney": "15.59",
+    "minMoney": "9.74",
+    "repeatCount": 286,
+    "timeLimitCount": 242
+  },
+  "2021-05-11": {
+    "addCount": 6,
+    "maxMoney": "15.53",
+    "minMoney": "9.70",
+    "repeatCount": 308,
+    "timeLimitCount": 233
+  },
+  "2021-05-12": {
+    "addCount": 3,
+    "maxMoney": "15.44",
+    "minMoney": "9.67",
+    "repeatCount": 305,
+    "timeLimitCount": 242
   }
 }
