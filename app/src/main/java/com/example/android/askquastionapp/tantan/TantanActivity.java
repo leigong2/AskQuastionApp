@@ -144,6 +144,7 @@ public class TantanActivity extends AppCompatActivity {
         final CardLayoutManager cardLayoutManager = new CardLayoutManager(recyclerView, touchHelper);
         recyclerView.setLayoutManager(cardLayoutManager);
         touchHelper.attachToRecyclerView(recyclerView);
+        cardCallback.attachTouchHelper(touchHelper, recyclerView);
         initData();
     }
 

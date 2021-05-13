@@ -14,6 +14,7 @@ import com.example.android.askquastionapp.utils.LogUtils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -87,7 +88,7 @@ public class CardItemTouchHelperCallback<T> extends ItemTouchHelper.Callback {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         View itemView = viewHolder.itemView;
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-            float ratio = dX / getThreshold(recyclerView, viewHolder);
+            float ratio = dX / getThreshold(recyclerView);
             // ratio 最大为 1 或 -1
             if (ratio > 1) {
                 ratio = 1;
@@ -151,8 +152,32 @@ public class CardItemTouchHelperCallback<T> extends ItemTouchHelper.Callback {
         animatorSet.start();
     }
 
-    private float getThreshold(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        return recyclerView.getWidth() * getSwipeThreshold(viewHolder);
+    private float getThreshold(RecyclerView recyclerView) {
+        return recyclerView.getWidth() * .5f;
     }
 
+    @Override
+    public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+        /*zune：反射获取水平移动量和垂直移动量，仿探探，水平移动10%就触发划走，垂直的话得达到60%**/
+        try {
+            Field fieldX = ItemTouchHelper.class.getDeclaredField("mDx");
+            fieldX.setAccessible(true);
+            Object mDx = fieldX.get(itemTouchHelper);
+            if (Math.abs((float) mDx) >= mRecyclerView.getWidth() * .1f) {
+                return .1f;
+            }
+            return .6f;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return .1f;
+    }
+
+    private ItemTouchHelper itemTouchHelper;
+    private RecyclerView mRecyclerView;
+
+    public void attachTouchHelper(@NonNull ItemTouchHelper itemTouchHelper, @NonNull RecyclerView recyclerView) {
+        this.itemTouchHelper = itemTouchHelper;
+        this.mRecyclerView = recyclerView;
+    }
 }
