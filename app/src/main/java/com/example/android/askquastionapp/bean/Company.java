@@ -23,4 +23,5 @@ public class Company extends ListDialog.BaseData {
     public float minMoney;
     public float maxMoney;
     public boolean timeLimit = true;
+    public int timeLimitCount;
 }

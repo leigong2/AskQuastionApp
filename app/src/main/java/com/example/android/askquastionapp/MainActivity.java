@@ -1114,13 +1114,18 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                         e.printStackTrace();
                     }
                 }
-                indexCompany.repeatCount = String.valueOf(++count);
+                indexCompany.repeatCount = String.valueOf(indexCompany.timeLimitCount < 15 || count > 100 ? ++count : 1);
                 indexCompany.timeLimit = false;
                 localData.set(index, indexCompany);
                 bean.repeatCount++;
                 moneyCount++;
                 minMoney += indexCompany.minMoney;
                 maxMoney += indexCompany.maxMoney;
+            }
+        }
+        for (Company localDatum : localData) {
+            if (localDatum.timeLimit) {
+                localDatum.timeLimitCount += 1;
             }
         }
         bean.timeLimitCount = Math.max(totalCount, 0);
