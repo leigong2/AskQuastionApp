@@ -1096,6 +1096,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 temp.minMoney = moneys[0];
                 temp.maxMoney = moneys[1];
                 temp.timeLimit = false;
+                temp.timeLimitDays = 0;
                 temp.from = company.from;
                 localData.add(temp);
                 bean.addCount++;
@@ -1114,8 +1115,9 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                         e.printStackTrace();
                     }
                 }
-                indexCompany.repeatCount = String.valueOf(indexCompany.timeLimitCount < 15 || count > 100 ? ++count : 1);
+                indexCompany.repeatCount = String.valueOf(indexCompany.timeLimitDays < 15 || count > 100 ? ++count : 1);
                 indexCompany.timeLimit = false;
+                indexCompany.timeLimitDays = 0;
                 localData.set(index, indexCompany);
                 bean.repeatCount++;
                 moneyCount++;
@@ -1125,7 +1127,10 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         }
         for (Company localDatum : localData) {
             if (localDatum.timeLimit) {
-                localDatum.timeLimitCount += 1;
+                localDatum.timeLimitDays += 1;
+                if (localDatum.repeatCount == null || "0".equalsIgnoreCase(localDatum.repeatCount)) {
+                    localDatum.repeatCount = "1";
+                }
             }
         }
         bean.timeLimitCount = Math.max(totalCount, 0);
