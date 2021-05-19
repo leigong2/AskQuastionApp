@@ -5,8 +5,8 @@ import android.os.Handler;
 
 
 import com.example.android.askquastionapp.utils.PhoneUtils;
-import com.sina.weibo.sdk.WbSdk;
-import com.sina.weibo.sdk.auth.AuthInfo;
+//import com.sina.weibo.sdk.WbSdk;
+//import com.sina.weibo.sdk.auth.AuthInfo;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -55,14 +55,14 @@ public class BaseApplication extends Application {
     }
 
     private void initWeiBo() {
-        try {
-            AuthInfo mAuthInfo = new AuthInfo(this, "1411207167", "http://open.weibo.com/apps/1411207167/privilege/oauth"
-                    , "email,direct_messages_read,direct_messages_write,"
-                    + "friendships_groups_read,friendships_groups_write,statuses_to_me_read,"
-                    + "follow_app_official_microblog," + "invitation_write");
-            WbSdk.install(this, mAuthInfo);
-        } catch (Throwable ignore) {
-        }
+//        try {
+//            AuthInfo mAuthInfo = new AuthInfo(this, "1411207167", "http://open.weibo.com/apps/1411207167/privilege/oauth"
+//                    , "email,direct_messages_read,direct_messages_write,"
+//                    + "friendships_groups_read,friendships_groups_write,statuses_to_me_read,"
+//                    + "follow_app_official_microblog," + "invitation_write");
+//            WbSdk.install(this, mAuthInfo);
+//        } catch (Throwable ignore) {
+//        }
     }
 
     public static void handleSSLHandshake() {

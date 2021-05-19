@@ -103,10 +103,6 @@ import com.example.android.askquastionapp.wxapi.ShareDialog;
 import com.example.android.askquastionapp.xmlparse.ExcelManager;
 import com.google.gson.reflect.TypeToken;
 import com.meituan.android.walle.WalleChannelReader;
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
-import com.sina.weibo.sdk.auth.WbAuthListener;
-import com.sina.weibo.sdk.auth.WbConnectErrorMessage;
-import com.sina.weibo.sdk.auth.sso.SsoHandler;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -148,6 +144,11 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.os.Build.VERSION_CODES.Q;
 import static java.io.File.separator;
+
+//import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+//import com.sina.weibo.sdk.auth.WbAuthListener;
+//import com.sina.weibo.sdk.auth.WbConnectErrorMessage;
+//import com.sina.weibo.sdk.auth.sso.SsoHandler;
 
 /**
  * The type Main activity.
@@ -362,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         added.add("mediaCodec");
         added.add("协程");
         added.add("探探");
+        added.add("淘宝热卖分析");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -714,7 +716,167 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
             case "探探":
                 TantanActivity.start(this);
                 break;
+            case "淘宝热卖分析":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    int readPermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                                , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        return;
+                    }
+                }
+                analyseJinhuo();
+                analyseTaobao();
+                break;
         }
+    }
+
+    private void analyseTaobao() {
+        ListDialog<ListDialog.BaseData> dataListDialog = ListDialog.showDialog(this, true);
+        Observable.just("热卖PC搜索.xlsx").map(new Function<String, List<List<String>>>() {
+            @Override
+            public List<List<String>> apply(String assets) throws Exception {
+                List<List<String>> resultLists = new ArrayList<>();
+                Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, new String[]{assets});
+                for (String key : map.keySet()) {
+                    List<List<String>> lists = map.get(key);
+                    if (lists == null) {
+                        continue;
+                    }
+                    for (int i = 1; i < lists.size(); i++) {
+                        List<String> strings = lists.get(i);
+                        List<String> results = new ArrayList<>();
+                        for (int j = 0; j < strings.size(); j++) {
+                            String s = strings.get(j);
+                            if (j == 0 || j == 2) {
+                                results.add(s);
+                            }
+                            if (j == 1) {
+                                String[] ¥s = s.split("¥");
+                                if (¥s.length == 2) {
+                                    results.add(s);
+                                    results.add(s);
+                                } else if (¥s.length == 3) {
+                                    results.add("¥" + ¥s[1]);
+                                    results.add("¥" + ¥s[2]);
+                                }
+                            }
+                            if (j == 3) {
+                                String s_ = s.replaceAll("月销 ", "");
+                                int count = 0;
+                                if (s_.endsWith("万")) {
+                                    count = (int) (Float.parseFloat(s_.replaceAll("万", "")) * 10000);
+                                } else {
+                                    count = Integer.parseInt(s_);
+                                }
+                                results.add(String.valueOf(count));
+                            }
+                        }
+                        resultLists.add(results);
+                    }
+                }
+                List<String> title = new ArrayList<>();
+                title.add("商品名");
+                title.add("促销价");
+                title.add("原价");
+                title.add("店铺名");
+                title.add("月销量");
+                resultLists.add(0, title);
+                return resultLists;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<List<List<String>>, Integer>(1, false) {
+                    @Override
+                    public void onNext(List<List<String>> lists, Integer integer) {
+                        Observable.just(lists).map(new Function<List<List<String>>, Integer>() {
+                            @Override
+                            public Integer apply(List<List<String>> file) throws Exception {
+                                Map<String, List<List<String>>> map = new HashMap<>();
+                                map.put("淘宝热卖", file);
+                                ExcelManager.getInstance().writeToXlsx(new File(getExternalCacheDir(), "淘宝热卖.xlsx"), map);
+                                return 1;
+                            }
+                        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                            @Override
+                            public void onNext(Integer integer, Integer integer2) {
+                                ToastUtils.showShort("写入完成");
+                                dataListDialog.dismiss();
+                            }
+                        });
+                    }
+                });
+    }
+
+    private void analyseJinhuo() {
+        ListDialog<ListDialog.BaseData> dataListDialog = ListDialog.showDialog(this, true);
+        Observable.just("日用百货 -阿里巴巴.xlsx").map(new Function<String, List<List<String>>>() {
+            @Override
+            public List<List<String>> apply(String assets) throws Exception {
+                List<List<String>> resultLists = new ArrayList<>();
+                Map<String, List<List<String>>> map = ExcelManager.getInstance().getStringListMap(MainActivity.this, new String[]{assets});
+                for (String key : map.keySet()) {
+                    List<List<String>> lists = map.get(key);
+                    if (lists == null) {
+                        continue;
+                    }
+                    for (int i = 1; i < lists.size(); i++) {
+                        List<String> strings = lists.get(i);
+                        List<String> results = new ArrayList<>();
+                        for (int j = 0; j < strings.size(); j++) {
+                            String s = strings.get(j);
+                            if (j == 0 || j == 1) {
+                                results.add(s);
+                            }
+                            if (j == 4) {
+                                String[] ¥s = s.split("¥");
+                                if (¥s.length == 2) {
+                                    results.add(s);
+                                    results.add(s);
+                                } else if (¥s.length == 3) {
+                                    results.add("¥" + ¥s[1]);
+                                    results.add("¥" + ¥s[2]);
+                                }
+                            }
+                            if (j == 2) {
+                                results.add(s + strings.get(j + 1));
+                            }
+                        }
+                        resultLists.add(results);
+                    }
+                }
+                List<String> title = new ArrayList<>();
+                title.add("图片地址");
+                title.add("商品名");
+                title.add("发货时间");
+                title.add("促销价");
+                title.add("原价");
+                resultLists.add(0, title);
+                return resultLists;
+            }
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<List<List<String>>, Integer>(1, false) {
+                    @Override
+                    public void onNext(List<List<String>> lists, Integer integer) {
+                        Observable.just(lists).map(new Function<List<List<String>>, Integer>() {
+                            @Override
+                            public Integer apply(List<List<String>> file) throws Exception {
+                                Map<String, List<List<String>>> map = new HashMap<>();
+                                map.put("日用百货", file);
+                                ExcelManager.getInstance().writeToXlsx(new File(getExternalCacheDir(), "日用百货.xlsx"), map);
+                                return 1;
+                            }
+                        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                            @Override
+                            public void onNext(Integer integer, Integer integer2) {
+                                ToastUtils.showShort("写入完成");
+                                dataListDialog.dismiss();
+                            }
+                        });
+                    }
+                });
     }
 
     private void analyseCar() {
@@ -820,38 +982,38 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 });
     }
 
-    private SsoHandler mSsoHandler;
+//    private SsoHandler mSsoHandler;
 
     private void startLoginWeibo(View view) throws Throwable {
-        mSsoHandler = new SsoHandler(this);
-        mSsoHandler.authorize(new WbAuthListener() {
-            @Override
-            public void onSuccess(Oauth2AccessToken oauth2AccessToken) {
-                if (oauth2AccessToken.isSessionValid()) {
-                    //登录成功
-                    String authToken = oauth2AccessToken.getToken();
-                    String uid = oauth2AccessToken.getUid();
-                    if (view.findViewById(R.id.tag) instanceof TextView) {
-                        ((TextView) view.findViewById(R.id.tag)).setText(uid);
-                    }
-                }
-            }
-
-            @Override
-            public void cancel() {
-                if (view instanceof TextView) {
-                    ((TextView) view).setText("cancel");
-                }
-            }
-
-            @Override
-            public void onFailure(WbConnectErrorMessage wbConnectErrorMessage) {
-                if (view instanceof TextView) {
-                    String text = wbConnectErrorMessage.getErrorCode() + "..." + wbConnectErrorMessage.getErrorMessage();
-                    ((TextView) view).setText(text);
-                }
-            }
-        });
+//        mSsoHandler = new SsoHandler(this);
+//        mSsoHandler.authorize(new WbAuthListener() {
+//            @Override
+//            public void onSuccess(Oauth2AccessToken oauth2AccessToken) {
+//                if (oauth2AccessToken.isSessionValid()) {
+//                    //登录成功
+//                    String authToken = oauth2AccessToken.getToken();
+//                    String uid = oauth2AccessToken.getUid();
+//                    if (view.findViewById(R.id.tag) instanceof TextView) {
+//                        ((TextView) view.findViewById(R.id.tag)).setText(uid);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void cancel() {
+//                if (view instanceof TextView) {
+//                    ((TextView) view).setText("cancel");
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(WbConnectErrorMessage wbConnectErrorMessage) {
+//                if (view instanceof TextView) {
+//                    String text = wbConnectErrorMessage.getErrorCode() + "..." + wbConnectErrorMessage.getErrorMessage();
+//                    ((TextView) view).setText(text);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -1794,9 +1956,9 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (mSsoHandler != null) {
-            mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
-        }
+//        if (mSsoHandler != null) {
+//            mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
+//        }
         if (requestCode == EXTERNAL_FILE_CODE && data != null) {
             Uri uri = data.getData();
             if (uri == null) {

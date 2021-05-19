@@ -105,7 +105,7 @@ dependencies {
     implementation 'com.google.zxing:core:3.3.3'
     implementation 'com.meituan.android.walle:library:1.1.7'  //美团多渠道打包工具
     //微博
-    implementation 'com.sina.weibo.sdk:core:4.4.4:openDefaultRelease@aar'
+//    implementation(name: 'openDefault-4.4.4', ext: 'aar')
 }
 
 walle {

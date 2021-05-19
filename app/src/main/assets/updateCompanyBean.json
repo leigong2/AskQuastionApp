@@ -664,5 +664,12 @@
     "minMoney": "9.67",
     "repeatCount": 300,
     "timeLimitCount": 257
+  },
+  "2021-05-19": {
+    "addCount": 3,
+    "maxMoney": "15.35",
+    "minMoney": "9.62",
+    "repeatCount": 300,
+    "timeLimitCount": 257
   }
 }
