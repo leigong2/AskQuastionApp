@@ -107,9 +107,11 @@ import com.meituan.android.walle.WalleChannelReader;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         added.add("组件化");
         added.add("ffmpeg");
         added.add("mediaCodec");
-        added.add("协程");
+        added.add("LiveData");
         added.add("探探");
         added.add("淘宝热卖分析");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
@@ -618,6 +620,38 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                         return;
                     }
                 }
+                if (true) {
+                    File fileName = FileUtil.assetsToFile(getApplicationContext(), "word.txt");
+                    Observable.just(fileName).map(new Function<File, Integer>() {
+                        @Override
+                        public Integer apply(File file) throws Exception {
+                            BufferedReader br = new BufferedReader(new FileReader(file));
+                            String s = null;
+                            List<List<String>> words = new ArrayList<>();
+                            while ((s = br.readLine()) != null) {
+                                String[] split = s.replaceAll("<string name=\"", "").replaceAll("</string>", "").split("\">");
+                                String key = split[0];
+                                String value = split[1];
+                                List<String> word = new ArrayList<>();
+                                word.add(key);
+                                word.add(value);
+                                words.add(word);
+                            }
+                            br.close();
+                            Map<String, List<List<String>>> map = new HashMap<>();
+                            map.put("待翻译", words);
+//                            Map<String, List<List<String>>> map = ExcelManager.getInstance().analyzeXlsx(file);
+                            ExcelManager.getInstance().writeToXlsx(new File(getExternalCacheDir(), "测试.xlsx"), map);
+                            return 1;
+                        }
+                    }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                        @Override
+                        public void onNext(Integer integer, Integer integer2) {
+                            ToastUtils.showShort("测试写入完成");
+                        }
+                    });
+                    return;
+                }
                 File fileName = FileUtil.assetsToFile(getApplicationContext(), "【郑州,android招聘，求职】-前程无忧.xlsx");
                 if (fileName == null) {
                     return;
@@ -711,7 +745,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 break;
             case "mediaCodec":
                 break;
-            case "协程":
+            case "LiveData":
                 break;
             case "探探":
                 TantanActivity.start(this);

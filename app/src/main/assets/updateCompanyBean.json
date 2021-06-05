@@ -685,5 +685,40 @@
     "minMoney": "9.55",
     "repeatCount": 302,
     "timeLimitCount": 258
+  },
+  "2021-05-24": {
+    "addCount": 3,
+    "maxMoney": "15.36",
+    "minMoney": "9.65",
+    "repeatCount": 287,
+    "timeLimitCount": 273
+  },
+  "2021-05-26": {
+    "addCount": 8,
+    "maxMoney": "15.47",
+    "minMoney": "9.69",
+    "repeatCount": 285,
+    "timeLimitCount": 278
+  },
+  "2021-06-02": {
+    "addCount": 6,
+    "maxMoney": "15.51",
+    "minMoney": "9.70",
+    "repeatCount": 293,
+    "timeLimitCount": 278
+  },
+  "2021-06-04": {
+    "addCount": 3,
+    "maxMoney": "15.45",
+    "minMoney": "9.64",
+    "repeatCount": 295,
+    "timeLimitCount": 282
+  },
+  "2021-06-05": {
+    "addCount": 6,
+    "maxMoney": "15.40",
+    "minMoney": "9.62",
+    "repeatCount": 296,
+    "timeLimitCount": 284
   }
 }
