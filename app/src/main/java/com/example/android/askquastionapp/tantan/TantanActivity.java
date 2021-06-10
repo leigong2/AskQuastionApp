@@ -39,8 +39,7 @@ public class TantanActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tantan);
-        ViewPager2 viewPager2 = findViewById(R.id.recycler_view);
-        RecyclerView recyclerView = (RecyclerView) viewPager2.getChildAt(0);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         RecyclerView.Adapter<MyViewHolder> adapter = new RecyclerView.Adapter<MyViewHolder>() {
             @NonNull

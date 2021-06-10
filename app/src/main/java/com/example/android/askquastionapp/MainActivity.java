@@ -76,7 +76,9 @@ import com.example.android.askquastionapp.reader.ReaderListActivity;
 import com.example.android.askquastionapp.reader.TxtUtils;
 import com.example.android.askquastionapp.scan.CaptureActivity;
 import com.example.android.askquastionapp.scan.QCodeDialog;
+import com.example.android.askquastionapp.tantan.ItemAnimActivity;
 import com.example.android.askquastionapp.tantan.TantanActivity;
+import com.example.android.askquastionapp.tantan2.Tantan2Activity;
 import com.example.android.askquastionapp.utils.BitmapUtil;
 import com.example.android.askquastionapp.utils.BrowserUtils;
 import com.example.android.askquastionapp.utils.ClearUtils;
@@ -366,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
         added.add("LiveData");
         added.add("探探");
         added.add("淘宝热卖分析");
+        added.add("item动画");
         if (temp != null && !temp.isEmpty() && temp.size() == added.size()) {
             mMainTags.addAll(temp);
         } else {
@@ -609,6 +612,44 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 QCodeDialog.showDialog(this);
                 break;
             case "qq拖动特效":
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int writePermission = ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        return;
+                    }
+                }
+                if (true) {
+                    File fileName = FileUtil.assetsToFile(getApplicationContext(), "0531多语言翻译-（译稿）-短视频需求文案-提供开发.xlsx");
+                    if (fileName == null) {
+                        return;
+                    }
+                    Observable.just(fileName).map(new Function<File, Integer>() {
+                        @Override
+                        public Integer apply(File file) throws Exception {
+                            Map<String, List<List<String>>> map = ExcelManager.getInstance().analyzeXlsx(file);
+                            for (String s : map.keySet()) {
+                                List<List<String>> lists = map.get(s);
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = 0; i < lists.size(); i++) {
+                                    List<String> strings = lists.get(i);
+                                    String key = strings.get(0);
+                                    String value = strings.get(1);
+                                    sb.append("<string name=\"").append(key).append("\">").append(value).append("</string>").append("\n");
+                                }
+                                LogUtils.i("zune: ", "sb = " + sb);
+                            }
+                            return 1;
+                        }
+                    }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new SimpleObserver<Integer, Integer>(1, false) {
+                        @Override
+                        public void onNext(Integer integer, Integer integer2) {
+                            ToastUtils.showShort("测试写入完成");
+                        }
+                    });
+                    return;
+                }
                 QQDragActivity.start(this);
                 break;
             case "写入xlsx":
@@ -748,7 +789,7 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
             case "LiveData":
                 break;
             case "探探":
-                TantanActivity.start(this);
+                Tantan2Activity.start(this);
                 break;
             case "淘宝热卖分析":
                 if (Build.VERSION.SDK_INT >= 23) {
@@ -764,6 +805,9 @@ public class MainActivity extends AppCompatActivity implements NetChangeUtils.On
                 }
                 analyseJinhuo();
                 analyseTaobao();
+                break;
+            case "item动画":
+                ItemAnimActivity.start(this);
                 break;
         }
     }

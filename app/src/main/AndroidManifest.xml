@@ -223,6 +223,8 @@
         <activity android:name=".video.xiqu.XiquListActivity" />
         <activity android:name=".video.xiqu.WebViewActivity" />
         <activity android:name=".tantan.TantanActivity" />
+        <activity android:name=".tantan2.Tantan2Activity" />
+        <activity android:name=".tantan.ItemAnimActivity" />
     </application>
 
 </manifest>
